@@ -44,8 +44,8 @@ Confianza verificable en cada capa: el algoritmo probado matemáticamente, la pe
 
 ## Criterios de aceptación
 
-- [ ] `npm run test` verde (unit + integración según configuración).
-- [ ] `npm run test:e2e` verde con los 11 flujos.
+- [ ] `pnpm test` verde (unit + integración según configuración).
+- [ ] `pnpm test:e2e` verde con los 11 flujos.
 - [ ] 5/5 checks de seguridad en verde.
 - [ ] Cero llamadas a la API real de Spoonacular en la suite.
 - [ ] Comandos forman parte del Definition of Done.

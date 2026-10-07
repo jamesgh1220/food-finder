@@ -1,8 +1,8 @@
-# ISSUE: 08 — Infrastructure: Supabase Repositories & Mappers
+# ISSUE: 08 — Infraestructura: repositorios Supabase y mappers
 
 ## Título
 
-Implementar los repositorios Supabase y los mappers row→entidad para los 6 puertos del dominio
+Implementar los repositorios Supabase y los mappers fila→entidad para los 6 puertos del dominio
 
 ## Descripción
 
@@ -24,12 +24,12 @@ Persistencia funcional tras una interfaz limpia: las capas superiores usan puert
 
 ## Casos de prueba
 
-1. `AddPantryIngredient` persiste y `GetUserPantry` la recupera (integración con DB real).
+1. `AddPantryIngredient` persiste y `GetUserPantry` la recupera (integración con BD real).
 2. `GetRecipeById` retorna la receta con sus ingredientes en un número acotado de queries (sin N+1).
 3. `SearchRecipes` filtra por `meal_type`/`cuisine_id` usando los índices.
 4. Un error de BD se presenta como `RepositoryError`, nunca como error crudo de Postgres.
 5. Ningún objeto row cruza fuera de `src/infrastructure/` (auditoría de imports/tipos).
-6. El repositorio usa el cliente server; ningún path usa service-role en el navegador.
+6. El repositorio usa el client server; ningún path usa service-role en el navegador.
 
 ## Consideraciones técnicas
 

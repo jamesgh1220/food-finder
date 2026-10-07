@@ -1,62 +1,62 @@
-# SPEC: 03 — Database Schema & Migrations
+# SPEC: 03 — Esquema de base de datos y migraciones
 
-**Source:** PROMTP.md #18 (Database), #19 (Database design), #23 (Supabase MCP), #24 (MCP vs SDK vs Auth), #25 (MCP workflow), #58 (TS types), #68 (Migrations), #69 (Indexes), #84 (Multi-cuisine data model), #85 (Country vs cuisine).
+**Fuente:** PROMTP.md #18 (Base de datos), #19 (Diseño de BD), #23 (MCP de Supabase), #24 (MCP vs SDK vs Auth), #25 (Workflow MCP), #58 (Tipos TS), #68 (Migraciones), #69 (Índices), #84 (Modelo de datos multicocina), #85 (País vs cocina).
 
-## Purpose
+## Propósito
 
-Define the complete PostgreSQL schema for Supabase — tables, columns, constraints, indexes, versioned migrations, generated TypeScript types — with `cuisines` as an extensible catalog (never a rigid enum).
+Definir el esquema PostgreSQL completo para Supabase — tablas, columnas, constraints, índices, migraciones versionadas, tipos TypeScript generados — con `cuisines` como catálogo extensible (nunca un enum rígido).
 
-## Scope
+## Alcance
 
-### In scope
-- Tables, columns, constraints and indexes for the MVP.
-- Versioned migrations under `supabase/migrations/`.
-- Generated `src/types/database.types.ts`.
-- Supabase MCP configuration and its migration workflow.
-- Data-model rules: cuisine catalog vs enum; country ≠ cuisine.
+### Dentro del alcance
+- Tablas, columnas, constraints e índices del MVP.
+- Migraciones versionadas en `supabase/migrations/`.
+- `src/types/database.types.ts` generado.
+- Configuración del MCP de Supabase y su workflow de migraciones.
+- Reglas de modelo de datos: catálogo de cocinas vs enum; país ≠ cocina.
 
-### Out of scope
-- RLS policies (see `04-security-rls`).
-- Seed content (see `15-seed-data`).
-- Repository implementations (see `08-infrastructure-supabase`).
+### Fuera del alcance
+- Políticas RLS (ver `04-security-rls`).
+- Contenido de seed (ver `15-seed-data`).
+- Implementaciones de repositorios (ver `08-infrastructure-supabase`).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Tables (minimum): `profiles`, `cuisines`, `ingredients`, `recipes`, `recipe_ingredients`, `pantry_items`, `favorite_recipes`. `recipe_tags` and `dietary_tags` may be deferred for the MVP but the design must leave room for them. |
-| REQ-02 | `profiles` relates to `auth.users`. Never store passwords manually. |
-| REQ-03 | `cuisines`: `id, name, slug, country, region, description, created_at, updated_at`; `slug` UNIQUE; appropriate indexes. |
-| REQ-04 | `ingredients`: `id, name, normalized_name, category, is_pantry_staple, created_at, updated_at`; index on `normalized_name`; case-insensitive search (`Tomate` = `tomate` = `TOMATE`). |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Tablas (mínimo): `profiles`, `cuisines`, `ingredients`, `recipes`, `recipe_ingredients`, `pantry_items`, `favorite_recipes`. `recipe_tags` y `dietary_tags` pueden diferirse para el MVP, pero el diseño debe dejarles espacio. |
+| REQ-02 | `profiles` se relaciona con `auth.users`. Nunca almacenar contraseñas manualmente. |
+| REQ-03 | `cuisines`: `id, name, slug, country, region, description, created_at, updated_at`; `slug` UNIQUE; índices apropiados. |
+| REQ-04 | `ingredients`: `id, name, normalized_name, category, is_pantry_staple, created_at, updated_at`; índice sobre `normalized_name`; búsqueda case-insensitive (`Tomate` = `tomate` = `TOMATE`). |
 | REQ-05 | `recipes`: `id, name, slug, description, cuisine_id, country, region, meal_type, instructions, preparation_time, cooking_time, servings, difficulty, image_url, source, source_url, created_at, updated_at`. |
-| REQ-06 | `recipe_ingredients`: relations + constraints, indexes on `recipe_id` and `ingredient_id`. |
-| REQ-07 | `pantry_items`: `user_id, ingredient_id, quantity, unit, created_at, updated_at` with a unique constraint preventing duplicate user+ingredient rows. |
-| REQ-08 | `favorite_recipes`: `user_id, recipe_id, created_at` with `UNIQUE(user_id, recipe_id)`. |
-| REQ-09 | Indexes at minimum: `ingredients.normalized_name`, `recipes.slug`, `recipes.cuisine_id`, `recipes.meal_type`, `recipes.source`, `recipe_ingredients.recipe_id`, `recipe_ingredients.ingredient_id`, `pantry_items.user_id`, `pantry_items.ingredient_id`, `favorite_recipes.user_id`. Add only justified extras. |
-| REQ-10 | Schema lives in **versioned migrations** (`supabase/migrations/001_*.sql`, …), never only in `seed.sql`. |
-| REQ-11 | `cuisines` is a catalog table, **not** a TS/SQL enum: adding a cuisine = `INSERT`, no code change; must scale from 10 to 100+ cuisines without structural change. |
-| REQ-12 | Store `cuisine`, `country`, `region` separately; never force `country = cuisine` (e.g. Mediterranean spans multiple countries). |
-| REQ-13 | Generate `src/types/database.types.ts` from the real schema; document the regeneration command; never hand-write types that contradict the DB. |
-| REQ-14 | Configure the official Supabase MCP for development (verify current URL/config in official docs; no hardcoded credentials). Understand the three distinct concepts: **MCP** (dev tooling), **SDK** (runtime), **Auth** (end users). |
-| REQ-15 | MCP workflow: inspect project → tables → relations → RLS → functions/triggers → existing migrations → plan → versioned migration → apply → verify → regenerate types → run tests. Any MCP change must be reflected in repo migrations; never leave changes only in Supabase Cloud; never assume the project is empty. |
+| REQ-06 | `recipe_ingredients`: relaciones + constraints, índices sobre `recipe_id` e `ingredient_id`. |
+| REQ-07 | `pantry_items`: `user_id, ingredient_id, quantity, unit, created_at, updated_at` con un unique constraint que evite filas duplicadas de usuario+ingrediente. |
+| REQ-08 | `favorite_recipes`: `user_id, recipe_id, created_at` con `UNIQUE(user_id, recipe_id)`. |
+| REQ-09 | Índices mínimo: `ingredients.normalized_name`, `recipes.slug`, `recipes.cuisine_id`, `recipes.meal_type`, `recipes.source`, `recipe_ingredients.recipe_id`, `recipe_ingredients.ingredient_id`, `pantry_items.user_id`, `pantry_items.ingredient_id`, `favorite_recipes.user_id`. Agregar solo los justificados. |
+| REQ-10 | El esquema vive en **migraciones versionadas** (`supabase/migrations/001_*.sql`, …), nunca solo en `seed.sql`. |
+| REQ-11 | `cuisines` es una tabla de catálogo, **no** un enum TS/SQL: agregar una cocina = `INSERT`, sin cambio de código; debe escalar de 10 a 100+ cocinas sin cambio estructural. |
+| REQ-12 | Almacenar `cuisine`, `country`, `region` por separado; nunca forzar `country = cuisine` (p. ej. Mediterráneo abarca varios países). |
+| REQ-13 | Generar `src/types/database.types.ts` desde el esquema real; documentar el comando de regeneración; nunca escribir a mano tipos que contradigan la BD. |
+| REQ-14 | Configurar el MCP oficial de Supabase para desarrollo (verificar URL/config actual en la documentación oficial; sin credenciales hardcodeadas). Entender los tres conceptos distintos: **MCP** (tooling de desarrollo), **SDK** (runtime), **Auth** (usuarios finales). |
+| REQ-15 | Workflow MCP: inspeccionar proyecto → tablas → relaciones → RLS → funciones/triggers → migraciones existentes → planificar → migración versionada → aplicar → verificar → regenerar tipos → ejecutar tests. Cualquier cambio vía MCP debe quedar reflejado en migraciones del repo; nunca dejar cambios solo en Supabase Cloud; nunca asumir que el proyecto está vacío. |
 
-## Dependencies
+## Dependencias
 
 - `01-project-scaffold`.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] Migrations apply cleanly on a fresh Supabase instance and on an existing one (idempotent by version order).
-- [ ] Every table in REQ-01 exists with the columns/constraints of REQ-03…REQ-08.
-- [ ] All REQ-09 indexes exist.
-- [ ] `database.types.ts` regenerated from the live schema, not hand-written.
-- [ ] Inserting a new cuisine row works without any code change (REQ-11).
-- [ ] Case-insensitive lookup on `normalized_name` returns `Tomate` for query `TOMATE`.
+- [ ] Las migraciones aplican limpias en una instancia Supabase nueva y en una existente (idempotentes por orden de versión).
+- [ ] Todas las tablas de REQ-01 existen con las columnas/constraints de REQ-03…REQ-08.
+- [ ] Todos los índices de REQ-09 existen.
+- [ ] `database.types.ts` regenerado desde el esquema vivo, no escrito a mano.
+- [ ] Insertar una fila nueva en `cuisines` funciona sin ningún cambio de código (REQ-11).
+- [ ] La búsqueda case-insensitive sobre `normalized_name` devuelve `Tomate` para la query `TOMATE`.
 
-## Verification
+## Verificación
 
 ```bash
-# apply migrations to a clean database, then:
-npm run typecheck   # types reflect generated database.types.ts
+# aplicar las migraciones a una base limpia, luego:
+pnpm typecheck   # los tipos reflejan el database.types.ts generado
 ```
-Plus SQL checks for constraints/indexes and a manual MCP-workflow audit.
+Más verificaciones SQL de constraints/índices y una auditoría manual del workflow MCP.

@@ -1,4 +1,4 @@
-# ISSUE: 09 — Spoonacular Adapter
+# ISSUE: 09 — Adapter de Spoonacular
 
 ## Título
 
@@ -17,7 +17,7 @@ Fuente externa disponible y desacoplada: resultados combinables cuando funciona,
 - Puerto `ExternalRecipeProvider` (`searchByIngredients`, `getRecipeById`).
 - Adapter `SpoonacularRecipeProvider` en `src/infrastructure/spoonacular/` (client, mappers, providers).
 - Verificación de endpoints contra la documentación actual (#28, #95).
-- Pipeline de mapping DTO → dominio (#29).
+- Pipeline de mapeo DTO → dominio (#29).
 - `Recipe.source = SPOONACULAR` (#30).
 - Failure handling: 429, timeout, 500, caída, cuota, respuesta inválida (#32).
 - API key solo server-side.
@@ -44,7 +44,7 @@ Fuente externa disponible y desacoplada: resultados combinables cuando funciona,
 ## Criterios de aceptación
 
 - [ ] Puerto + adapter completos, inyectados por DI, reemplazables por mock.
-- [ ] Pipeline de mapping respetado; cero JSON crudo hacia la aplicación.
+- [ ] Pipeline de mapeo respetado; cero JSON crudo hacia la aplicación.
 - [ ] Los 7 casos de prueba en verde (mockeados).
 - [ ] Endpoints verificados contra documentación oficial actual y anotados en el PR.
 - [ ] Clave nunca expuesta al cliente.

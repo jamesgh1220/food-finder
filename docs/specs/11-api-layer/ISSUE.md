@@ -1,4 +1,4 @@
-# ISSUE: 11 — API Layer
+# ISSUE: 11 — Capa API
 
 ## Título
 
@@ -37,8 +37,8 @@ Una API predecible, segura y documentada: cualquier cliente puede consumirla con
 ## Consideraciones técnicas
 
 - Rate limiting: estrategia sencilla compatible con el entorno serverless (#55); no introducir infraestructura nueva solo para esto.
-- Las rutas existen para clientes externos/APIs; los Server Components no se auto-llamaban vía `/api` (spec 02).
-- Validar SIEMPRE en el servidor aunque la UI ya valide (defense in depth, #56).
+- Las rutas existen para clientes externos/APIs; los Server Components no deben auto-llamarse vía `/api` (spec 02).
+- Validar SIEMPRE en el servidor aunque la UI ya valide (defensa en profundidad, #56).
 - Unificar la construcción de respuestas en helpers reutilizables (envelope + error mapper).
 
 ## Criterios de aceptación

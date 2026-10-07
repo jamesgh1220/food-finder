@@ -1,52 +1,52 @@
-# SPEC: 04 — Row Level Security & Backend Security
+# SPEC: 04 — Row Level Security y seguridad del backend
 
-**Source:** PROMTP.md #20 (Row Level Security), #56 (Security), #57 (Env variables — enforcement), #67 (Security E2E — verification owned by `16-testing-strategy`).
+**Fuente:** PROMTP.md #20 (Row Level Security), #56 (Seguridad), #57 (Variables de entorno — cumplimiento), #67 (E2E de seguridad — verificación a cargo de `16-testing-strategy`).
 
-## Purpose
+## Propósito
 
-Enforce data isolation and the MVP security baseline: RLS policies per table, server-side authorization, input validation, secret protection, safe error handling, and external timeouts.
+Hacer efectivo el aislamiento de datos y la línea base de seguridad del MVP: políticas RLS por tabla, autorización server-side, validación de inputs, protección de secretos, manejo seguro de errores y timeouts externos.
 
-## Scope
+## Alcance
 
-### In scope
-- RLS policies for every user-owned and global catalog table.
-- Security checklist enforcement across the app (auth, Zod, IDs, secrets, errors, rate limiting cross-ref, timeouts).
+### Dentro del alcance
+- Políticas RLS para cada tabla de usuario y de catálogo global.
+- Cumplimiento de la checklist de seguridad en toda la app (auth, Zod, IDs, secretos, errores, rate limiting cruzado, timeouts).
 
-### Out of scope
-- E2E security tests (owned by `16-testing-strategy`).
-- Rate-limit implementation (owned by `11-api-layer`).
-- Auth flows/clients (owned by `05-supabase-auth`).
+### Fuera del alcance
+- Tests E2E de seguridad (a cargo de `16-testing-strategy`).
+- Implementación de rate limiting (a cargo de `11-api-layer`).
+- Flujos de auth/clients (a cargo de `05-supabase-auth`).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | `profiles`: user can read/modify **only their own** profile. |
-| REQ-02 | `pantry_items`: user can select/insert/update/delete **only their own** rows — never another user's. |
-| REQ-03 | `favorite_recipes`: user manages only their own favorites. |
-| REQ-04 | `recipes`: public/internal recipes readable by authenticated users; no arbitrary user may modify the global catalog. |
-| REQ-05 | `ingredients`: readable by authenticated users; no arbitrary writes. |
-| REQ-06 | `cuisines`: readable; no arbitrary modifications from the frontend. |
-| REQ-07 | Enable RLS on every table with policies matching REQ-01…REQ-06 (no table left unprotected). |
-| REQ-08 | Supabase Auth + RLS + application-level authorization all in place; authorization must be backed by backend/RLS, **never only by the UI**. |
-| REQ-09 | Zod validation of all inputs: query params, body, route params, IDs, filters, quantities, units. Never trust client input directly. |
-| REQ-10 | Never send secrets to the client. `SUPABASE_SECRET_KEY` and `SPOONACULAR_API_KEY` stay server-side only (enforced by env naming from spec 01). |
-| REQ-11 | Safe error handling: never expose stack traces, API keys, secrets, internal details, SQL, or sensitive information to clients. |
-| REQ-12 | Timeouts on external calls (Spoonacular) so a hung provider cannot hang requests. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | `profiles`: el usuario solo puede consultar/modificar **su propio** perfil. |
+| REQ-02 | `pantry_items`: el usuario solo puede seleccionar/insertar/actualizar/borrar **sus propias** filas — nunca las de otro usuario. |
+| REQ-03 | `favorite_recipes`: el usuario solo administra sus propios favoritos. |
+| REQ-04 | `recipes`: las recetas públicas/internas pueden leerse estando autenticado; ningún usuario puede modificar el catálogo global. |
+| REQ-05 | `ingredients`: legibles por usuarios autenticados; sin escrituras arbitrarias. |
+| REQ-06 | `cuisines`: legibles; sin modificaciones arbitrarias desde el frontend. |
+| REQ-07 | RLS habilitado en **todas** las tablas con políticas coherentes con REQ-01…REQ-06 (ninguna tabla sin protección). |
+| REQ-08 | Supabase Auth + RLS + autorización a nivel de aplicación presentes; la autorización debe estar respaldada por backend/RLS, **nunca solo por la UI**. |
+| REQ-09 | Validación con Zod de todos los inputs: query params, body, route params, IDs, filtros, cantidades, unidades. Nunca confiar directamente en el input del cliente. |
+| REQ-10 | Nunca enviar secretos al cliente. `SUPABASE_SECRET_KEY` y `SPOONACULAR_API_KEY` solo en servidor (reforzado por el naming de env de la spec 01). |
+| REQ-11 | Manejo seguro de errores: nunca exponer stack traces, API keys, secretos, detalles internos, SQL ni información sensible a los clientes. |
+| REQ-12 | Timeouts en llamadas externas (Spoonacular) para que un proveedor colgado no cuelgue las requests. |
 
-## Dependencies
+## Dependencias
 
-- `03-database-schema` (tables must exist before policies).
-- `05-supabase-auth` (session/user identity used by policies) — can be developed in parallel, verified together.
+- `03-database-schema` (las tablas deben existir antes que las políticas).
+- `05-supabase-auth` (la identidad de usuario de sesión que usan las políticas) — puede desarrollarse en paralelo y verificarse en conjunto.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] Every table in the schema has RLS enabled with at least one policy per REQ-01…REQ-06.
-- [ ] Query as user A returns zero rows of user B for `pantry_items` and `favorite_recipes`.
-- [ ] Unauthenticated requests to catalog tables are rejected per policy design.
-- [ ] No API response body contains stack traces, SQL strings or secrets (spot check error paths).
-- [ ] All external calls have finite timeouts.
+- [ ] Cada tabla del esquema tiene RLS habilitado con al menos una política por REQ-01…REQ-06.
+- [ ] Consultar como usuario A devuelve cero filas del usuario B en `pantry_items` y `favorite_recipes`.
+- [ ] Las solicitudes no autenticadas sobre catálogos globales se rechazan según el diseño de políticas.
+- [ ] Ningún cuerpo de respuesta de API contiene stack traces, strings SQL ni secretos (revisar rutas de error).
+- [ ] Todas las llamadas externas tienen timeouts finitos.
 
-## Verification
+## Verificación
 
-SQL/RLS checks per table + integration/security tests deferred to `16-testing-strategy` (cases S1–S5 there mirror REQ-01…REQ-06).
+Verificaciones SQL/RLS por tabla + tests de integración/seguridad diferidos a `16-testing-strategy` (los casos S1–S5 de allí reflejan REQ-01…REQ-06).

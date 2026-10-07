@@ -1,4 +1,4 @@
-# ISSUE: 05 — Supabase Auth
+# ISSUE: 05 — Autenticación con Supabase
 
 ## Título
 
@@ -14,7 +14,7 @@ Autenticación funcional y segura: usuarios se registran, inician sesión, cierr
 
 ## Alcance
 
-- Clientes Supabase con `@supabase/ssr`: browser, server y admin (solo si estrictamente necesario).
+- Clients de Supabase con `@supabase/ssr`: browser, server y admin (solo si estrictamente necesario).
 - Casos de uso: `RegisterUser`, `LoginUser`, `LogoutUser`, `GetCurrentUser`.
 - Páginas `/login` y `/register`.
 - Protección de `/dashboard` con redirect a `/login`.
@@ -30,12 +30,12 @@ Autenticación funcional y segura: usuarios se registran, inician sesión, cierr
 3. Logout → cookie/sesión eliminada; volver a `/dashboard` redirige a `/login`.
 4. Usuario no autenticado visita `/dashboard` → redirect `/login`.
 5. `GetCurrentUser` devuelve el usuario en contexto server.
-6. Bundle del navegador no contiene la secret key (grep en build).
+6. El bundle del navegador no contiene la secret key (grep sobre el build).
 
 ## Consideraciones técnicas
 
 - Verificar la documentación actual de Supabase para naming de llaves, SSR y session handling; no copiar tutoriales viejos (#94).
-- El admin/service client solo para casos que lo exijan, siempre tras una guarda server-only.
+- El client admin/service solo para casos que lo exijan, siempre tras una guarda server-only.
 - Los casos de uso viven en la capa application, detrás de un puerto de auth (el dominio no conoce Supabase).
 
 ## Criterios de aceptación

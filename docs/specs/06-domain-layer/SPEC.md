@@ -1,51 +1,51 @@
-# SPEC: 06 — Domain Layer (Entities, Value Objects, Ports, Errors, Normalization)
+# SPEC: 06 — Capa de dominio (entidades, value objects, puertos, errores, normalización)
 
-**Source:** PROMTP.md #10 (Entities), #11 (Value objects), #12 (Repository ports), #37 (Error types — domain part), #50 (Ingredient normalization), #84/#85 (Cuisine rules), #15 (match score VO).
+**Fuente:** PROMTP.md #10 (Entidades), #11 (Value objects), #12 (Puertos de repositorio), #37 (Tipos de error — parte de dominio), #50 (Normalización de ingredientes), #84/#85 (Reglas de Cuisine), #15 (VO de match score).
 
-## Purpose
+## Propósito
 
-Create the technology-independent domain: entities, value objects, repository port interfaces, domain errors, and ingredient normalization — with `Cuisine` as an extensible entity, never a rigid enum.
+Crear el dominio independiente de tecnología: entidades, value objects, interfaces de puertos de repositorio, errores de dominio y normalización de ingredientes — con `Cuisine` como entidad extensible, nunca un enum rígido.
 
-## Scope
+## Alcance
 
-### In scope
-- Six entities with the exact conceptual fields of PROMTP #10.
+### Dentro del alcance
+- Seis entidades con los campos conceptuales exactos de PROMTP #10.
 - Value objects: `IngredientName`, `MealType`, `Quantity`, `Unit`, `RecipeMatchScore`.
-- Repository port interfaces.
-- Domain error taxonomy.
-- Ingredient normalization rules.
+- Interfaces de puertos de repositorio.
+- Taxonomía de errores de dominio.
+- Reglas de normalización de ingredientes.
 
-### Out of scope
-- Use cases (spec 07), matching/recommendation logic (spec 10), DB rows/mappers (specs 03/08), HTTP error mapping (spec 11).
+### Fuera del alcance
+- Casos de uso (spec 07), lógica de matching/recomendación (spec 10), filas de BD/mappers (specs 03/08), mapeo HTTP de errores (spec 11).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | **Recipe**: `id, name, slug, description, cuisineId, country, region, mealType, instructions, preparationTime, cookingTime, servings, difficulty, imageUrl, source, sourceUrl, timestamps`. `source` ∈ `INTERNAL \| SPOONACULAR \| AI_GENERATED \| OTHER` (only INTERNAL/SPOONACULAR used now; the other values must not require schema/code redesign later). |
-| REQ-02 | **Cuisine**: `id, name, slug, country, region, description, createdAt, updatedAt`. Extensible catalog entity — **never** a rigid enum; new cuisines added via data only. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | **Recipe**: `id, name, slug, description, cuisineId, country, region, mealType, instructions, preparationTime, cookingTime, servings, difficulty, imageUrl, source, sourceUrl, timestamps`. `source` ∈ `INTERNAL \| SPOONACULAR \| AI_GENERATED \| OTHER` (ahora solo se usan INTERNAL/SPOONACULAR; los demás valores no deben requerir rediseño de esquema/código a futuro). |
+| REQ-02 | **Cuisine**: `id, name, slug, country, region, description, createdAt, updatedAt`. Entidad-catálogo extensible — **nunca** un enum rígido; las nuevas cocinas se agregan solo con datos. |
 | REQ-03 | **Ingredient**: `id, name, normalizedName, category, isPantryStaple, createdAt, updatedAt`. |
 | REQ-04 | **RecipeIngredient**: `recipeId, ingredientId, quantity, unit, optional, notes`. |
 | REQ-05 | **PantryItem**: `id, userId, ingredientId, quantity, unit, createdAt, updatedAt`. |
 | REQ-06 | **FavoriteRecipe**: `userId, recipeId, createdAt`. |
 | REQ-07 | Value objects: `IngredientName`, `MealType` (`BREAKFAST \| LUNCH \| DINNER \| SNACK \| DESSERT \| ANY`), `Quantity`, `Unit`, `RecipeMatchScore`. |
-| REQ-08 | Repository port interfaces, Supabase-independent: `RecipeRepository`, `IngredientRepository`, `CuisineRepository`, `PantryRepository`, `FavoriteRepository`, `UserRepository`. Domain/application never know the persistence technology. |
-| REQ-09 | Domain errors: `DomainError`, `ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `ExternalServiceError`, `RepositoryError` (HTTP mapping happens in spec 11, not here). |
-| REQ-10 | Ingredient normalization: `Tomate` / `tomate` / `TOMATE` map to the same ingredient (case-insensitive via `normalizedName`). Architecture must leave room for synonyms/translations/plurals/regional names (`aguacate/avocado/palta`) — **no NLP** in the MVP. |
-| REQ-11 | Domain files import no framework, database or external HTTP code (rule enforced by spec 02). |
+| REQ-08 | Interfaces de puertos de repositorio, independientes de Supabase: `RecipeRepository`, `IngredientRepository`, `CuisineRepository`, `PantryRepository`, `FavoriteRepository`, `UserRepository`. Dominio/aplicación nunca conocen la tecnología de persistencia. |
+| REQ-09 | Errores de dominio: `DomainError`, `ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `ExternalServiceError`, `RepositoryError` (el mapeo a HTTP ocurre en la spec 11, no aquí). |
+| REQ-10 | Normalización de ingredientes: `Tomate` / `tomate` / `TOMATE` mapean al mismo ingrediente (case-insensitive vía `normalizedName`). La arquitectura debe dejar espacio para sinónimos/traducciones/plurales/nombres regionales (`aguacate/avocado/palta`) — **sin NLP** en el MVP. |
+| REQ-11 | Los archivos de dominio no importan frameworks, bases de datos ni HTTP externo (regla aplicada por la spec 02). |
 
-## Dependencies
+## Dependencias
 
 - `02-architecture-foundation`, `01-project-scaffold`.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] All six entities and five value objects exist with exactly the fields/values above.
-- [ ] Compiling the domain requires no Supabase/Spoonacular/Next.js/React packages.
-- [ ] Repository ports are pure interfaces usable with mocks.
-- [ ] Normalization unit tests: case variants resolve to one ingredient.
-- [ ] Adding a cuisine requires zero code change (data-driven).
+- [ ] Las seis entidades y los cinco value objects existen con exactamente los campos/valores indicados.
+- [ ] Compilar el dominio no requiere paquetes de Supabase/Spoonacular/Next.js/React.
+- [ ] Los puertos de repositorio son interfaces puras utilizables con mocks.
+- [ ] Tests unitarios de normalización: las variantes de mayúsculas resuelven a un solo ingrediente.
+- [ ] Agregar una cocina no requiere cambio de código (datos-driven).
 
-## Verification
+## Verificación
 
-Unit tests for normalization, `MealType`, `RecipeMatchScore`; import-boundary audit for REQ-11.
+Tests unitarios de normalización, `MealType` y `RecipeMatchScore`; auditoría de imports para REQ-11.

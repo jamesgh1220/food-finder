@@ -1,45 +1,45 @@
-# SPEC: 13 — Frontend: Dashboard & Pantry
+# SPEC: 13 — Frontend: Dashboard y Pantry
 
-**Source:** PROMTP.md #40 (Dashboard), #41 (Pantry), #45 (Pantry components), #83 Casos 2–3 (acceptance flows), #70 (Filter model — pantry inputs part).
+**Fuente:** PROMTP.md #40 (Dashboard), #41 (Pantry), #45 (Componentes de pantry), #83 Casos 2–3 (flujos de aceptación), #70 (Modelo de filtros — parte de inputs de pantry).
 
-## Purpose
+## Propósito
 
-Build the authenticated home (`/dashboard`) and the pantry manager (`/dashboard/pantry`): the screen where users declare their ingredients and launch recipe searches.
+Construir el inicio autenticado (`/dashboard`) y el gestor de despensa (`/dashboard/pantry`): la pantalla donde el usuario declara sus ingredientes y lanza las búsquedas de recetas.
 
-## Scope
+## Alcance
 
-### In scope
-- Dashboard page: greeting, meal-type selector, available ingredients, optional cuisine selector, search button, recommendations display.
-- Pantry page: search/add/edit/remove ingredients with quantity/unit, clear pantry.
+### Dentro del alcance
+- Página de dashboard: saludo, selector de tipo de comida, ingredientes disponibles, selector opcional de cocina, botón de búsqueda, recomendaciones.
+- Página de pantry: buscar/agregar/editar/eliminar ingredientes con cantidad/unidad, limpiar despensa.
 
-### Out of scope
-- Recipes list/detail/favorites pages (spec 14), recommendation algorithm (spec 10), shared components (spec 12), API routes (spec 11).
+### Fuera del alcance
+- Páginas de recetas/detalle/favoritos (spec 14), algoritmo de recomendación (spec 10), componentes compartidos (spec 12), rutas API (spec 11).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Dashboard route `/dashboard` (protected — redirect handled per spec 05) with: greeting, meal-type selector (`Desayuno/Almuerzo/Cena/Cualquier momento`), available-ingredients chips, optional cuisine selector (default `Todas`), **Encontrar recetas** button, and recommendation results. |
-| REQ-02 | Pantry route `/dashboard/pantry` with components `IngredientSearch`, `IngredientSelector`, `PantryList`, `PantryItem`. |
-| REQ-03 | Pantry operations: search ingredient (case-insensitive), add, edit (quantity/unit), remove, clear pantry. |
-| REQ-04 | Search submits `{ ingredientIds, mealType, cuisineId }` to the recommendations flow (spec 11 endpoint or direct use case per spec 02 hop rule). |
-| REQ-05 | Results list renders shared `RecipeCard`s with `RecipeMatchScore` and missing-ingredient hints (components from spec 12). |
-| REQ-06 | Filter model must be extensible: full model `ingredients, mealType, cuisine, maxPreparationTime, difficulty, diet`; MVP implements only `ingredients, mealType, cuisine` without locking the shape (#70). |
-| REQ-07 | **Routing note:** the specified URLs (`/dashboard`, `/dashboard/pantry`) are authoritative. Next.js route groups do not affect URLs — structure folders so the final URLs match exactly (adapt PROMTP #9 folder layout if needed). |
-| REQ-08 | Empty pantry → friendly `EmptyState` guiding the user to add ingredients; loading and error states on all data fetches. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Ruta de dashboard `/dashboard` (protegida — redirect según spec 05) con: saludo, selector de tipo de comida (`Desayuno/Almuerzo/Cena/Cualquier momento`), chips de ingredientes disponibles, selector opcional de cocina (default `Todas`), botón **Encontrar recetas** y resultados de recomendación. |
+| REQ-02 | Ruta de pantry `/dashboard/pantry` con componentes `IngredientSearch`, `IngredientSelector`, `PantryList`, `PantryItem`. |
+| REQ-03 | Operaciones de pantry: buscar ingrediente (case-insensitive), agregar, editar (cantidad/unidad), eliminar, limpiar despensa. |
+| REQ-04 | La búsqueda envía `{ ingredientIds, mealType, cuisineId }` al flujo de recomendaciones (endpoint de la spec 11 o caso de uso directo según la regla de hops de la spec 02). |
+| REQ-05 | La lista de resultados renderiza `RecipeCard`s compartidos con `RecipeMatchScore` y pistas de ingredientes faltantes (componentes de la spec 12). |
+| REQ-06 | El modelo de filtros debe ser extensible: modelo completo `ingredients, mealType, cuisine, maxPreparationTime, difficulty, diet`; el MVP implementa solo `ingredients, mealType, cuisine` sin bloquear la forma (#70). |
+| REQ-07 | **Nota de rutas:** las URLs especificadas (`/dashboard`, `/dashboard/pantry`) son autoritativas. Los route groups de Next.js no afectan la URL — estructurar las carpetas para que las URLs finales coincidan exactamente (adaptar el layout de carpetas de PROMTP #9 si es necesario). |
+| REQ-08 | Despensa vacía → `EmptyState` amigable que guíe al usuario a agregar ingredientes; estados de carga y error en todas las obtenciones de datos. |
 
-## Dependencies
+## Dependencias
 
-- `12-frontend-foundation`, `07-application-layer`, `10-recommendation-engine` (results), `05-supabase-auth` (protection).
+- `12-frontend-foundation`, `07-application-layer`, `10-recommendation-engine` (resultados), `05-supabase-auth` (protección).
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] `/dashboard` requires auth and shows all elements of REQ-01.
-- [ ] Pantry CRUD works end-to-end against real data (add `papa`, `carne`, `huevo` → visible in list; edit/remove/clear work).
-- [ ] Selecting meal type, no cuisine, and searching returns multi-cuisine results (Caso 2).
-- [ ] With `cuisine = Peruana`, results are predominantly/only Peruvian (Caso 3).
-- [ ] Final URLs are exactly `/dashboard` and `/dashboard/pantry`.
+- [ ] `/dashboard` exige autenticación y muestra todos los elementos de REQ-01.
+- [ ] El CRUD de pantry funciona end-to-end contra datos reales (agregar `papa`, `carne`, `huevo` → visibles en la lista; editar/eliminar/limpiar funcionan).
+- [ ] Seleccionando tipo de comida, sin cocina, y buscando → resultados multi-cocina (Caso 2).
+- [ ] Con `cuisine = Peruana` → resultados predominantemente/solo peruanos (Caso 3).
+- [ ] Las URLs finales son exactamente `/dashboard` y `/dashboard/pantry`.
 
-## Verification
+## Verificación
 
-E2E flows 3–6 of spec 16 (dashboard, add ingredients, select meal type, search recipes, view results).
+Flujos E2E 3–6 de la spec 16 (dashboard, agregar ingredientes, seleccionar meal type, buscar recetas, ver resultados).

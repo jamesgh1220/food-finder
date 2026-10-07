@@ -1,59 +1,59 @@
-# SPEC: 02 — Architecture Foundation
+# SPEC: 02 — Fundamentos de arquitectura
 
-**Source:** PROMTP.md #7 (Architecture), #8 (Layers), #9 (Folder structure), #49 (Avoid unnecessary hops), #51 (i18n readiness), #59 (Mappers), #60 (DI), #61 (Logging), #74 (Capacitor/PWA readiness), #76 (Code quality).
+**Fuente:** PROMTP.md #7 (Arquitectura), #8 (Capas), #9 (Estructura de carpetas), #49 (Evitar hops innecesarios), #51 (Readiness i18n), #59 (Mappers), #60 (DI), #61 (Logging), #74 (Readiness Capacitor/PWA), #76 (Calidad de código).
 
-## Purpose
+## Propósito
 
-Establish the hexagonal (Ports & Adapters) skeleton, folder structure, dependency-injection, logging, mapper and code-quality rules that keep the domain independent of Next.js, React, Supabase and Spoonacular.
+Establecer el esqueleto hexónico (Ports & Adapters), la estructura de carpetas, la inyección de dependencias, el logging, la regla de mappers y las reglas de calidad que mantienen el dominio independiente de Next.js, React, Supabase y Spoonacular.
 
-## Scope
+## Alcance
 
-### In scope
-- Layer definitions and the dependency rule.
-- Canonical folder structure for `src/`, `supabase/`, `tests/`, `docs/`.
-- Simple explicit DI (composition root; no DI framework).
-- Logging abstraction (`debug`/`info`/`warn`/`error`) with secret redaction.
-- Mandatory mapper rule (DB rows and external DTOs never reach the domain).
-- Call-path rule: no unnecessary API hops from Server Components.
-- i18n readiness and future PWA/Capacitor compatibility constraints.
-- Code-quality principles (SOLID, DRY, KISS, strict typing).
+### Dentro del alcance
+- Definición de capas y la regla de dependencia.
+- Estructura canónica de carpetas para `src/`, `supabase/`, `tests/`, `docs/`.
+- DI simple y explícita (composition root; sin framework de DI).
+- Abstracción de logging (`debug`/`info`/`warn`/`error`) con redacción de secretos.
+- Regla obligatoria de mappers (filas de BD y DTOs externos nunca llegan al dominio).
+- Regla de llamadas: sin hops innecesarios a la API propia desde Server Components.
+- Readiness i18n y restricciones de compatibilidad futura PWA/Capacitor.
+- Principios de calidad de código (SOLID, DRY, KISS, tipado estricto).
 
-### Out of scope
-- Concrete entities/use cases/repositories (their own specs).
-- Mermaid diagram and docs files (see `17-documentation-release`).
+### Fuera del alcance
+- Entidades, casos de uso y repositorios concretos (cada uno tiene su spec).
+- Diagrama Mermaid y archivos de documentación (ver `17-documentation-release`).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Layers: `Presentation → Application → Domain → Ports → Infrastructure/Adapters`. |
-| REQ-02 | **Domain must not import** Next.js, React, Supabase, Spoonacular, `fetch`, or UI components. |
-| REQ-03 | Presentation: UI, pages, components, forms, Route Handlers, input validation, HTTP serialization — no complex business logic. |
-| REQ-04 | Application: use cases, coordination, DTOs, ports, use-case-level authorization, repository/service orchestration. |
-| REQ-05 | Domain: entities, value objects, business rules, domain services, domain errors, matching/recommendation logic. |
-| REQ-06 | Infrastructure: Supabase, PostgreSQL, Spoonacular, HTTP, persistence, technical auth, mappers, external clients. |
-| REQ-07 | Implement the folder structure of PROMTP #9 (`src/app`, `src/components`, `src/domain`, `src/application`, `src/infrastructure`, `src/lib`, `src/types`, `supabase/`, `tests/`, `docs/`), adapting only for current Next.js conventions while preserving layer separation. |
-| REQ-08 | Explicit dependency injection via a composition root (or equivalent). No DI framework. Example chain: `SupabaseRecipeRepository` + `SpoonacularRecipeProvider` → `RecipeRecommendationService` → `FindRecipesFromPantry`. |
-| REQ-09 | Logging abstraction with levels `debug/info/warn/error`. Never log API keys, passwords, tokens, secrets or sensitive data. |
-| REQ-10 | Mappers are mandatory: `SupabaseRow → Mapper → Domain Entity` and `SpoonacularDTO → Mapper → Recipe`. Raw rows/DTOs never cross into domain/application. |
-| REQ-11 | A Server Component must call use cases directly (`Server Component → Use Case → Repository → Supabase`), never `fetch("/api/...")` to its own Route Handlers. Route Handlers exist for external clients/APIs and genuinely needed cases. |
-| REQ-12 | i18n readiness: do not hardcode domain decisions that would block Spanish/English/Portuguese/French later. Full i18n is **not** required in the MVP. |
-| REQ-13 | Do not install Capacitor; keep architecture PWA/Capacitor-compatible (avoid depending exclusively on server-side APIs for features that must later run on mobile). |
-| REQ-14 | Code quality: SOLID, DRY, KISS, composition, small functions, descriptive names, strict typing, explicit errors. Hexagonal architecture must not become an excuse for hundreds of valueless files. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Capas: `Presentation → Application → Domain → Ports → Infrastructure/Adapters`. |
+| REQ-02 | El **dominio no debe importar** Next.js, React, Supabase, Spoonacular, `fetch` ni componentes UI. |
+| REQ-03 | Presentation: UI, páginas, componentes, formularios, Route Handlers, validación de entrada, serialización HTTP — sin lógica de negocio compleja. |
+| REQ-04 | Application: casos de uso, coordinación, DTOs, puertos, autorización a nivel de caso de uso, orquestación de repositorios y servicios. |
+| REQ-05 | Domain: entidades, value objects, reglas de negocio, servicios de dominio, errores de dominio, lógica de matching y recomendaciones. |
+| REQ-06 | Infrastructure: Supabase, PostgreSQL, Spoonacular, HTTP, persistencia, autenticación técnica, mappers, clientes externos. |
+| REQ-07 | Implementar la estructura de carpetas de PROMTP #9 (`src/app`, `src/components`, `src/domain`, `src/application`, `src/infrastructure`, `src/lib`, `src/types`, `supabase/`, `tests/`, `docs/`), adaptándola solo para convenciones actuales de Next.js preservando la separación de capas. |
+| REQ-08 | Inyección de dependencias explícita vía un composition root (o equivalente). Sin framework de DI. Cadena de ejemplo: `SupabaseRecipeRepository` + `SpoonacularRecipeProvider` → `RecipeRecommendationService` → `FindRecipesFromPantry`. |
+| REQ-09 | Abstracción de logging con niveles `debug/info/warn/error`. Nunca registrar API keys, contraseñas, tokens, secretos ni datos sensibles. |
+| REQ-10 | Los mappers son obligatorios: `SupabaseRow → Mapper → Domain Entity` y `SpoonacularDTO → Mapper → Recipe`. Filas/DTOs crudos nunca cruzan hacia dominio/aplicación. |
+| REQ-11 | Un Server Component debe invocar casos de uso directamente (`Server Component → Use Case → Repository → Supabase`), nunca `fetch("/api/...")` hacia sus propios Route Handlers. Los Route Handlers existen para clientes externos/APIs y casos donde realmente sean necesarios. |
+| REQ-12 | Readiness i18n: no hardcodear decisiones de dominio que bloqueen español/inglés/portugués/francés más adelante. (i18n completo **no** es requerido en el MVP.) |
+| REQ-13 | No instalar Capacitor; mantener la arquitectura compatible con PWA/Capacitor (evitar depender exclusivamente de APIs server-side para funcionalidades que luego deban ejecutarse en móvil). |
+| REQ-14 | Calidad de código: SOLID, DRY, KISS, composición, funciones pequeñas, nombres descriptivos, tipado estricto, errores explícitos. La arquitectura hexagonal no debe convertirse en una excusa para crear cientos de archivos sin valor. |
 
-## Dependencies
+## Dependencias
 
-- `01-project-scaffold` (project, tooling, strict TS).
+- `01-project-scaffold` (proyecto, tooling, TS strict).
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] Folder tree matches REQ-07; every source file lives in exactly one layer.
-- [ ] A static check (lint rule, import audit, or review) confirms no domain file imports infrastructure/framework packages (REQ-02).
-- [ ] One composition root wires adapters into use cases explicitly (REQ-08).
-- [ ] A single logger implementation exists; grep shows no secret logging (REQ-09).
-- [ ] No Server Component calls the project's own `/api/*` routes (REQ-11).
-- [ ] No DI framework or banned technology (#75) was added.
+- [ ] El árbol de carpetas coincide con REQ-07; cada archivo vive en exactamente una capa.
+- [ ] Una verificación estática (lint, auditoría de imports o review) confirma que ningún archivo del dominio importa paquetes de infraestructura/framework (REQ-02).
+- [ ] Un composition root cablea explícitamente los adapters hacia los casos de uso (REQ-08).
+- [ ] Existe una única implementación de logger; grep no muestra logging de secretos (REQ-09).
+- [ ] Ningún Server Component llama a las rutas propias `/api/*` (REQ-11).
+- [ ] No se agregó ningún framework de DI ni tecnología prohibida (#75).
 
-## Verification
+## Verificación
 
-Import-boundary lint/audit + code review against REQ-02, REQ-08, REQ-10, REQ-11.
+Auditoría de imports/lint de límites de dependencia + review de código contra REQ-02, REQ-08, REQ-10, REQ-11.

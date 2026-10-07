@@ -1,12 +1,12 @@
-# ISSUE: 04 — Row Level Security & Backend Security
+# ISSUE: 04 — Row Level Security y seguridad del backend
 
 ## Título
 
-Configurar RLS por tabla y el baseline de seguridad del backend (autorización, validación, secretos, errores)
+Configurar RLS por tabla y la línea base de seguridad del backend (autorización, validación, secretos, errores)
 
 ## Descripción
 
-Con las tablas creadas, el siguiente paso es aislar los datos por usuario con Row Level Security y fijar el baseline de seguridad: autorización respaldada por backend/RLS (nunca solo por la UI), validación Zod de todo input, protección de secretos y manejo seguro de errores. Un fallo aquí expone datos de otros usuarios, por lo que se trata como bloqueante.
+Con las tablas creadas, el siguiente paso es aislar los datos por usuario con Row Level Security y fijar la línea base de seguridad: autorización respaldada por backend/RLS (nunca solo por la UI), validación Zod de todo input, protección de secretos y manejo seguro de errores. Un fallo aquí expone datos de otros usuarios, por lo que se trata como bloqueante.
 
 ## Objetivo
 
@@ -27,9 +27,9 @@ Garantizar que cada usuario solo vea y modifique sus propios datos (perfil, desp
 
 1. Usuario A no puede leer ni modificar el pantry de usuario B (select/update/delete devuelven 0 filas).
 2. Usuario A no puede modificar favoritos de usuario B.
-3. Usuario no autenticado no obtiene filas de tablas con RLS de usuario.
-4. Usuarios autenticados pueden leer `recipes`/`ingredients`/`cuisines` pero no escribir en ellas.
-5. Ninguna respuesta de error incluye stack trace, SQL o valores de `.env`.
+3. Un usuario no autenticado no obtiene filas de tablas RLS de usuario.
+4. Los usuarios autenticados pueden leer `recipes`/`ingredients`/`cuisines` pero no escribir en ellas.
+5. Ninguna respuesta de error incluye stack trace, SQL ni valores de `.env`.
 6. Una llamada a Spoonacular colgada expira por timeout en lugar de bloquear la request.
 
 ## Consideraciones técnicas

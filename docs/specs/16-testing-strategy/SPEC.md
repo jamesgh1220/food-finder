@@ -1,47 +1,47 @@
-# SPEC: 16 — Testing Strategy (Unit, Integration, E2E, Security)
+# SPEC: 16 — Estrategia de testing (unit, integración, E2E, seguridad)
 
-**Source:** PROMTP.md #62 (Testing stack), #63 (Unit tests), #64 (Integration tests), #65 (Spoonacular testing), #66 (E2E tests), #67 (Security E2E), #96 (DoD — tests must pass).
+**Fuente:** PROMTP.md #62 (Stack de testing), #63 (Tests unitarios), #64 (Tests de integración), #65 (Testing de Spoonacular), #66 (Tests E2E), #67 (E2E de seguridad), #96 (DoD — los tests deben pasar).
 
-## Purpose
+## Propósito
 
-Establish the testing pyramid for the project: Vitest + React Testing Library for unit/component tests, Playwright for E2E, plus security E2E — with Spoonacular always mocked in unit tests.
+Establecer la pirámide de testing del proyecto: Vitest + React Testing Library para tests unitarios/de componentes, Playwright para E2E, más E2E de seguridad — con Spoonacular siempre mockeado en los tests unitarios.
 
-## Scope
+## Alcance
 
-### In scope
-- Test tooling setup and suites: domain unit, application unit, integration, Spoonacular mock scenarios, E2E flows, security E2E.
+### Dentro del alcance
+- Configuración del tooling de testing y suites: unit de dominio, unit de aplicación, integración, escenarios mock de Spoonacular, flujos E2E, E2E de seguridad.
 
-### Out of scope
-- Production implementation (specs 01–15); this spec defines and runs the verification.
+### Fuera del alcance
+- Implementación de producto (specs 01–15); esta spec define y ejecuta la verificación.
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Stack: **Vitest**, **React Testing Library**, **Playwright** (verify current compatible versions before install). |
-| REQ-02 | **Domain unit tests** for: ingredient normalization, match score, recipe matching, pantry staples, meal type, cuisine filtering, optional ingredients. |
-| REQ-03 | **Application unit tests** for: `FindRecipesFromPantry`, `AddPantryIngredient`, `RemovePantryIngredient`, favorites, cuisine retrieval — repositories/providers **mocked**. |
-| REQ-04 | **Never** depend on real Spoonacular in unit tests. Create `MockExternalRecipeProvider` covering: success, timeout, 429, 500, malformed response, empty result. |
-| REQ-05 | **Integration tests** for: Supabase repositories, RLS, API endpoints, auth, pantry persistence, favorites, recipe retrieval. |
-| REQ-06 | **E2E tests (Playwright)** for the 11 flows: 1 register, 2 login, 3 dashboard, 4 add ingredients, 5 select meal type, 6 search recipes, 7 view results, 8 view recipe, 9 save favorite, 10 consult favorites, 11 logout. |
-| REQ-07 | **Security E2E**: unauthenticated user cannot access the dashboard; user A cannot access user B's pantry; user A cannot modify user B's favorites; RLS actually works; endpoints validate authorization. |
-| REQ-08 | All suites are part of the Definition of Done: `npm run test` and `npm run test:e2e` must pass for a release. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Stack: **Vitest**, **React Testing Library**, **Playwright** (verificar las versiones compatibles actuales antes de instalar). |
+| REQ-02 | **Tests unitarios de dominio** para: normalización de ingredientes, match score, matching de recetas, pantry staples, meal type, filtro de cocina, ingredientes opcionales. |
+| REQ-03 | **Tests unitarios de aplicación** para: `FindRecipesFromPantry`, `AddPantryIngredient`, `RemovePantryIngredient`, favoritos, obtención de cocinas — repositorios/providers **mockeados**. |
+| REQ-04 | **Nunca** depender de Spoonacular real en tests unitarios. Crear `MockExternalRecipeProvider` que cubra: éxito, timeout, 429, 500, respuesta malformada, resultado vacío. |
+| REQ-05 | **Tests de integración** para: repositorios Supabase, RLS, endpoints de API, auth, persistencia de pantry, favoritos, obtención de recetas. |
+| REQ-06 | **Tests E2E (Playwright)** para los 11 flujos: 1 registro, 2 login, 3 dashboard, 4 agregar ingredientes, 5 seleccionar meal type, 6 buscar recetas, 7 ver resultados, 8 ver receta, 9 guardar favorito, 10 consultar favoritos, 11 logout. |
+| REQ-07 | **E2E de seguridad**: usuario no autenticado no puede acceder al dashboard; el usuario A no puede acceder a la pantry del usuario B; el usuario A no puede modificar los favoritos del usuario B; RLS funciona realmente; los endpoints validan autorización. |
+| REQ-08 | Todas las suites forman parte de la Definition of Done: `pnpm test` y `pnpm test:e2e` deben pasar para un release. |
 
-## Dependencies
+## Dependencias
 
-All feature specs (01–15) for what to test; tooling from spec 01.
+Todas las specs de funcionalidad (01–15) para qué testear; tooling de la spec 01.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] REQ-02 and REQ-03 suites exist and are green.
-- [ ] `MockExternalRecipeProvider` covers all six scenarios of REQ-04.
-- [ ] Integration suite exercises persistence + RLS against a real database.
-- [ ] All 11 E2E flows pass in CI/local.
-- [ ] All 5 security E2E checks pass with two distinct test users.
-- [ ] Zero tests hit the real Spoonacular API.
+- [ ] Las suites de REQ-02 y REQ-03 existen y están en verde.
+- [ ] `MockExternalRecipeProvider` cubre los seis escenarios de REQ-04.
+- [ ] La suite de integración ejercita persistencia + RLS contra una base real.
+- [ ] Los 11 flujos E2E pasan en CI/local.
+- [ ] Los 5 checks de E2E de seguridad pasan con dos usuarios de prueba distintos.
+- [ ] Cero tests tocan la API real de Spoonacular.
 
-## Verification
+## Verificación
 
 ```bash
-npm run test && npm run test:e2e
+pnpm test && pnpm test:e2e
 ```

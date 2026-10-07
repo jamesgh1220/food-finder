@@ -1,4 +1,4 @@
-# ISSUE: 07 — Application Layer
+# ISSUE: 07 — Capa de aplicación
 
 ## Título
 
@@ -40,7 +40,7 @@ Todos los flujos del MVP expresados como casos de uso testeables, con autorizaci
 ## Criterios de aceptación
 
 - [ ] Los 16 casos de uso existen y están cableados en el composition root.
-- [ ] Suite unitaria de aplicación verde con mocks (sin DB real).
+- [ ] Suite unitaria de aplicación verde con mocks (sin BD real).
 - [ ] Verificación de pertenencia de usuario en todo caso de uso con datos de usuario.
 - [ ] Cuisine opcional demostrado con test.
 - [ ] Extension points futuros documentados e inertes.

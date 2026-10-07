@@ -1,4 +1,4 @@
-# ISSUE: 06 — Domain Layer
+# ISSUE: 06 — Capa de dominio
 
 ## Título
 
@@ -40,7 +40,7 @@ Un dominio puro y testeable que modele el producto multicocina — con `Cuisine`
 
 ## Criterios de aceptación
 
-- [ ] 6 entidades y 5 value objects implementados con los campos/válidos exactos del SPEC.
+- [ ] 6 entidades y 5 value objects implementados con los campos/valores exactos del SPEC.
 - [ ] 6 puertos de repositorio como interfaces puras.
 - [ ] Taxonomía de errores de dominio completa.
 - [ ] Tests de normalización y value objects en verde.

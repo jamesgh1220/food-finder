@@ -1,4 +1,4 @@
-# ISSUE: 13 — Frontend: Dashboard & Pantry
+# ISSUE: 13 — Frontend: Dashboard y Pantry
 
 ## Título
 
@@ -37,15 +37,15 @@ El usuario puede declarar qué tiene en su cocina y obtener recomendaciones mult
 
 ## Consideraciones técnicas
 
-- Respetar el hop rule (spec 02): si es Server Component, invocar casos de uso directamente; el endpoint `/api` para clientes externos.
+- Respetar la regla de hops (spec 02): si es Server Component, invocar casos de uso directamente; el endpoint `/api` es para clientes externos.
 - Los ingredientes del usuario provienen de su sesión — nunca de estado global compartido entre usuarios.
 - El modelo de filtros debe poder crecer (maxPreparationTime, difficulty, diet) sin rehacer el estado (#70).
 - Copy localizable, mobile-first, chips tocables (#46).
 
 ## Criterios de aceptación
 
-- [ ] Ambas rutas en producción con los elementos completos de los PROMPT #40/#41.
-- [ ] CRUD de pantry end-to-end persistiendo en Supabase (Caso 6 de aceptación general: favoritos; pantry análogo).
+- [ ] Ambas rutas en producción con los elementos completos de PROMTP #40/#41.
+- [ ] CRUD de pantry end-to-end persistiendo en Supabase.
 - [ ] Casos 2 y 3 del PROMPT verificados en navegador.
 - [ ] URLs exactas `/dashboard` y `/dashboard/pantry`.
 - [ ] Estados loading/empty/error presentes.

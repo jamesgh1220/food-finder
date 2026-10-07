@@ -27,7 +27,7 @@ Cualquier desarrollador nuevo (o agente futuro) clona, entiende el sistema, lo l
 
 ## Casos de prueba
 
-1. Sigue las instrucciones del README en una máquina limpia → `npm install` + `npm run dev` funcionan.
+1. Sigue las instrucciones del README en una máquina limpia → `pnpm install` + `pnpm dev` funcionan.
 2. Diagrama Mermaid renderiza y coincide con la arquitectura real del código.
 3. Cada una de las 7 decisiones tiene su archivo en `docs/decisions/`.
 4. Recorrer los ~30 puntos del DoD (#96) y encontrar evidencia observada de cada uno.

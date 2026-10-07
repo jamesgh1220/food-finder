@@ -1,49 +1,49 @@
-# SPEC: 17 — Documentation, Observability & Release Readiness
+# SPEC: 17 — Documentación, observabilidad y preparación para release
 
-**Source:** PROMTP.md #78 (README), #79 (Documentation), #80 (Architecture diagram), #89 (Observability), #90 (Deployment readiness), #91 (Local development), #96 (Definition of Done), #97 (Final agent output), #81 (Development process).
+**Fuente:** PROMTP.md #78 (README), #79 (Documentación), #80 (Diagrama de arquitectura), #89 (Observabilidad), #90 (Deployment readiness), #91 (Desarrollo local), #96 (Definition of Done), #97 (Salida final del agente), #81 (Proceso de desarrollo).
 
-## Purpose
+## Propósito
 
-Ship the documentation set, the architecture diagram, the observability abstraction, deployment readiness, and run the final Definition of Done verification.
+Entregar el set de documentación, el diagrama de arquitectura, la abstracción de observabilidad, la preparación para despliegue y ejecutar la verificación final de la Definition of Done.
 
-## Scope
+## Alcance
 
-### In scope
-- `README.md` (complete) + Mermaid architecture diagram.
+### Dentro del alcance
+- `README.md` (completo) + diagrama de arquitectura en Mermaid.
 - `docs/architecture.md`, `docs/database.md`, `docs/api.md`, `docs/setup.md`, `docs/decisions/`.
-- Observability abstraction (logs/metrics/tracing ready, no platform in MVP).
-- Deployment readiness for a Next.js-compatible platform (e.g. Vercel).
-- Final Definition of Done checklist verification.
+- Abstracción de observabilidad (logs/métricas/tracing listos, sin plataforma en el MVP).
+- Deployment readiness para una plataforma compatible con Next.js (p. ej. Vercel).
+- Verificación final de la checklist de Definition of Done.
 
-### Out of scope
-- Feature implementation (specs 01–16).
+### Fuera del alcance
+- Implementación de funcionalidades (specs 01–16).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | README explains: what Food Finder is, stack, architecture, structure, installation, env vars, Supabase, Supabase Auth, Supabase MCP, Spoonacular, migrations, seed, type generation, development, tests, build, deployment. Includes a Mermaid architecture diagram. |
-| REQ-02 | Create `docs/architecture.md`, `docs/database.md`, `docs/api.md`, `docs/setup.md` and `docs/decisions/`. |
-| REQ-03 | Decision records must document especially: why hexagonal architecture, why Supabase, why Spoonacular, why `Cuisine` is an entity and not an enum, matching strategy, fallback strategy, security strategy. |
-| REQ-04 | Architecture diagram (Mermaid, per PROMTP #80, improved if the final architecture requires it): UI → Route Handlers/Server Actions → Use Cases → Domain Services + Ports → Supabase/Spoonacular adapters → PostgreSQL/Auth. |
-| REQ-05 | Observability: keep an abstraction that can later incorporate logs, metrics, tracing, errors — **no complex external platform in the MVP** (builds on the logger of spec 02). |
-| REQ-06 | Deployment readiness: prepared for a Next.js-compatible platform (Vercel or equivalent); do not assume a VPS; Supabase = managed backend; Spoonacular = external service. Architecture: `User → Next.js → Supabase → PostgreSQL`, plus `Next.js → Spoonacular` when needed. |
-| REQ-07 | Local development documented: `npm install`, `npm run dev`, plus commands for Supabase local, migrations, seed, type generation, tests (#91). |
-| REQ-08 | Final **Definition of Done** — verify ALL: `npm install/dev/build/lint/typecheck` work; unit/integration/E2E tests pass; Supabase integrated; Auth works; RLS works; migrations work; seed works; pantry/recipes/recommendations/favorites/cuisine filtering/multi-cuisine work; Spoonacular works; Spoonacular failure handling works; no secrets exposed; API validated; errors handled; UI responsive; docs updated; `.env.example` exists; database types current; MCP documented/configured; hexagonal architecture respected; domain independent of infrastructure. |
-| REQ-09 | Final delivery report per PROMTP #97 (25-point summary: architecture, folder structure, deps, env vars, migrations, tables, RLS, entities, VOs, use cases, ports, adapters, Spoonacular, algorithm, endpoints, screens, tests, MCP, dev/test/typegen/Supabase/Spoonacular commands, key decisions, future improvements). |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | El README explica: qué es Food Finder, stack, arquitectura, estructura, instalación, variables de entorno, Supabase, Supabase Auth, Supabase MCP, Spoonacular, migraciones, seed, generación de tipos, desarrollo, tests, build, despliegue. Incluye un diagrama de arquitectura en Mermaid. |
+| REQ-02 | Crear `docs/architecture.md`, `docs/database.md`, `docs/api.md`, `docs/setup.md` y `docs/decisions/`. |
+| REQ-03 | Los registros de decisiones deben documentar especialmente: por qué arquitectura hexagonal, por qué Supabase, por qué Spoonacular, por qué `Cuisine` es una entidad y no un enum, estrategia de matching, estrategia de fallback, estrategia de seguridad. |
+| REQ-04 | Diagrama de arquitectura (Mermaid, según PROMTP #80, mejorado si la arquitectura final lo requiere): UI → Route Handlers/Server Actions → Casos de uso → Servicios de dominio + Puertos → Adaptadores Supabase/Spoonacular → PostgreSQL/Auth. |
+| REQ-05 | Observabilidad: mantener una abstracción que pueda incorporar después logs, métricas, tracing, errores — **sin plataforma externa compleja en el MVP** (se construye sobre el logger de la spec 02). |
+| REQ-06 | Deployment readiness: preparado para una plataforma compatible con Next.js (Vercel o equivalente); no asumir un VPS; Supabase = backend gestionado; Spoonacular = servicio externo. Arquitectura: `User → Next.js → Supabase → PostgreSQL`, más `Next.js → Spoonacular` cuando haga falta. |
+| REQ-07 | Desarrollo local documentado: `pnpm install`, `pnpm dev`, más comandos para Supabase local, migraciones, seed, generación de tipos, tests (#91). |
+| REQ-08 | **Definition of Done** final — verificar TODO: `pnpm install`, `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck` funcionan; tests unitarios/integración/E2E pasan; Supabase integrado; Auth funciona; RLS funciona; migraciones funcionan; seed funciona; pantry/recetas/recomendaciones/favoritos/filtro por cocina/multicocina funcionan; Spoonacular funciona; manejo de fallos de Spoonacular funciona; sin secretos expuestos; API validada; errores manejados; UI responsive; docs actualizadas; `.env.example` existe; tipos de BD al día; MCP documentado/configurado; arquitectura hexagonal respetada; dominio independiente de infraestructura. |
+| REQ-09 | Reporte final de entrega según PROMTP #97 (resumen de 25 puntos: arquitectura, estructura de carpetas, dependencias, variables de entorno, migraciones, tablas, RLS, entidades, VOs, casos de uso, puertos, adaptadores, Spoonacular, algoritmo, endpoints, pantallas, tests, MCP, comandos de dev/test/typegen/Supabase/Spoonacular, decisiones clave, mejoras futuras). |
 
-## Dependencies
+## Dependencias
 
-All previous specs (01–16).
+Todas las specs anteriores (01–16).
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] README and the four `docs/*.md` files exist and match the implemented system (no aspirational content).
-- [ ] Mermaid diagram renders and reflects the real architecture.
-- [ ] `docs/decisions/` contains the seven required decision records.
-- [ ] Every item of REQ-08 checked and green.
-- [ ] REQ-09 report produced at delivery.
+- [ ] El README y los cuatro archivos `docs/*.md` existen y reflejan el sistema implementado (sin contenido aspiracional).
+- [ ] El diagrama Mermaid renderiza y refleja la arquitectura real.
+- [ ] `docs/decisions/` contiene los siete registros de decisión requeridos.
+- [ ] Cada ítem de REQ-08 verificado y en verde.
+- [ ] El reporte de REQ-09 producido en la entrega.
 
-## Verification
+## Verificación
 
-Walk the DoD checklist item by item with observed command results; render README/mermaid preview.
+Recorrer la checklist de DoD ítem por ítem con resultados observados de comandos; previsualizar README/mermaid.

@@ -1,47 +1,47 @@
-# SPEC: 12 — Frontend Foundation (Landing, UX Standards, State & Component Primitives)
+# SPEC: 12 — Base del frontend (landing, estándares UX, estado y primitivas de componentes)
 
-**Source:** PROMTP.md #38 (Frontend), #39 (Landing page), #45 (Components), #46 (UX), #47 (State management), #48 (Server Components), #51 (i18n readiness).
+**Fuente:** PROMTP.md #38 (Frontend), #39 (Landing page), #45 (Componentes), #46 (UX), #47 (State management), #48 (Server Components), #51 (Readiness i18n).
 
-## Purpose
+## Propósito
 
-Set the frontend experience and rules: a modern mobile-first food-discovery feel, the landing page, shared UI primitives, UX standards (states, accessibility), and the state/data-fetching strategy.
+Fijar la experiencia y las reglas del frontend: sensación moderna mobile-first de app de descubrimiento de comida, la landing page, los primitivos de UI compartidos, los estándares UX (estados, accesibilidad) y la estrategia de estado/obtención de datos.
 
-## Scope
+## Alcance
 
-### In scope
-- Design/UX principles for the whole app.
-- Landing page at `/`.
-- Shared components (all reusable pieces of PROMTP #45).
-- State management and Server/Client Component rules.
+### Dentro del alcance
+- Principios de diseño/UX para toda la app.
+- Landing page en `/`.
+- Componentes compartidos (todas las piezas reutilizables de PROMTP #45).
+- Reglas de state management y de Server/Client Components.
 
-### Out of scope
-- Dashboard/pantry pages (spec 13), recipes/detail/favorites pages (spec 14), auth pages shell (spec 05).
+### Fuera del alcance
+- Páginas de dashboard/pantry (spec 13), recetas/detalle/favoritos (spec 14), shell de páginas de auth (spec 05).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Modern, clean, mobile-first experience that feels like a **food-discovery app**, not an admin panel. |
-| REQ-02 | Landing `/`: communicates "¿Qué puedo cocinar con lo que tengo?", CTA **Comenzar**, visual examples, brief explanation of: add ingredients → choose what to cook → discover recipes → save favorites. |
-| REQ-03 | Reusable components: `IngredientSearch`, `IngredientSelector`, `PantryList`, `PantryItem`, `MealTypeSelector`, `CuisineSelector`, `RecipeCard`, `RecipeGrid`, `RecipeMatchScore`, `MissingIngredients`, `RecipeIngredients`, `RecipeInstructions`, `FavoriteButton`, `EmptyState`, `LoadingState`, `ErrorState`. Use shadcn/ui where appropriate; Lucide React icons. |
-| REQ-04 | UX: mobile-first, responsive, accessible, fast, clear, intuitive. Loading states, empty states, error states, skeletons where sensible, user feedback, visible validations. Semantic HTML + accessibility best practices. |
-| REQ-05 | State management: **no Redux**. Prefer Server Components, Server Actions where appropriate, React state, URL search params, React Hook Form. Avoid unnecessary global state. |
-| REQ-06 | Client Components only when interaction is needed: local state, browser events, interactive forms, browser APIs. Everything else stays a Server Component. |
-| REQ-07 | i18n readiness: UI copy structured so languages can be added later; no hardcoded domain decisions. (Full i18n not required in MVP.) |
-| REQ-08 | Forms use React Hook Form + Zod with visible validation feedback. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Experiencia moderna, limpia y mobile-first que se sienta como una **app de descubrimiento de comida**, no como un panel administrativo. |
+| REQ-02 | Landing `/`: comunica "¿Qué puedo cocinar con lo que tengo?", CTA **Comenzar**, ejemplos visuales, explicación breve de: agrega tus ingredientes → elige qué quieres comer → descubre recetas → guarda tus favoritas. |
+| REQ-03 | Componentes reutilizables: `IngredientSearch`, `IngredientSelector`, `PantryList`, `PantryItem`, `MealTypeSelector`, `CuisineSelector`, `RecipeCard`, `RecipeGrid`, `RecipeMatchScore`, `MissingIngredients`, `RecipeIngredients`, `RecipeInstructions`, `FavoriteButton`, `EmptyState`, `LoadingState`, `ErrorState`. Usar shadcn/ui donde sea apropiado; iconos de Lucide React. |
+| REQ-04 | UX: mobile-first, responsive, accesible, rápida, clara, intuitiva. Estados de carga, estados vacíos, estados de error, skeletons donde tengan sentido, feedback al usuario, validaciones visibles. HTML semántico + buenas prácticas de accesibilidad. |
+| REQ-05 | State management: **sin Redux**. Preferir Server Components, Server Actions cuando corresponda, React state, URL search params, React Hook Form. Evitar estado global innecesario. |
+| REQ-06 | Client Components solo cuando se necesite interacción: estado local, eventos del navegador, formularios interactivos, APIs del browser. Todo lo demás permanece como Server Component. |
+| REQ-07 | Readiness i18n: el copy de UI estructurado para poder añadir idiomas después; sin decisiones de dominio hardcodeadas. (i18n completo no requerido en el MVP.) |
+| REQ-08 | Los formularios usan React Hook Form + Zod con feedback de validación visible. |
 
-## Dependencies
+## Dependencias
 
-- `01-project-scaffold`, `02-architecture-foundation`, `05-supabase-auth` (session context for protected shell).
+- `01-project-scaffold`, `02-architecture-foundation`, `05-supabase-auth` (contexto de sesión para el shell protegido).
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] Landing renders at `/` with the exact message, CTA and 4 explained steps.
-- [ ] All 15 components of REQ-03 exist and are used or exported from the components tree.
-- [ ] Lighthouse/mobile viewport: no horizontal overflow; tap targets usable.
-- [ ] Every data view has loading/empty/error states.
-- [ ] Audit: no unnecessary `'use client'` boundaries; no Redux/global state library installed.
+- [ ] La landing renderiza en `/` con el mensaje exacto, el CTA y los 4 pasos explicados.
+- [ ] Los 15 componentes de REQ-03 existen y se usan o exportan desde el árbol de componentes.
+- [ ] Viewport móvil: sin overflow horizontal; targets táctiles utilizables.
+- [ ] Toda vista de datos tiene estados de carga/vacío/error.
+- [ ] Auditoría: sin boundaries `'use client'` innecesarios; sin librería de Redux/global state instalada.
 
-## Verification
+## Verificación
 
-Component tests (RTL) for primitives + visual/manual pass on the landing; accessibility spot check (semantic HTML, labels).
+Tests de componentes (RTL) para las primitivas + pase visual/manual de la landing; chequeo de accesibilidad (HTML semántico, labels).

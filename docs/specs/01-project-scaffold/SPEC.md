@@ -1,54 +1,54 @@
-# SPEC: 01 — Project Scaffold
+# SPEC: 01 — Scaffold del proyecto
 
-**Source:** PROMTP.md #5 (Stack), #6 (Database deps), #57 (Env vars), #75 (No overengineering), #77 (Lint/Format), #92 (Version verification), #93 (Next.js rule), #99 (First step), Milestone 1.
+**Fuente:** PROMTP.md #5 (Stack), #6 (Dependencias de BD), #57 (Variables de entorno), #75 (No sobreingeniería), #77 (Lint/Formato), #92 (Verificación de versiones), #93 (Regla de Next.js), #99 (Primer paso), Milestone 1.
 
-## Purpose
+## Propósito
 
-Bootstrap the Food Finder repository as a single Next.js + TypeScript project with the tooling, scripts, and environment-variable contract every later spec builds on.
+Inicializar el repositorio de Food Finder como un único proyecto Next.js + TypeScript con el tooling, los scripts y el contrato de variables de entorno sobre los que se construirán todas las specs siguientes.
 
-## Scope
+## Alcance
 
-### In scope
-- Repository inspection before any change (no destruction of existing work).
-- Next.js App Router + React + TypeScript (strict) scaffold.
-- Styling/UI tooling: Tailwind CSS, shadcn/ui, Lint React, React Hook Form, Zod.
-- Lint/format/typecheck configuration and `package.json` scripts.
-- `.env.example` with the full environment contract.
-- Explicit "no overengineering" boundary for the whole project.
+### Dentro del alcance
+- Inspección del repositorio antes de cualquier cambio (sin destruir trabajo existente).
+- Scaffold de Next.js App Router + React + TypeScript (strict).
+- Tooling de estilos/UI: Tailwind CSS, shadcn/ui, Lint React, React Hook Form, Zod.
+- Configuración de lint/format/typecheck y scripts de `package.json`.
+- `.env.example` con el contrato completo de variables de entorno.
+- Límite explícito de "no sobreingeniería" para todo el proyecto.
 
-### Out of scope
-- Hexagonal layering and folder structure (see `02-architecture-foundation`).
-- Supabase setup, auth, or database (see `05-supabase-auth`, `03-database-schema`).
-- Any application feature code.
+### Fuera del alcance
+- Capas hexagonales y estructura de carpetas (ver `02-architecture-foundation`).
+- Configuración de Supabase, auth o base de datos (ver `05-supabase-auth`, `03-database-schema`).
+- Código de cualquier funcionalidad.
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Inspect the repo first: identify existing stack, deps, config, Supabase artifacts, migrations. Do not destroy existing work without clear reason. |
-| REQ-02 | Single Next.js project; backend lives inside it (Route Handlers/Server Actions). No separate backend service. |
-| REQ-03 | Use current App Router practices only. Do **not** create a `pages/` directory. Read current Next.js docs before coding. |
-| REQ-04 | Verify current stable, mutually compatible versions **before installing**: Next.js, React, TypeScript, Supabase packages, Tailwind CSS, shadcn/ui, Zod, React Hook Form, Vitest, Playwright. No legacy configs copied from old tutorials. |
-| REQ-05 | ESLint + Prettier + TypeScript `strict` configured. |
-| REQ-06 | Scripts exist and work: `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `test:watch`, `test:e2e` (Supabase scripts optional). |
-| REQ-07 | Create `.env.example` with: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SPOONACULAR_API_KEY`, `SPOONACULAR_BASE_URL`, `NEXT_PUBLIC_APP_URL`. Verify current Supabase variable naming before finalizing. |
-| REQ-08 | Never define `NEXT_PUBLIC_SUPABASE_SECRET_KEY` or `NEXT_PUBLIC_SPOONACULAR_API_KEY`. |
-| REQ-09 | Forbidden stack for the MVP: microservices, Kafka, Kubernetes, Redis without need, GraphQL, Elasticsearch, vector DB, event sourcing, full CQRS, payments, subscriptions, push notifications, complex AI agents, distributed architecture. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Inspeccionar el repo primero: identificar stack, dependencias, configuración, artefactos de Supabase y migraciones existentes. No destruir trabajo existente sin una razón clara. |
+| REQ-02 | Proyecto Next.js único; el backend vive dentro de él (Route Handlers/Server Actions). Sin servicio backend separado. |
+| REQ-03 | Usar únicamente prácticas actuales de App Router. **No** crear el directorio `pages/`. Leer la documentación actual de Next.js antes de escribir código. |
+| REQ-04 | Verificar versiones estables actuales y mutuamente compatibles **antes de instalar**: Next.js, React, TypeScript, paquetes de Supabase, Tailwind CSS, shadcn/ui, Zod, React Hook Form, Vitest, Playwright. Sin configuraciones legadas copiadas de tutoriales antiguos. |
+| REQ-05 | ESLint + Prettier + TypeScript `strict` configurados. |
+| REQ-06 | Scripts que existen y funcionan: `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `test:watch`, `test:e2e` (scripts de Supabase opcionales). |
+| REQ-07 | Crear `.env.example` con: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SPOONACULAR_API_KEY`, `SPOONACULAR_BASE_URL`, `NEXT_PUBLIC_APP_URL`. Verificar el naming vigente de las variables de Supabase antes de finalizar. |
+| REQ-08 | Nunca definir `NEXT_PUBLIC_SUPABASE_SECRET_KEY` ni `NEXT_PUBLIC_SPOONACULAR_API_KEY`. |
+| REQ-09 | Stack prohibido para el MVP: microservicios, Kafka, Kubernetes, Redis sin necesidad, GraphQL, Elasticsearch, base de datos vectorial, event sourcing, CQRS completo, pagos, subscriptions, push notifications, agentes IA complejos, arquitectura distribuida. |
 
-## Dependencies
+## Dependencias
 
-None. This is Milestone 1 and the first deliverable.
+Ninguna. Es el Milestone 1 y el primer entregable.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] `npm install`, `npm run dev`, `npm run build`, `npm run lint`, `npm run typecheck` all succeed.
-- [ ] All REQ-06 scripts exist and exit 0 (tests may be empty until `16-testing-strategy`).
-- [ ] `.env.example` matches REQ-07 exactly; no forbidden `NEXT_PUBLIC_*` secret vars anywhere.
-- [ ] No `pages/` directory exists.
-- [ ] Version choices recorded and consistent with REQ-04.
+- [ ] `pnpm install`, `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck` funcionan todos.
+- [ ] Todos los scripts de REQ-06 existen y terminan con 0 (los tests pueden estar vacíos hasta `16-testing-strategy`).
+- [ ] `.env.example` coincide exactamente con REQ-07; ninguna variable `NEXT_PUBLIC_*` secreta en ningún lugar.
+- [ ] No existe el directorio `pages/`.
+- [ ] Las versiones elegidas están documentadas y son coherentes con REQ-04.
 
-## Verification
+## Verificación
 
 ```bash
-npm run lint && npm run typecheck && npm run build
+pnpm lint && pnpm typecheck && pnpm build
 ```

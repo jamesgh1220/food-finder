@@ -1,48 +1,48 @@
-# SPEC: 09 — Spoonacular Adapter (Port, Client, Mapping, Failure Handling)
+# SPEC: 09 — Adapter de Spoonacular (puerto, client, mapping, manejo de fallos)
 
-**Source:** PROMTP.md #26 (Spoonacular port), #27 (Adapter), #28 (Endpoints), #29 (Mapping), #30 (Recipe source), #32 (Failure handling), #95 (Verify current docs).
+**Fuente:** PROMTP.md #26 (Puerto Spoonacular), #27 (Adapter), #28 (Endpoints), #29 (Mapping), #30 (Fuente de receta), #32 (Manejo de fallos), #95 (Verificar docs actuales).
 
-## Purpose
+## Propósito
 
-Integrate Spoonacular as a complementary external recipe provider behind the `ExternalRecipeProvider` port: HTTP client with timeout/retries/rate handling, DTO mapping, and graceful failure so Spoonacular is **never a single point of failure**.
+Integrar Spoonacular como proveedor externo complementario de recetas detrás del puerto `ExternalRecipeProvider`: client HTTP con timeout/retries/rate, mapeo de DTOs y fallo elegante para que Spoonacular **nunca sea un single point of failure**.
 
-## Scope
+## Alcance
 
-### In scope
-- `ExternalRecipeProvider` port + `SpoonacularRecipeProvider` adapter under `src/infrastructure/spoonacular/`.
-- Endpoint selection verified against current Spoonacular docs.
-- DTO → domain mapping pipeline.
-- Failure handling (429/timeout/5xx/invalid/empty) with internal-results fallback.
-- Server-only API key.
+### Dentro del alcance
+- Puerto `ExternalRecipeProvider` + adapter `SpoonacularRecipeProvider` bajo `src/infrastructure/spoonacular/`.
+- Selección de endpoints verificada contra la documentación actual de Spoonacular.
+- Pipeline de mapeo DTO → dominio.
+- Manejo de fallos (429/timeout/5xx/inválido/vacío) con fallback a resultados internos.
+- API key solo en servidor.
 
-### Out of scope
-- Recommendation flow orchestration/dedup/merge (spec 10), rate limiting of our own API (spec 11), mock provider tests (spec 16).
+### Fuera del alcance
+- Orquestación del flujo de recomendación/dedup/merge (spec 10), rate limiting de nuestra API (spec 11), tests con mock (spec 16).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | Define port `ExternalRecipeProvider` with at least `searchByIngredients(...)` and `getRecipeById(...)`; the domain must not know Spoonacular. |
-| REQ-02 | Adapter at `src/infrastructure/spoonacular/` with `client/`, `mappers/`, `providers/`; implement `SpoonacularRecipeProvider`. |
-| REQ-03 | Client responsibilities: base URL, API key, HTTP, **timeout**, retries when appropriate, error classification, rate limiting awareness, response parsing. |
-| REQ-04 | API key `SPOONACULAR_API_KEY` server-side only; never `NEXT_PUBLIC_SPOONACULAR_API_KEY`. |
-| REQ-05 | Before implementing, verify current Spoonacular documentation: endpoints for ingredient search, detailed recipe info, advanced search, cuisine filters, meal-type filters, preparation time, diet/intolerances when available. No obsolete endpoints. |
-| REQ-06 | Mapping pipeline — never return raw Spoonacular JSON to the frontend: `Spoonacular DTO → Spoonacular Mapper → Application DTO → Domain/Application model → API Response`. |
-| REQ-07 | Recipes carry `source = SPOONACULAR` (and external id/URL) so future providers can be added via `Recipe.source`. |
-| REQ-08 | Failure handling: on 429, timeout, 500, outage, quota exceeded, or invalid response the application **keeps working**; if internal results exist, show them; never surface technical errors (no "AxiosError 429…" to users). Friendly message e.g. *"No pudimos consultar algunas recetas externas, pero encontramos estas opciones con tus ingredientes."* (UI copy localizable — see spec 12). |
-| REQ-09 | `SpoonacularRecipeProvider` must be replaceable in tests with `MockExternalRecipeProvider` (no real API in unit tests — spec 16). |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | Definir el puerto `ExternalRecipeProvider` con al menos `searchByIngredients(...)` y `getRecipeById(...)`; el dominio no debe conocer Spoonacular. |
+| REQ-02 | Adapter en `src/infrastructure/spoonacular/` con `client/`, `mappers/`, `providers/`; implementar `SpoonacularRecipeProvider`. |
+| REQ-03 | Responsabilidades del client: base URL, API key, HTTP, **timeout**, reintentos cuando sean apropiados, clasificación de errores, conciencia de rate limiting, parsing de respuestas. |
+| REQ-04 | API key `SPOONACULAR_API_KEY` solo en servidor; nunca `NEXT_PUBLIC_SPOONACULAR_API_KEY`. |
+| REQ-05 | Antes de implementar, verificar la documentación actual de Spoonacular: endpoints de búsqueda por ingredientes, información detallada de recetas, búsqueda avanzada, filtros por cuisine, filtros por tipo, tiempo de preparación, dieta/intolerancias cuando estén disponibles. Sin endpoints obsoletos. |
+| REQ-06 | Pipeline de mapeo — nunca devolver JSON crudo de Spoonacular al frontend: `Spoonacular DTO → Spoonacular Mapper → Application DTO → Domain/Application model → API Response`. |
+| REQ-07 | Las recetas llevan `source = SPOONACULAR` (y external id/URL) para que futuros proveedores se agreguen vía `Recipe.source`. |
+| REQ-08 | Manejo de fallos: en 429, timeout, 500, caída, cuota excedida o respuesta inválida la aplicación **sigue funcionando**; si existen resultados internos, muéstralos; nunca exponer errores técnicos (sin "AxiosError 429…" para el usuario). Mensaje amigable p. ej. *"No pudimos consultar algunas recetas externas, pero encontramos estas opciones con tus ingredientes."* (copy de UI localizable — ver spec 12). |
+| REQ-09 | `SpoonacularRecipeProvider` debe ser reemplazable en tests con `MockExternalRecipeProvider` (sin API real en tests unitarios — spec 16). |
 
-## Dependencies
+## Dependencias
 
-- `06-domain-layer`, `02-architecture-foundation`, `01-project-scaffold` (env vars), `07-application-layer` (consumers).
+- `06-domain-layer`, `02-architecture-foundation`, `01-project-scaffold` (env vars), `07-application-layer` (consumidores).
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] The application compiles and runs with the Spoonacular key removed/endpoint down: internal recipes still return (no crash, no raw error to users).
-- [ ] No Spoonacular JSON shape appears outside `src/infrastructure/spoonacular/`.
-- [ ] Timeout enforced on every external call.
-- [ ] Endpoint list verified against current official docs (reference recorded in the PR).
+- [ ] La aplicación compila y funciona con la key de Spoonacular eliminada/endpoint caído: las recetas internas siguen retornando (sin crash, sin error crudo al usuario).
+- [ ] Ninguna forma de JSON de Spoonacular aparece fuera de `src/infrastructure/spoonacular/`.
+- [ ] Timeout aplicado en cada llamada externa.
+- [ ] Lista de endpoints verificada contra la documentación oficial actual (referencia registrada en el PR).
 
-## Verification
+## Verificación
 
-Unit tests via `MockExternalRecipeProvider` (success, timeout, 429, 500, malformed, empty) in spec 16 + manual kill-the-network smoke test.
+Tests unitarios con `MockExternalRecipeProvider` (success, timeout, 429, 500, malformado, vacío) en la spec 16 + prueba manual de corte de red.

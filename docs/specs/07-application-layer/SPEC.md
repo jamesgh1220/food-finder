@@ -1,47 +1,47 @@
-# SPEC: 07 — Application Layer (Use Cases & DTOs)
+# SPEC: 07 — Capa de aplicación (casos de uso y DTOs)
 
-**Source:** PROMTP.md #13 (Use cases), #8 (Application responsibilities), #73 (Future AI port), #87 (Future user preferences), #88 (API design principle — use-case framing).
+**Fuente:** PROMTP.md #13 (Casos de uso), #8 (Responsabilidades de Application), #73 (Puerto futuro de IA), #87 (Preferencias futuras de usuario), #88 (Principio de diseño de API — enmarcado en casos de uso).
 
-## Purpose
+## Propósito
 
-Implement the 16 application use cases with DTOs, coordination of repositories/services, use-case-level authorization, and forward-compatible extension points (AI enhancer, user preferences) that are **designed but not implemented** in the MVP.
+Implementar los 16 casos de uso de la aplicación con DTOs, coordinación de repositorios/servicios, autorización a nivel de caso de uso y puntos de extensión compatibles con el futuro (enhancer de IA, preferencias de usuario) que se **diseñan pero no implementan** en el MVP.
 
-## Scope
+## Alcance
 
-### In scope
-- Use cases: Auth (4), Pantry (5), Recipes (4), Cuisine (2), Favorites (3).
-- DTOs and orchestration rules.
-- Conceptual ports reserved for future AI and user preferences.
+### Dentro del alcance
+- Casos de uso: Auth (4), Pantry (5), Recipes (4), Cuisine (2), Favorites (3).
+- DTOs y reglas de orquestación.
+- Puertos conceptuales reservados para IA futura y preferencias de usuario.
 
-### Out of scope
-- Recommendation service internals (spec 10), API exposure (spec 11), repository implementations (spec 08).
+### Fuera del alcance
+- Internals del servicio de recomendación (spec 10), exposición HTTP (spec 11), implementaciones de repositorios (spec 08).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
+| ID | Requisito |
+|----|-----------|
 | REQ-01 | **Auth**: `RegisterUser`, `LoginUser`, `LogoutUser`, `GetCurrentUser`. |
 | REQ-02 | **Pantry**: `AddPantryIngredient`, `RemovePantryIngredient`, `UpdatePantryIngredient`, `GetUserPantry`, `ClearUserPantry`. |
 | REQ-03 | **Recipes**: `FindRecipesFromPantry`, `GetRecipeById`, `SearchRecipes`, `GetRecipesByMealType`. |
 | REQ-04 | **Cuisine**: `GetCuisines`, `GetCuisineById`. |
 | REQ-05 | **Favorites**: `AddFavoriteRecipe`, `RemoveFavoriteRecipe`, `GetFavoriteRecipes`. |
-| REQ-06 | Application layer owns: DTOs, coordination, orchestration of repositories and services, and **authorization at use-case level** (never trust the UI alone). |
-| REQ-07 | Use cases depend only on ports/interfaces; concrete adapters are injected via the composition root. |
-| REQ-08 | `FindRecipesFromPantry` must **not** treat `cuisine` as a mandatory filter (default `ALL`). |
-| REQ-09 | Design-only extension points (no MVP implementation): conceptual port `RecipeRecommendationEnhancer` (future LLM/AI provider flow) and a future `UserPreferences` input shape (`preferredCuisines, excludedIngredients, diet, allergies, maxPreparationTime, difficulty, budget`). Document them; do not build them. |
-| REQ-10 | APIs/cases represent real use cases — no CRUD-only endpoints invented for their own sake (enforced in spec 11). |
+| REQ-06 | La capa application posee: DTOs, coordinación, orquestación de repositorios y servicios, y **autorización a nivel de caso de uso** (nunca confiar solo en la UI). |
+| REQ-07 | Los casos de uso dependen solo de interfaces/puertos; los adapters concretos se inyectan vía el composition root. |
+| REQ-08 | `FindRecipesFromPantry` **no** debe tratar `cuisine` como filtro obligatorio (por defecto `ALL`). |
+| REQ-09 | Puntos de extensión solo-diseño (sin implementación en MVP): puerto conceptual `RecipeRecommendationEnhancer` (futuro flujo LLM/IA) y una forma futura de entrada `UserPreferences` (`preferredCuisines, excludedIngredients, diet, allergies, maxPreparationTime, difficulty, budget`). Documentarlos; no construirlos. |
+| REQ-10 | Las APIs/casos representan casos de uso reales — sin endpoints CRUD inventados solo por seguir CRUD (aplicado en la spec 11). |
 
-## Dependencies
+## Dependencias
 
 - `06-domain-layer`, `02-architecture-foundation`.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] All 16 use cases exist, are independently unit-testable with mocked ports, and cover authorization checks for user-owned data.
-- [ ] No use case imports Supabase/Spoonacular/Next.js.
-- [ ] `FindRecipesFromPantry` with no cuisine returns cross-cuisine results (cuisine optional).
-- [ ] Extension points from REQ-09 exist as documented interfaces/stubs only — zero AI logic shipped.
+- [ ] Los 16 casos de uso existen, son testeables de forma independiente con puertos mockeados y cubren verificaciones de autorización para datos de usuario.
+- [ ] Ningún caso de uso importa Supabase/Spoonacular/Next.js.
+- [ ] `FindRecipesFromPantry` sin cuisine devuelve resultados multi-cocina (cuisine opcional).
+- [ ] Los puntos de extensión de REQ-09 existen como interfaces/stubs documentados — cero lógica de IA entregada.
 
-## Verification
+## Verificación
 
-Unit tests per use case with mocked repositories (application suite in spec 16).
+Tests unitarios por caso de uso con repositorios mockeados (suite de aplicación en la spec 16).

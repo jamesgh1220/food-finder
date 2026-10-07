@@ -1,4 +1,4 @@
-# ISSUE: 03 — Database Schema & Migrations
+# ISSUE: 03 — Esquema de base de datos y migraciones
 
 ## Título
 
@@ -20,25 +20,25 @@ Un esquema completo, aplicable de forma repetible en cualquier entorno, con los 
 - Migraciones versionadas en `supabase/migrations/` (#68).
 - Generación de `src/types/database.types.ts` (#58).
 - Configuración del MCP de Supabase + workflow de migraciones (#23–#25).
-- Reglas multicocina (#84) y country vs cuisine (#85).
+- Reglas multicocina (#84) y país vs cocina (#85).
 
 **Fuera de alcance:** RLS (spec 04), seed de contenido (spec 15), repositorios (spec 08).
 
 ## Casos de prueba
 
-1. Migraciones aplican limpias en una base nueva.
+1. Las migraciones aplican limpias en una base nueva.
 2. `recipes.slug`, `favorite_recipes(user_id, recipe_id)` y el unique de `pantry_items` rechazan duplicados.
-3. Búsqueda case-insensitive: `SELECT` con `TOMATE` encuentra la fila `Tomate` vía `normalized_name`.
+3. Búsqueda case-insensitive: un `SELECT` con `TOMATE` encuentra la fila `Tomate` vía `normalized_name`.
 4. `INSERT INTO cuisines` agrega una cocina sin tocar código TypeScript ni SQL de esquema.
-5. Regenerar tipos produce cambios coherentes y `npm run typecheck` pasa.
-6. Cambio hecho vía MCP queda reflejado en un archivo de migración versionado.
+5. Regenerar tipos produce cambios coherentes y `pnpm typecheck` pasa.
+6. Un cambio hecho vía MCP queda reflejado en un archivo de migración versionado.
 
 ## Consideraciones técnicas
 
 - No asumir que el proyecto Supabase está vacío: inspeccionar antes de migrar (#25).
 - Mantener la distinción MCP (tooling de desarrollo) vs SDK (runtime) vs Auth (usuarios) (#24).
 - No crear índices innecesarios; revisar si se necesitan adicionales y justificarlos.
-- El schema NO puede vivir solo en `seed.sql`.
+- El esquema NO puede vivir solo en `seed.sql`.
 
 ## Criterios de aceptación
 

@@ -1,4 +1,4 @@
-# ISSUE: 10 — Recommendation Engine & Matching Algorithm
+# ISSUE: 10 — Motor de recomendaciones y algoritmo de matching
 
 ## Título
 

@@ -1,49 +1,49 @@
-# SPEC: 14 — Frontend: Recipes, Detail & Favorites
+# SPEC: 14 — Frontend: Recetas, detalle y favoritos
 
-**Source:** PROMTP.md #42 (Recipes), #43 (Recipe detail), #44 (Favorites), #45 (Recipe components), #70 (Filter model), #71 (Search results), #72 (Match score UI), #83 Casos 4/6 (acceptance).
+**Fuente:** PROMTP.md #42 (Recetas), #43 (Detalle de receta), #44 (Favoritos), #45 (Componentes de receta), #70 (Modelo de filtros), #71 (Resultados de búsqueda), #72 (UI de match score), #83 Casos 4/6 (aceptación).
 
-## Purpose
+## Propósito
 
-Build the recipe discovery surfaces: results grid with filters and match explanation, the full recipe detail page, and the favorites list.
+Construir las superficies de descubrimiento de recetas: cuadrícula de resultados con filtros y explicación de coincidencia, la página completa de detalle de receta y la lista de favoritos.
 
-## Scope
+## Alcance
 
-### In scope
-- `/dashboard/recipes` with filters (cuisine, meal type) and result cards.
-- `/dashboard/recipes/[id]` detail view.
-- `/dashboard/favorites` list with remove/search.
-- Match-score UI that explains *why* a recipe was recommended.
+### Dentro del alcance
+- `/dashboard/recipes` con filtros (cocina, tipo de comida) y tarjetas de resultado.
+- Vista de detalle `/dashboard/recipes/[id]`.
+- Lista `/dashboard/favorites` con eliminación/búsqueda.
+- UI de match score que explica *por qué* se recomendó una receta.
 
-### Out of scope
-- Recommendation engine (spec 10), shared components (spec 12), favorites API (spec 11).
+### Fuera del alcance
+- Motor de recomendaciones (spec 10), componentes compartidos (spec 12), API de favoritos (spec 11).
 
-## Requirements
+## Requisitos
 
-| ID | Requirement |
-|----|-------------|
-| REQ-01 | `/dashboard/recipes`: filters (cuisine, meal type), `RecipeCard` grid, per-card: match score, available ingredients, missing ingredients. Components: `MealTypeSelector`, `CuisineSelector`, `RecipeCard`, `RecipeGrid`, `RecipeMatchScore`, `MissingIngredients`. |
-| REQ-02 | `/dashboard/recipes/[id]`: name, image, description, cuisine, country, region, ingredients with quantities, instructions, time, servings, difficulty, match score, available/missing ingredients, favorite button, source. |
-| REQ-03 | `/dashboard/favorites`: favorite recipes list, search/filters when useful, remove favorite. |
-| REQ-04 | Each result exposes `recipe, matchScore, availableIngredients, missingIngredients, optionalMissingIngredients` (#71) — JSON example shape from the PROMPT. |
-| REQ-05 | Match score UI must be **understandable**: "92% de coincidencia" or "Tienes 5 de 6 ingredientes" — never only an abstract number; the user must understand *why* the recipe was recommended (#72). |
-| REQ-06 | Filter model extensible (`maxPreparationTime`, `difficulty`, `diet` reserved); MVP ships `ingredients/mealType/cuisine` only (#70). |
-| REQ-07 | Insufficient ingredients case (Caso 4): show available **and** missing ingredients clearly on cards and detail. |
-| REQ-08 | Favorite button toggles optimistic/persistent state via favorites use cases; Caso 6: favorite persists in Supabase across sessions. |
-| REQ-09 | Recipe detail must handle both internal and Spoonacular-sourced recipes transparently (show `source`; external failure states degrade gracefully per spec 09). |
-| REQ-10 | Loading skeletons, empty states (no results, no favorites), error states everywhere. |
+| ID | Requisito |
+|----|-----------|
+| REQ-01 | `/dashboard/recipes`: filtros (cocina, tipo de comida), cuadrícula `RecipeCard`, por tarjeta: match score, ingredientes disponibles, ingredientes faltantes. Componentes: `MealTypeSelector`, `CuisineSelector`, `RecipeCard`, `RecipeGrid`, `RecipeMatchScore`, `MissingIngredients`. |
+| REQ-02 | `/dashboard/recipes/[id]`: nombre, imagen, descripción, cocina, país, región, ingredientes con cantidades, instrucciones, tiempo, porciones, dificultad, match score, ingredientes disponibles/faltantes, botón de favorito, fuente. |
+| REQ-03 | `/dashboard/favorites`: lista de recetas favoritas, búsqueda/filtros cuando aporten, eliminación de favorito. |
+| REQ-04 | Cada resultado expone `recipe, matchScore, availableIngredients, missingIngredients, optionalMissingIngredients` (#71) — forma JSON de ejemplo del PROMPT. |
+| REQ-05 | La UI del match score debe ser **comprensible**: "92% de coincidencia" o "Tienes 5 de 6 ingredientes" — nunca solo un número abstracto; el usuario debe entender *por qué* se recomendó la receta (#72). |
+| REQ-06 | Modelo de filtros extensible (`maxPreparationTime`, `difficulty`, `diet` reservados); el MVP entrega solo `ingredients/mealType/cuisine` (#70). |
+| REQ-07 | Caso de ingredientes insuficientes (Caso 4): mostrar disponibles **y** faltantes con claridad en tarjetas y detalle. |
+| REQ-08 | El botón de favorito alterna estado optimista/persistente vía los casos de uso de favoritos; Caso 6: el favorito persiste en Supabase entre sesiones. |
+| REQ-09 | El detalle de receta debe manejar de forma transparente recetas internas y con origen Spoonacular (mostrar `source`; los estados de fallo externo degradan con elegancia según la spec 09). |
+| REQ-10 | Skeletons de carga, estados vacíos (sin resultados, sin favoritos), estados de error en todas partes. |
 
-## Dependencies
+## Dependencias
 
-- `12-frontend-foundation`, `13-frontend-dashboard-pantry` (search entry), `11-api-layer`, `10-recommendation-engine`.
+- `12-frontend-foundation`, `13-frontend-dashboard-pantry` (entrada de búsqueda), `11-api-layer`, `10-recommendation-engine`.
 
-## Acceptance criteria
+## Criterios de aceptación
 
-- [ ] Searching from the dashboard lands on/renders results at `/dashboard/recipes` with filters working.
-- [ ] Cards show percentage + available/missing ingredients (Caso 4).
-- [ ] Detail page renders every field of REQ-02 for an internal and an external recipe.
-- [ ] Favorite → persists (Caso 6); unfavorite removes it; `/dashboard/favorites` reflects state.
-- [ ] Match score understandable in at least the two formats of REQ-05.
+- [ ] Buscar desde el dashboard lleva a/renderiza resultados en `/dashboard/recipes` con filtros funcionando.
+- [ ] Las tarjetas muestran porcentaje + ingredientes disponibles/faltantes (Caso 4).
+- [ ] La página de detalle renderiza cada campo de REQ-02 para una receta interna y una externa.
+- [ ] Favorito → persiste (Caso 6); quitar favorito lo elimina; `/dashboard/favorites` refleja el estado.
+- [ ] Match score comprensible en al menos los dos formatos de REQ-05.
 
-## Verification
+## Verificación
 
-E2E flows 7–10 of spec 16 (view results, view recipe, save favorite, consult favorites) + RTL tests for `RecipeMatchScore`.
+Flujos E2E 7–10 de la spec 16 (ver resultados, ver receta, guardar favorito, consultar favoritos) + tests RTL de `RecipeMatchScore`.

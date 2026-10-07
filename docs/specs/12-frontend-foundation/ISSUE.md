@@ -1,4 +1,4 @@
-# ISSUE: 12 — Frontend Foundation
+# ISSUE: 12 — Base del frontend
 
 ## Título
 
@@ -18,7 +18,7 @@ Una base de UI coherente y reutilizable: landing que comunica el producto, primi
 - Landing `/` con mensaje, CTA "Comenzar", ejemplos visuales y 4 pasos (#39).
 - 15 componentes compartidos (#45) con shadcn/ui donde aplique.
 - Estrategia de estado: Server Components, Server Actions, React state, URL params, RHF; sin Redux (#47, #48).
-- i18n readiness del copy (#51).
+- Readiness i18n del copy (#51).
 - Formularios RHF + Zod con validación visible.
 
 **Fuera de alcance:** pantallas de dashboard/pantry (spec 13), recipes/detail/favorites (spec 14), páginas de auth (spec 05).

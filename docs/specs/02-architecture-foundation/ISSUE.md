@@ -1,4 +1,4 @@
-# ISSUE: 02 — Architecture Foundation
+# ISSUE: 02 — Fundamentos de arquitectura
 
 ## Título
 
@@ -28,15 +28,15 @@ Dejar establecida la "caja de huecos" del proyecto: estructura de carpetas canó
 ## Casos de prueba
 
 1. Auditoría de imports: ningún archivo de `src/domain/` importa paquetes de Next.js/React/Supabase/Spoonacular.
-2. La estructura de carpetas generada coincide con la del SPEC (adaptaciones solo de convención Next.js actual).
+2. La estructura de carpetas generada coincide con la del SPEC (adaptaciones solo de convención de Next.js actual).
 3. Un caso de uso se puede instanciar en tests inyectando repositorios mockeados desde el composition root.
 4. El logger expone `debug/info/warn/error` y no registra variables sensibles.
 5. Ningún Server Component hace `fetch("/api/...")` a rutas propias del proyecto.
 
 ## Consideraciones técnicas
 
-- La regla de dominio puro es la más fácil de violar con el tiempo: conviene regla de lint/import boundaries, no solo buena voluntad.
-- Mappers son obligatorios en ambas direcciones (DB y externos); son la frontera que protege el dominio.
+- La regla de dominio puro es la más fácil de violar con el tiempo: conviene una regla de lint/import boundaries, no solo buena voluntad.
+- Los mappers son obligatorios en ambas direcciones (BD y externos); son la frontera que protege al dominio.
 - No sobrearquitecturar: capas simples, archivos con valor, sin abstracciones sin propósito (#76).
 
 ## Criterios de aceptación

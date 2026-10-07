@@ -3058,8 +3058,8 @@ cuando sea necesario.
 Documentar claramente:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 y cualquier comando necesario para:
@@ -3139,11 +3139,11 @@ No asumir que endpoints, parámetros o límites actuales son idénticos a ejempl
 
 El proyecto se considera terminado cuando:
 
-- `npm install` funciona
-- `npm run dev` funciona
-- `npm run build` funciona
-- `npm run lint` funciona
-- `npm run typecheck` funciona
+- `pnpm install` funciona
+- `pnpm dev` funciona
+- `pnpm build` funciona
+- `pnpm lint` funciona
+- `pnpm typecheck` funciona
 - unit tests funcionan
 - integration tests funcionan
 - E2E tests funcionan

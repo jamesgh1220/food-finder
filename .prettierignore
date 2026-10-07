@@ -1,0 +1,16 @@
+# Build and dependency artifacts
+node_modules
+.next
+pnpm-lock.yaml
+
+# Test artifacts
+test-results
+playwright-report
+
+# Hand-written docs kept out of the formatter to preserve existing work
+docs/
+odd/
+.atl
+
+# Generated/static assets
+public/

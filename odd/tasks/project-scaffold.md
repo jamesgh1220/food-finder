@@ -30,8 +30,8 @@ Baseline state on `main` at `57e13fc`:
 
 - [ ] T1. Repo inspection + baseline report (REQ-01) — **inline**
 - [x] T2. Verify current stable, mutually compatible versions before install: Next.js, React, TypeScript, Supabase packages, Tailwind, shadcn/ui, Zod, React Hook Form, Vitest, Playwright + confirm current Supabase env var naming (REQ-04, REQ-07) — **delegated research**
-- [ ] T3. Missing scripts (`typecheck`, `test`, `test:watch`, `test:e2e`) + Vitest + Playwright configs (REQ-06) — **delegated writer**
-- [ ] T4. Prettier + ESLint + strict verification (REQ-05) — **delegated writer**
+- [x] T3. Missing scripts (`typecheck`, `test`, `test:watch`, `test:e2e`) + Vitest + Playwright configs (REQ-06) — **delegated writer**
+- [x] T4. Prettier + ESLint + strict verification (REQ-05) — **delegated writer**
 - [ ] T5. shadcn/ui + React Hook Form + Zod installed and working (in-scope tooling) — **delegated writer**
 - [ ] T6. `.env.example` with the exact 6 vars (REQ-07/REQ-08) — **delegated writer**
 - [ ] T7. Document chosen versions + "no over-engineering" limit (REQ-09 + acceptance) — **delegated writer**

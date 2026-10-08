@@ -19,34 +19,40 @@ La ISSUE de la spec 04 marca un fallo aquí como bloqueante: sin RLS, cualquier 
 - RDD: off (clone-local) → sin ceremonia de revisión.
 - Entrega: estrategia `ask-on-risk`, presupuesto 400 líneas/PR.
 - Convención: al cerrar, actualizar `docs/specs/04-security-rls/ISSUE.md`.
-
 ## Tareas
 
-- [ ] T1 — Rama `feat/04-security-rls` desde `main`
-- [ ] T2 — Escribir `supabase/migrations/002_rls_policies.sql`: `ENABLE ROW LEVEL SECURITY` en las 7 tablas; políticas:
-  - [ ] `profiles` (REQ-01): select/insert/update/delete propias (`id = auth.uid()`)
-  - [ ] `pantry_items` (REQ-02): select/insert/update/delete propias (`user_id = auth.uid()`)
-  - [ ] `favorite_recipes` (REQ-03): select/insert/update/delete propias (`user_id = auth.uid()`)
-  - [ ] `recipes` (REQ-04): select solo `authenticated`; sin políticas de escritura
-  - [ ] `ingredients` (REQ-05): select solo `authenticated`; sin escritura
-  - [ ] `cuisines` (REQ-06): select solo `authenticated`; sin escritura
-  - [ ] `recipe_ingredients` (REQ-07): select solo `authenticated`; sin escritura
-- [ ] T3 — `pnpm db:push` a la base vinculada + verificar con SQL que las 7 tablas tienen RLS y las políticas esperadas existen
-- [ ] T4 — Verificación de comportamiento (casos 1–4 de la ISSUE) con roles/usuarios simulados vía SQL (`set local role authenticated` + `request.jwt.claims`): A no ve pantry/favoritos de B; anónimo sin filas de tablas usuario; autenticado lee catálogos y no escribe
-- [ ] T5 — Barrido REQ-10/11: grep de secretos con prefijo `NEXT_PUBLIC_` en código fuente y respuestas; confirmar que `SUPABASE_SECRET_KEY`/`SPOONACULAR_API_KEY` solo se referencian en servidor
-- [ ] T6 — Crear `docs/specs/04-security-rls/ISSUE-DEFERRED.md` (Zod, errores seguros, timeout Spoonacular, con specs responsables 05/11/16)
-- [ ] T7 — Actualizar `docs/specs/04-security-rls/ISSUE.md`: criterios verificados + registro de implementación + diferidos
-- [ ] T8 — `pnpm lint && pnpm typecheck && pnpm test` + commit unitario `feat(db): enable RLS policies for all tables (spec 04)`
+- [x] T1 — Rama `feat/04-security-rls` desde `main`
+- [x] T2 — Escribir `supabase/migrations/002_rls_policies.sql`: `ENABLE ROW LEVEL SECURITY` en las 7 tablas; políticas:
+  - [x] `profiles` (REQ-01): select/insert/update/delete propias (`id = auth.uid()`)
+  - [x] `pantry_items` (REQ-02): select/insert/update/delete propias (`user_id = auth.uid()`)
+  - [x] `favorite_recipes` (REQ-03): select/insert/update/delete propias (`user_id = auth.uid()`)
+  - [x] `recipes` (REQ-04): select solo `authenticated`; sin políticas de escritura
+  - [x] `ingredients` (REQ-05): select solo `authenticated`; sin escritura
+  - [x] `cuisines` (REQ-06): select solo `authenticated`; sin escritura
+  - [x] `recipe_ingredients` (REQ-07): select solo `authenticated`; sin escritura
+- [x] T3 — `pnpm db:push` a la base vinculada + verificar con SQL que las 7 tablas tienen RLS y las políticas esperadas existen *(7/7 RLS=true, 16 políticas)*
+- [x] T4 — Verificación de comportamiento (casos 1–4 de la ISSUE) con roles/usuarios simulados vía SQL *(PASS: A, B simétrico, anónimo; fixtures limpiados a 0)*
+- [x] T5 — Barrido REQ-10/11: sin secretos `NEXT_PUBLIC_*`, sin `.env` trackeado, sin stacks en `src/`
+- [x] T6 — Crear `docs/specs/04-security-rls/ISSUE-DEFERRED.md` *(6 ítems con specs responsables: 09, 11, 05/07/08, 16)*
+- [x] T7 — Actualizar `docs/specs/04-security-rls/ISSUE.md`: criterios verificados + registro de implementación
+- [x] T8 — `pnpm lint && pnpm typecheck && pnpm test` (7/7) + commit `250eb1c`
 
 ## Criterios de aceptación
-- [ ] Las 7 tablas con RLS habilitado y al menos una política coherente por REQ-01…REQ-06; ninguna tabla sin protección (REQ-07).
-- [ ] Usuario A obtiene 0 filas del pantry/favoritos de usuario B (verificado en base real).
-- [ ] Sin escrituras de usuarios en catálogos globales.
-- [ ] Sin secretos con prefijo público ni stack traces en el código actual.
-- [ ] `pnpm lint && pnpm typecheck && pnpm test` en verde.
+
+- [x] Las 7 tablas con RLS habilitado y al menos una política coherente por REQ-01…REQ-06; ninguna tabla sin protección (REQ-07).
+- [x] Usuario A obtiene 0 filas del pantry/favoritos de usuario B (verificado en base real).
+- [x] Sin escrituras de usuarios en catálogos globales.
+- [x] Sin secretos con prefijo público ni stack traces en el código actual.
+- [x] `pnpm lint && pnpm typecheck && pnpm test` en verde.
 
 ## Progreso / evidencia
-- Pendiente.
+
+- Commit: `250eb1c feat(db): enable RLS policies for all tables (spec 04)` (rama `feat/04-security-rls`, 233 añadidas/5 borradas — bajo el presupuesto de 400, slice único).
+- BD vinculada: migración `002_rls_policies.sql` aplicada vía `pnpm db:push`.
+- Aerciones SQL PASS: `PASS_cases_1_2_4_user_A`, `PASS_user_B_symmetric`, `PASS_case_3_anonymous`.
+- Checks: lint ✅ · typecheck ✅ · test 7/7 ✅.
+- RDD off (clone-local) → sin ciclo de revisión.
 
 ## Siguiente paso
-- T1.
+
+- Tarea completada. Push/PR/merge quedan como decisión del usuario (política ordinaria del repo).

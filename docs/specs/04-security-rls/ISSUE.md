@@ -60,7 +60,7 @@ Garantizar que cada usuario solo vea y modifique sus propios datos (perfil, desp
 
 **Dependencias:** `03-database-schema` ✅ · `05-supabase-auth` pendiente (políticas listas para cuando exista la identidad de sesión; verificadas con claims simulados).
 
-**Verificación:** `pnpm db:push` OK · aserciones SQL PASS (A, B, anónimo) · pendiente `pnpm lint && pnpm typecheck && pnpm test` al cierre de la rama.
+**Verificación:** `pnpm db:push` OK · aserciones SQL PASS (A, B, anónimo) · `pnpm lint && pnpm typecheck && pnpm test` en verde (7/7 tests) · commit `250eb1c`.
 
 ## Resultado esperado
 

@@ -41,14 +41,14 @@ Autenticación funcional y segura: usuarios se registran, inician sesión, cierr
 ## Criterios de aceptación
 
 - [x] Los 4 casos de uso implementados con tests unitarios (puerto mockeado). *(15 tests en `tests/unit/auth-use-cases.test.ts`, todos PASS)*
-- [x] Páginas `/login` y `/register` funcionales y conectadas a los casos de uso. *(formularios RHF+Zod → casos de uso → adapter; renderizan con copy en español y manejo de errores controlado. El click-through live contra Supabase queda para spec 16)*
+- [x] Páginas `/login` y `/register` funcionales y conectadas a los casos de uso. *(formularios RHF+Zod → casos de uso → adapter; renderizan con copy en español y manejo de errores controlado. E2E live `e2e/auth-flow.spec.ts` contra Supabase real: guard de sesión, registro con salida controlada en español, error de credenciales, login → dashboard, logout → guard, y rebote de usuarios autenticados fuera de `/login` — 2/2 corridas PASS)*
 - [x] Redirect de rutas protegidas verificado en el navegador. *(verificado contra el servidor de producción: `GET /dashboard` sin sesión → `307 /login?next=%2Fdashboard`, misma lógica de `src/proxy.ts` que ejecuta el navegador)*
 - [x] Ninguna clave secreta accesible desde el cliente. *(grep sobre `.next/static`: sin valor `sb_secret_*` ni nombre `SUPABASE_SECRET_KEY`; solo el literal de librería `startsWith("sb_secret_")`. Ningún módulo referencia `SUPABASE_SECRET_KEY`)*
 - [x] Mecanismo de refresh de sesión según docs actuales, documentado en el SPEC/README. *(sección "Mecanismo de refresh de sesión (REQ-06)" en `docs/specs/05-supabase-auth/SPEC.md`: `proxy.ts` de Next 16 + `getClaims()` de `@supabase/ssr`)*
 
 ## Registro de implementación
 
-**Estado:** completado con click-through live pendiente (2026-10-08, rama `feat/05-supabase-auth`)
+**Estado:** completado con E2E live ejecutado (2026-10-08, rama `feat/05-supabase-auth`)
 
 **Qué se hizo:**
 - Deps: `@supabase/supabase-js@2.117.3` + `@supabase/ssr@0.12.7`.
@@ -61,11 +61,11 @@ Autenticación funcional y segura: usuarios se registran, inician sesión, cierr
 - Páginas: `/login`, `/register` (formularios client con RHF+Zod, copy español) y `/dashboard` (server component con `GetCurrentUser` + `redirect`, contenido bajo `<Suspense>` por Cache Components de Next 16).
 - Verificación: lint/typecheck/test (19/19) · build OK · redirect HTTP 307 verificado · grep de secrets sobre `.next` limpio.
 
-**Cambios vs plan:** sin desviaciones de alcance; el E2E live (registro → dashboard → logout contra Supabase real) queda para spec 16 tal como indica el SPEC.
+**Cambios vs plan:** el E2E live se ejecutó con `e2e/auth-flow.spec.ts` (Playwright) contra el proyecto Supabase real. Hallazgos: el proyecto tiene `mailer_autoconfirm: false` (el registro con confirmación de email no inicia sesión → `RegisterOutcome.sessionStarted=false` muestra el aviso en español, comportamiento esperado) y la validación pública rechaza `example.com`, así que la cuenta E2E `ff-e2e-auth@example.com` se creó y confirmó vía admin API. El live expuso mensajes crudos de Supabase en inglés filtrándose a la UI → corregido con mapeo a español (`360f712`, +4 unit tests). El camino "registro fresco → sesión directa → dashboard" requiere desactivar la confirmación de email en el proyecto (decisión del mantenedor, no del código).
 
 **Dependencias:** `01` ✅ · `02` ✅ · `03` ✅ (`profiles`) · siguientes: `06-domain-layer`, `07-application-layer` (el puerto y casos de uso quedan como precedente), `16-testing-strategy` (E2E live).
 
-**Verificación:** `pnpm lint && pnpm typecheck && pnpm test` en verde (19 tests) · `pnpm build` OK (proxy registrado) · `GET /dashboard` → 307 `/login` · grep secrets limpio.
+**Verificación:** `pnpm lint && pnpm typecheck && pnpm test` en verde (23 tests) · `pnpm build` OK (proxy registrado) · `GET /dashboard` → 307 `/login` · grep secrets limpio · `pnpm exec playwright test e2e/auth-flow.spec.ts` → 1 test, 2/2 corridas PASS (5.3s) contra Supabase real.
 
 ## Resultado esperado
 

@@ -63,14 +63,22 @@ operen por usuario. Sin esto, los specs 06–11 no tienen consumidor de sesión.
 - [x] T13 — SPEC actualizado (refresh, decisión admin, MCP/SDK/Auth) + ISSUE con criterios y registro;
       click-through live queda para spec 16
 - [x] T14 — Commits work-unit (4 commits, conventional, sin atribución AI)
+- [x] T15 — Comentarios de código de la spec 05 traducidos al español (`c88d40a`);
+      preferencia guardada en Engram (`preferences/code-comments-spanish`): de ahora en
+      adelante TODOS los comentarios en español en este proyecto
+- [x] T16 — E2E live `e2e/auth-flow.spec.ts` (Playwright + Chromium) contra Supabase real;
+      2/2 corridas PASS; expuso mensajes crudos en inglés → mapeo a español + 4 unit tests
+      (`360f712`), spec E2E (`ffc1b7e`)
 
 ## Criterios de aceptación
 
 - [x] 4 casos de uso con tests unitarios (puerto mockeado) → 15/15 PASS
-- [x] `/login` y `/register` funcionales y conectadas a los casos de uso (click-through live → spec 16)
+- [x] `/login` y `/register` funcionales y conectadas a los casos de uso
+      → E2E live PASS (guard, registro controlado, credenciales, login, logout, rebote)
 - [x] Redirect de `/dashboard` sin sesión → 307 `/login?next=%2Fdashboard`
 - [x] Ninguna secret key accesible desde el cliente (grep de build limpio)
 - [x] Mecanismo de refresh documentado en SPEC
+- [x] Comentarios de los archivos nuevos en español (preferencia de proyecto)
 
 ## Evidencia / progreso
 
@@ -80,14 +88,31 @@ operen por usuario. Sin esto, los specs 06–11 no tienen consumidor de sesión.
 2. `a9d62a2` feat(auth): refresh sessions in proxy and protect /dashboard — 3 files, +206
 3. `701ab59` feat(auth): add login and register pages wired to use cases — 5 files, +337
 4. `1e2ef94` docs(specs): record spec 05 auth implementation evidence — 3 files, +150/−11
+5. `bb91f0a` docs(odd): record spec 05 completion evidence and commits
+6. `c88d40a` docs(auth): translate code comments to Spanish — 14 files, +77/−69
+7. `360f712` fix(auth): map raw Supabase error messages to Spanish — 2 files, +123/−1
+8. `ffc1b7e` test(e2e): add live auth flow spec against Supabase — 1 file, +94
 
 **Verificación observada:**
-- `pnpm lint` → exit 0 · `pnpm typecheck` → exit 0 · `pnpm test` → 19/19 PASS (3 files)
+- `pnpm lint` → exit 0 · `pnpm typecheck` → exit 0 · `pnpm test` → 23/23 PASS (4 files)
 - `pnpm build` → OK; rutas: `/login` ○, `/register` ○, `/dashboard` ◐ (PPR), `ƒ Proxy (Middleware)`
 - `GET :3005/dashboard` sin sesión → `307 /login?next=%2Fdashboard`; `/login`,`/register` → 200 (títulos en español); cookie basura → 307; `/favicon.ico` → 200
 - Grep `.next/static`: sin valor `sb_secret_*` ni nombre `SUPABASE_SECRET_KEY` (solo literal librería `startsWith("sb_secret_")`)
+- **E2E live** `pnpm exec playwright test e2e/auth-flow.spec.ts` → 1 test, 2/2 corridas PASS
+  (guard → registro controlado en español → guard → credenciales inválidas en español →
+  login → dashboard con email visible → logout → guard → re-login → rebote de `/login`)
+
+**Hallazgos del live (corregidos/decididos):**
+- Supabase devolvía mensajes crudos en inglés (`email_address_invalid`, rate-limit) filtrados
+  a la UI → mapeados a español + fallback español para códigos desconocidos (`360f712`).
+- Proyecto real: `mailer_autoconfirm: false` → el registro NO inicia sesión (el aviso
+  "Revisa tu email" es el comportamiento correcto; `sessionStarted=false`).
+- Validación pública rechaza `example.com`; la cuenta E2E `ff-e2e-auth@example.com` se creó
+  confirmada vía admin API (sin email, sin rate-limit). Usuario real de prueba en el proyecto.
+- Chromium de Playwright instalado (`pnpm exec playwright install chromium`).
 
 **Desviaciones:** delegación de writer no disponible (runtime rechazó el sub-agente: "OpenCode free tier") → ejecución inline.
 
-**Pendiente:** click-through live registro→dashboard→logout contra Supabase real (spec 16 / manual);
-decisión de chain strategy (>400 líneas) antes de abrir PR(s).
+**Pendiente:** decisión de chain strategy (>400 líneas) antes de abrir PR(s);
+el camino "registro fresco → sesión directa" requiere desactivar `mailer_autoconfirm`
+en el proyecto Supabase (decisión del mantenedor; cubierto por spec 16 si aplica).

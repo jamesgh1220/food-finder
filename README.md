@@ -58,14 +58,32 @@ Anything added to this repo must justify itself against this list.
 
 ## Repository map
 
-| Path                  | Contents                                       |
-| --------------------- | ---------------------------------------------- |
-| `app/`                | App Router routes, layouts, globals            |
-| `lib/`, `components/` | shadcn/ui helpers and components               |
-| `e2e/`                | Playwright specs                               |
-| `docs/specs/`         | Numbered spec + issue pairs (the build plan)   |
-| `odd/tasks/`          | Active feature documents and progress evidence |
+| Path                          | Contents                                              |
+| ----------------------------- | ----------------------------------------------------- |
+| `src/app/`                    | App Router routes, layouts, globals (Presentation)    |
+| `src/components/`, `src/lib/` | UI components, shared helpers, composition root       |
+| `src/application/`            | Use cases, DTOs, ports (Application)                  |
+| `src/domain/`                 | Entities, value objects, business rules (pure Domain) |
+| `src/infrastructure/`         | Supabase, Spoonacular, HTTP, logging adapters         |
+| `src/types/`                  | Shared type declarations                              |
+| `supabase/`                   | DB migrations / config                                |
+| `tests/`                      | Unit tests (Vitest)                                   |
+| `e2e/`                        | Playwright specs                                      |
+| `docs/specs/`                 | Numbered spec + issue pairs (the build plan)          |
+| `odd/tasks/`                  | Active feature documents and progress evidence        |
+
+## Architecture rules (spec 02)
+
+- **Layer dependency:** Presentation → Application → Domain → Ports → Infrastructure. Each file lives in exactly one layer.
+- **Pure domain (REQ-02):** `src/domain/` never imports Next.js, React, Supabase, Spoonacular, `fetch`, or UI components. Enforced by lint — a violating import fails `pnpm lint`.
+- **Mappers (REQ-10):** DB rows and external DTOs are converted by mappers before reaching the domain (`SupabaseRow → Mapper → Entity`, `SpoonacularDTO → Mapper → Recipe`). Raw rows/DTOs never cross the boundary.
+- **No self-fetch hops (REQ-11):** Server Components call use cases directly, never `fetch("/api/...")` on this app's own routes. Enforced by lint.
+- **DI (REQ-08):** one composition root at `src/lib/composition/`, plain functions, no DI framework.
+- **Logging (REQ-09):** single logger (`src/infrastructure/logging/console-logger.ts`) with `debug/info/warn/error`; sensitive keys are redacted before writing.
+- **i18n readiness (REQ-12):** no hardcoded user-facing strings inside domain/application logic (full i18n is not an MVP requirement).
+- **PWA/Capacitor readiness (REQ-13):** Capacitor is not installed; avoid designs that depend exclusively on server-only APIs for features that must later run on mobile.
+- **Quality (REQ-14):** SOLID, DRY, KISS, strict typing, explicit errors — hexagonal layers are not an excuse to create files without value.
 
 ## Next step
 
-Implement `docs/specs/02-architecture-foundation/SPEC.md` — hexagonal layering and folder structure.
+Implement `docs/specs/03-database-schema/SPEC.md`.

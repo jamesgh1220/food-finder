@@ -39,10 +39,15 @@ operen por usuario. Sin esto, los specs 06–11 no tienen consumidor de sesión.
 
 ## Entrega
 
-- Forecast real autorado: **~1314 líneas** (1349 add + 35 del, `250eb1c..HEAD`) → **>400**;
-  estrategia `ask-on-risk`: decisión de chain strategy pendiente ANTES de abrir PR(s).
-- Sin PR pedido por el usuario en esta sesión → commits work-unit locales en rama
-  `feat/05-supabase-auth`; ninguna entrega remota realizada.
+- Forecast real autorado: **1651 líneas** (1616 add + 35 del, `250eb1c..f8e7d48`) → >400.
+- **Decisión del usuario (2026-10-08): NO PR.** Este proyecto no usa PRs: la entrega es
+  commitear work units en la rama feature y fusionar directo a `main` (hist lineal → `--ff-only`).
+  Anula `ask-on-risk`/chain strategy para este proyecto (guardado en Engram:
+  `preferences/delivery-no-prs-merge-main`).
+- **Fusionado:** `main` fast-forward `c7977f5` → `f8e7d48` (31 files, +1825/−16), post-merge
+  lint/typecheck/23-tests verdes. Incluye 2 commits finales de la spec 04 que aún no estaban
+  en main (`250eb1c` RLS policies, `c2e599b` evidencia) — arrastrados como ancestros.
+- Sin push a origin (no pedido).
 
 ## Tareas
 
@@ -113,6 +118,7 @@ operen por usuario. Sin esto, los specs 06–11 no tienen consumidor de sesión.
 
 **Desviaciones:** delegación de writer no disponible (runtime rechazó el sub-agente: "OpenCode free tier") → ejecución inline.
 
-**Pendiente:** decisión de chain strategy (>400 líneas) antes de abrir PR(s);
-el camino "registro fresco → sesión directa" requiere desactivar `mailer_autoconfirm`
-en el proyecto Supabase (decisión del mantenedor; cubierto por spec 16 si aplica).
+**Pendiente:** ninguno de entrega (fusión a `main` hecha, `f8e7d48`). Solo quedan pendientes
+del mantenedor: el camino "registro fresco → sesión directa" requiere desactivar
+`mailer_autoconfirm` en el proyecto Supabase (cubierto por spec 16 si aplica), y borrar la
+cuenta E2E `ff-e2e-auth@example.com` cuando ya no se necesite.

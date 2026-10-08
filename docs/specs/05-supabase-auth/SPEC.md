@@ -35,13 +35,56 @@ Implementar la autenticación de extremo a extremo: clientes Supabase correctame
 
 ## Criterios de aceptación
 
-- [ ] Registro → autenticado y redirigido a `/dashboard`.
-- [ ] Login con credenciales válidas → `/dashboard`; logout → sesión limpia y rutas protegidas inaccesibles.
-- [ ] Visitar `/dashboard` sin autenticar redirige a `/login`.
-- [ ] `GetCurrentUser` devuelve el usuario de sesión en contextos de server.
-- [ ] Grep confirma que ninguna secret key está en una variable `NEXT_PUBLIC_*` ni en el bundle del cliente.
-- [ ] Solo existe un lugar documentado que crea el client admin, protegido por acceso a env solo-servidor.
+- [ ] Registro → autenticado y redirigido a `/dashboard`. *(pendiente: click-through live — ver Verificación)*
+- [ ] Login con credenciales válidas → `/dashboard`; logout → sesión limpia y rutas protegidas inaccesibles. *(pendiente: click-through live — ver Verificación)*
+- [x] Visitar `/dashboard` sin autenticar redirige a `/login`. *(307 → `/login?next=%2Fdashboard` verificado contra servidor de producción)*
+- [x] `GetCurrentUser` devuelve el usuario de sesión en contextos de server. *(unit test con puerto mockeado + uso en `/dashboard` server component)*
+- [x] Grep confirma que ninguna secret key está en una variable `NEXT_PUBLIC_*` ni en el bundle del cliente. *(grep sobre `.next`: sin `sb_secret_<valor>` ni `SUPABASE_SECRET_KEY` en `.next/static`)*
+- [x] Solo existe un lugar documentado que crea el client admin, protegido por acceso a env solo-servidor. *(Hoy no existe ningún client admin: ninguno de los 4 casos de uso lo necesita. La decisión y el lugar único futuro están documentados abajo.)*
+
+## Implementación (resultado)
+
+### Clients (REQ-01/REQ-02/REQ-03)
+
+| Client | Ubicación | Contexto | Llaves |
+|--------|-----------|----------|--------|
+| Browser | `src/infrastructure/supabase/browser-client.ts` (`createBrowserClient`) | Client Components (formularios, logout) | `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
+| Server | `src/infrastructure/supabase/server-client.ts` (`createServerClient`) | Server Components / Route Handlers | solo publishable (mismas `NEXT_PUBLIC_*`) |
+| Admin | **no existe** | — | — |
+
+- **Decisión admin client:** `RegisterUser`, `LoginUser`, `LogoutUser` y `GetCurrentUser` operan con la sesión del usuario vía cookies; no requieren service-role. Si una spec futura lo necesita (p. ej. operaciones administrativas sobre otros usuarios), el ÚNICO lugar autorizado para crearlo es `src/infrastructure/supabase/admin-client.ts`, con `import "server-only"`, `SUPABASE_SECRET_KEY` (solo servidor, jamás `NEXT_PUBLIC_*`) y `auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }`.
+- Ningún módulo de la aplicación referencia `SUPABASE_SECRET_KEY` hoy; grep sobre `.next/static` confirma que el bundle del navegador no contiene el nombre ni el valor de la variable (caso de prueba 6).
+
+### Mecanismo de refresh de sesión (REQ-06)
+
+Documentado según las docs vigentes de Next.js 16.4 y Supabase (verificado contra `node_modules/next/dist/docs/` y las guías actuales de `@supabase/ssr`; sin tutoriales antiguos):
+
+1. **`src/proxy.ts`** — Next.js 16 renombró la convención `middleware.ts` → `proxy.ts` (middleware está deprecado). El proxy corre antes de renderizar cada ruta.
+2. Por request: crea un `createServerClient` con cookies de la petición y llama a **`supabase.auth.getClaims()`**, que inicializa la sesión en modo lazy y **refresca tokens expirados**; los cookies nuevos se propagan mediante `setAll` → `Set-Cookie` de la respuesta. Sin este paso, Server Components no pueden escribir cookies y la sesión moriría (patrón oficial de `@supabase/ssr`).
+3. El proxy es también el único punto de **redirect de rutas**: sin sesión, `/dashboard*` → `/login?next=…`; con sesión, `/login` y `/register` → `/dashboard`.
+4. **`/dashboard`** (Next 16 Cache Components): la lectura de `cookies()` vive dentro de un `<Suspense>`, con chequeo de defensa con `GetCurrentUser` → `redirect("/login")` si no hay sesión.
+5. En el navegador, `createBrowserClient` mantiene la sesión proactive-mente actualizada en cookies, sincronizándose con el proxy.
+
+### Casos de uso (REQ-04)
+
+`src/application/auth/{register-user,login-user,logout-user,get-current-user}.ts` — clases que dependen solo del puerto `AuthPort` (`src/application/ports/auth.ts`), con validación de entrada y resultados controlados (`AuthResult<T>`, nunca throw para fallos esperados). Wiring exclusivo en `src/lib/composition/auth.ts` (+ `browser-auth.ts` / `server-auth.ts` para elegir el adapter por contexto). El adapter Supabase vive en `src/infrastructure/auth/supabase-auth-port.ts`.
+
+> Nota: si el proyecto exige confirmación de email, `RegisterUser` devuelve `sessionStarted: false` y la UI muestra el aviso en lugar de redirigir (el criterio "registro → `/dashboard`" asume confirmación desactivada, como en el MVP del PROMTP).
+
+### Conceptos (REQ-07)
+
+- **Supabase MCP**: server MCP de desarrollo (tooling para el agente/editor; p. ej. `supabase` MCP configurado en la sesión). No participa en el runtime de la app.
+- **Supabase SDK**: `@supabase/supabase-js` + `@supabase/ssr`, las librerías que el código de la app importa para hablar con la API en runtime.
+- **Supabase Auth**: el servicio de usuarios finales (tablas `auth.users`, sesiones, tokens) que los casos de uso consumen a través del puerto.
 
 ## Verificación
 
 Tests unitarios de los casos de uso de auth con un puerto de auth mockeado + flujo manual/E2E (registro, login, logout, redirect) cubierto en `16-testing-strategy`.
+
+**Evidencia de esta implementación:**
+
+- `pnpm lint && pnpm typecheck && pnpm test` → PASS (19 tests; 15 de auth con puerto mockeado).
+- `pnpm build` → PASS (rutas: `/login` y `/register` estáticas, `/dashboard` con contenido dinámico bajo Suspense, `Proxy (Middleware)` registrado).
+- Redirect con servidor de producción: `GET /dashboard` sin sesión → `307 /login?next=%2Fdashboard`; `/login` y `/register` → `200` con copy en español; cookie falsa → `307` (sin 500); `_next/static` y `favicon.ico` → `200`.
+- Grep de secrets sobre `.next/static` → sin valores `sb_secret_*` ni el nombre `SUPABASE_SECRET_KEY` (solo literal de librería `startsWith("sb_secret_")`).
+- **Pendiente (spec 16 / manual):** click-through live registro → dashboard → logout contra Supabase real.

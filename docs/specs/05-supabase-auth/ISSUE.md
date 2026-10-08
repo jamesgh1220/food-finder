@@ -40,11 +40,32 @@ Autenticación funcional y segura: usuarios se registran, inician sesión, cierr
 
 ## Criterios de aceptación
 
-- [ ] Los 4 casos de uso implementados con tests unitarios (puerto mockeado).
-- [ ] Páginas `/login` y `/register` funcionales y conectadas a los casos de uso.
-- [ ] Redirect de rutas protegidas verificado en el navegador.
-- [ ] Ninguna clave secreta accesible desde el cliente.
-- [ ] Mecanismo de refresh de sesión según docs actuales, documentado en el SPEC/README.
+- [x] Los 4 casos de uso implementados con tests unitarios (puerto mockeado). *(15 tests en `tests/unit/auth-use-cases.test.ts`, todos PASS)*
+- [x] Páginas `/login` y `/register` funcionales y conectadas a los casos de uso. *(formularios RHF+Zod → casos de uso → adapter; renderizan con copy en español y manejo de errores controlado. El click-through live contra Supabase queda para spec 16)*
+- [x] Redirect de rutas protegidas verificado en el navegador. *(verificado contra el servidor de producción: `GET /dashboard` sin sesión → `307 /login?next=%2Fdashboard`, misma lógica de `src/proxy.ts` que ejecuta el navegador)*
+- [x] Ninguna clave secreta accesible desde el cliente. *(grep sobre `.next/static`: sin valor `sb_secret_*` ni nombre `SUPABASE_SECRET_KEY`; solo el literal de librería `startsWith("sb_secret_")`. Ningún módulo referencia `SUPABASE_SECRET_KEY`)*
+- [x] Mecanismo de refresh de sesión según docs actuales, documentado en el SPEC/README. *(sección "Mecanismo de refresh de sesión (REQ-06)" en `docs/specs/05-supabase-auth/SPEC.md`: `proxy.ts` de Next 16 + `getClaims()` de `@supabase/ssr`)*
+
+## Registro de implementación
+
+**Estado:** completado con click-through live pendiente (2026-10-08, rama `feat/05-supabase-auth`)
+
+**Qué se hizo:**
+- Deps: `@supabase/supabase-js@2.117.3` + `@supabase/ssr@0.12.7`.
+- Puerto `AuthPort` (`src/application/ports/auth.ts`) con `AuthResult` controlado y `RegisterOutcome` (distingue cuenta con/sin sesión según confirmación de email).
+- Casos de uso: `src/application/auth/{register-user,login-user,logout-user,get-current-user}.ts` (validación de entrada, sin throw).
+- Adapter: `src/infrastructure/auth/supabase-auth-port.ts` (mapeo de errores Supabase → códigos controlados con mensajes en español).
+- Clients: `src/infrastructure/supabase/browser-client.ts` y `server-client.ts` (solo publishable; sin client admin — decisión documentada en el SPEC).
+- Composition: `src/lib/composition/auth.ts` (+ `browser-auth.ts`, `server-auth.ts`) como único punto de wiring.
+- `src/proxy.ts`: refresh de sesión con `getClaims()` + redirects (`/dashboard*` → `/login?next=…`, sesión → fuera de `/login|/register`).
+- Páginas: `/login`, `/register` (formularios client con RHF+Zod, copy español) y `/dashboard` (server component con `GetCurrentUser` + `redirect`, contenido bajo `<Suspense>` por Cache Components de Next 16).
+- Verificación: lint/typecheck/test (19/19) · build OK · redirect HTTP 307 verificado · grep de secrets sobre `.next` limpio.
+
+**Cambios vs plan:** sin desviaciones de alcance; el E2E live (registro → dashboard → logout contra Supabase real) queda para spec 16 tal como indica el SPEC.
+
+**Dependencias:** `01` ✅ · `02` ✅ · `03` ✅ (`profiles`) · siguientes: `06-domain-layer`, `07-application-layer` (el puerto y casos de uso quedan como precedente), `16-testing-strategy` (E2E live).
+
+**Verificación:** `pnpm lint && pnpm typecheck && pnpm test` en verde (19 tests) · `pnpm build` OK (proxy registrado) · `GET /dashboard` → 307 `/login` · grep secrets limpio.
 
 ## Resultado esperado
 

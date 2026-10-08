@@ -13,16 +13,20 @@ export function LogoutButton() {
     setPending(true);
     setError(null);
     const { logoutUser } = createBrowserAuthServices();
-    const result = await logoutUser.execute();
+    
+    try {
+      const result = await logoutUser.execute();
 
-    if (!result.ok) {
-      setError(result.message);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      router.push("/login");
+      router.refresh();
+    } finally {
       setPending(false);
-      return;
     }
-
-    router.push("/login");
-    router.refresh();
   }
 
   return (

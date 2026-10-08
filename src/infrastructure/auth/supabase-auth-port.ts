@@ -18,7 +18,7 @@ function toAuthUser(user: { id: string; email?: string }): AuthUser {
   return { id: user.id, email: user.email ?? "" };
 }
 
-/** Maps Supabase Auth errors to controlled port codes with Spanish messages. */
+/** Mapea errores de Supabase Auth a códigos controlados del puerto, con mensajes en español. */
 function mapAuthError(
   error: SupabaseAuthError,
   fallbackMessage: string,
@@ -42,12 +42,12 @@ function mapAuthError(
 }
 
 /**
- * Supabase adapter for the `AuthPort` (spec 05, REQ-02/REQ-04).
+ * Adapter de Supabase para el `AuthPort` (spec 05, REQ-02/REQ-04).
  *
- * This is the only module in the application runtime that talks to
- * Supabase Auth. The client it receives is created by the browser/server
- * factories — never by this file — so the same adapter works in both
- * contexts and stays trivially mockable in tests.
+ * Único módulo del runtime que habla con Supabase Auth. El cliente lo
+ * crean las factorías browser/server — nunca este archivo — para que el
+ * mismo adapter funcione en ambos contextos y sea trivialmente mockeable
+ * en tests.
  */
 export function createSupabaseAuthPort(client: AuthClient): AuthPort {
   return {
@@ -80,7 +80,7 @@ export function createSupabaseAuthPort(client: AuthClient): AuthPort {
     async getCurrentUser(): Promise<AuthResult<AuthUser | null>> {
       const { data, error } = await client.auth.getUser();
       if (error) {
-        // No session on this request is a normal, unauthenticated state.
+        // No haber sesión en esta petición es un estado normal (no autenticado).
         if (isAuthSessionMissingError(error)) return authOk(null);
         return mapAuthError(error, "No se pudo verificar la sesión.");
       }

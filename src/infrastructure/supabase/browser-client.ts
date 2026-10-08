@@ -2,11 +2,11 @@ import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "@/types/database.types";
 
 /**
- * Browser Supabase client (spec 05, REQ-02).
+ * Cliente Supabase de navegador (spec 05, REQ-02).
  *
- * Uses only NEXT_PUBLIC_* publishable variables — the secret key never
- * reaches this module (REQ-03). `createBrowserClient` persists the session
- * in cookies so `src/proxy.ts` and server components can read it.
+ * Usa solo variables publicables NEXT_PUBLIC_* — la secret key nunca
+ * llega a este módulo (REQ-03). `createBrowserClient` persiste la sesión
+ * en cookies para que `src/proxy.ts` y los Server Components puedan leerla.
  */
 export function createSupabaseBrowserClient() {
   return createBrowserClient<Database>(

@@ -7,10 +7,10 @@ import type {
 import { validateCredentials } from "@/application/auth/register-user";
 
 /**
- * LoginUser use case (spec 05, REQ-04).
+ * Caso de uso LoginUser (spec 05, REQ-04).
  *
- * Wrong credentials surface as `{ ok: false, code: "invalid_credentials" }`
- * so the UI shows a controlled error (ISSUE test case 2).
+ * Credenciales incorrectas → `{ ok: false, code: "invalid_credentials" }`
+ * para que la UI muestre un error controlado (caso de prueba 2 de la ISSUE).
  */
 export class LoginUser {
   constructor(private readonly auth: AuthPort) {}

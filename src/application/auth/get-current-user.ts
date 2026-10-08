@@ -1,10 +1,10 @@
 import type { AuthPort, AuthResult, AuthUser } from "@/application/ports/auth";
 
 /**
- * GetCurrentUser use case (spec 05, REQ-04).
+ * Caso de uso GetCurrentUser (spec 05, REQ-04).
  *
- * Returns the session user in server contexts, or null when there is no
- * authenticated session (ISSUE test case 5).
+ * Devuelve el usuario de la sesión en contextos de server, o null cuando
+ * no hay sesión autenticada (caso de prueba 5 de la ISSUE).
  */
 export class GetCurrentUser {
   constructor(private readonly auth: AuthPort) {}

@@ -9,7 +9,7 @@ import { authFail } from "@/application/ports/auth";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
 
-/** Shared input validation so every use case fails before hitting the port. */
+/** Validación compartida de entrada: todos los casos de uso fallan antes de tocar el puerto. */
 export function validateCredentials(
   credentials: AuthCredentials,
 ): AuthResult<never> | null {
@@ -26,10 +26,10 @@ export function validateCredentials(
 }
 
 /**
- * RegisterUser use case (spec 05, REQ-04).
+ * Caso de uso RegisterUser (spec 05, REQ-04).
  *
- * Validates input, then delegates to the auth port. Expected failures come
- * back as controlled `AuthResult` errors, never as exceptions.
+ * Valida la entrada y delega en el puerto de auth. Los fallos esperados
+ * vuelven como errores controlados (`AuthResult`), nunca como excepciones.
  */
 export class RegisterUser {
   constructor(private readonly auth: AuthPort) {}

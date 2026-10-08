@@ -1,9 +1,9 @@
 /**
- * Auth port (spec 05, REQ-02/REQ-04).
+ * Puerto de autenticación (spec 05, REQ-02/REQ-04).
  *
- * The application layer defines the abstraction; Supabase is only an
- * adapter in `src/infrastructure/auth/`. Nothing in this file may import
- * `@supabase/*`, Next.js or React.
+ * La capa application define la abstracción; Supabase es solo un adapter
+ * en `src/infrastructure/auth/`. Nada de este archivo puede importar
+ * `@supabase/*`, Next.js ni React.
  */
 
 export interface AuthUser {
@@ -24,8 +24,9 @@ export type AuthErrorCode =
   | "unknown";
 
 /**
- * Controlled result — use cases never throw for expected failures so the UI
- * can render a specific Spanish message per code (ISSUE test case 2).
+ * Resultado controlado — los casos de uso nunca lanzan excepciones para
+ * fallos esperados, para que la UI pueda mostrar un mensaje específico en
+ * español por código (caso de prueba 2 de la ISSUE).
  */
 export type AuthResult<T> =
   | { ok: true; data: T }
@@ -45,20 +46,21 @@ export function authFail<T>(
 export interface RegisterOutcome {
   user: AuthUser;
   /**
-   * False when the project requires email confirmation: the account was
-   * created but no session exists yet, so the UI must not redirect to
-   * /dashboard (ISSUE test case 1 assumes confirmation is disabled).
+   * Falso cuando el proyecto exige confirmación de email: la cuenta se
+   * creó pero aún no existe sesión, así que la UI no debe redirigir a
+   * /dashboard (el caso de prueba 1 de la ISSUE asume confirmación
+   * desactivada).
    */
   sessionStarted: boolean;
 }
 
 export interface AuthPort {
-  /** Signs up with email/password and starts a session when confirmation is not required. */
+  /** Registro con email/password; inicia sesión si no se requiere confirmación. */
   register(credentials: AuthCredentials): Promise<AuthResult<RegisterOutcome>>;
-  /** Signs in with email/password. */
+  /** Inicio de sesión con email/password. */
   login(credentials: AuthCredentials): Promise<AuthResult<AuthUser>>;
-  /** Clears the session and its cookies. */
+  /** Cierra la sesión y elimina sus cookies. */
   logout(): Promise<AuthResult<void>>;
-  /** Current session user on a server context, or null when unauthenticated. */
+  /** Usuario de la sesión en contexto server, o null si no hay sesión. */
   getCurrentUser(): Promise<AuthResult<AuthUser | null>>;
 }

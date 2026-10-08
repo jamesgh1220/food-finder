@@ -21,7 +21,7 @@ export const registerSchema = z.object({
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
 
-/** Only same-origin absolute paths are safe redirect targets. */
+/** Solo rutas absolutas del mismo origen son destinos de redirect seguros. */
 export function safeNextPath(raw: string | null): string {
   if (raw && raw.startsWith("/") && !raw.startsWith("//")) return raw;
   return "/dashboard";

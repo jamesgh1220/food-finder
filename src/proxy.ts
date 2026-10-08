@@ -3,12 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database.types";
 
 /**
- * Session handling for Supabase + Next.js (spec 05, REQ-06).
+ * Manejo de sesiones de Supabase + Next.js (spec 05, REQ-06).
  *
- * Next.js 16 renamed the middleware convention to `proxy` (middleware.ts is
- * deprecated). Supabase's current guidance: refresh the token here before
- * any route renders, propagate refreshed cookies to the response, and
- * redirect unauthenticated users away from protected routes.
+ * Next.js 16 renombró la convención de middleware a `proxy` (middleware.ts
+ * está deprecado). Guía actual de Supabase: refrescar el token aquí, antes
+ * de renderizar cualquier ruta, propagar las cookies refrescadas a la
+ * respuesta y redirigir a los usuarios no autenticados fuera de las rutas
+ * protegidas.
  */
 
 const PROTECTED_PREFIXES = ["/dashboard"];
@@ -41,9 +42,9 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // Refreshes expired tokens (writes new cookies through setAll) and
-  // validates the session. Do not add code between client creation and
-  // this call — it desyncs browser and server sessions.
+  // Refresca tokens expirados (escribe cookies nuevas vía setAll) y
+  // valida la sesión. No pongas código entre la creación del cliente y
+  // esta llamada: desincroniza las sesiones de navegador y servidor.
   const { data, error } = await supabase.auth.getClaims();
   const user = error || !data ? null : data;
 
@@ -67,12 +68,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Must be returned as-is so refreshed cookies reach the browser.
+  // Debe devolverse tal cual para que las cookies refrescadas lleguen al navegador.
   return supabaseResponse;
 }
 
 export const config = {
-  // Exclude static assets; everything else runs through session handling.
+  // Excluye estáticos; todo lo demás pasa por el manejo de sesiones.
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],

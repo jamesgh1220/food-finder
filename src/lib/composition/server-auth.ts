@@ -3,8 +3,9 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/server-cli
 import { createAuthServices, type AuthServices } from "@/lib/composition/auth";
 
 /**
- * Auth services for Server Components / Route Handlers (e.g. /dashboard
- * resolving the current session user). Server-only: imports `next/headers`.
+ * Servicios de auth para Server Components / Route Handlers (p. ej.
+ * `/dashboard` resolviendo el usuario de la sesión). Solo server:
+ * importa `next/headers`.
  */
 export async function createServerAuthServices(): Promise<AuthServices> {
   const client = await createSupabaseServerClient();

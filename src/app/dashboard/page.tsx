@@ -9,13 +9,14 @@ export const metadata: Metadata = {
 };
 
 /**
- * Protected area (spec 05, REQ-05). `src/proxy.ts` already redirects
- * unauthenticated requests; this server-side check is the second line of
- * defense and the place where `GetCurrentUser` runs in a server context.
+ * Ruta protegida (spec 05, REQ-05). `src/proxy.ts` ya redirige las
+ * peticiones no autenticadas; esta comprobación en server es la segunda
+ * línea de defensa y el lugar donde `GetCurrentUser` corre en contexto
+ * server.
  *
- * Next 16 Cache Components: reading `cookies()` must sit behind a
- * `<Suspense>` boundary, so the authenticated content streams in at
- * request time while the shell stays static (docs:
+ * Next 16 Cache Components: leer `cookies()` debe estar detrás de un
+ * límite `<Suspense>`, así el contenido autenticado entra en streaming
+ * en tiempo de petición y el shell se mantiene estático (docs:
  * authentication-with-cache-components).
  */
 export default function DashboardPage() {

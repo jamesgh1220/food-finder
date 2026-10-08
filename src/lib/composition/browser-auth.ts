@@ -3,8 +3,8 @@ import { createSupabaseBrowserClient } from "@/infrastructure/supabase/browser-c
 import { createAuthServices, type AuthServices } from "@/lib/composition/auth";
 
 /**
- * Auth services for Client Components (login/register/logout forms).
- * Session cookies are written by the browser client itself.
+ * Servicios de auth para Client Components (formularios de login/registro
+ * y logout). Las cookies de sesión las escribe el propio cliente browser.
  */
 export function createBrowserAuthServices(): AuthServices {
   return createAuthServices(createSupabaseAuthPort(createSupabaseBrowserClient()));

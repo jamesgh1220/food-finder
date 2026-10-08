@@ -1,10 +1,11 @@
 import type { AuthPort, AuthResult } from "@/application/ports/auth";
 
 /**
- * LogoutUser use case (spec 05, REQ-04).
+ * Caso de uso LogoutUser (spec 05, REQ-04).
  *
- * Clears the session through the port; after success the cookies are gone
- * and protected routes redirect to /login (ISSUE test case 3).
+ * Limpia la sesión a través del puerto; tras el éxito las cookies quedan
+ * eliminadas y las rutas protegidas redirigen a /login (caso de prueba 3
+ * de la ISSUE).
  */
 export class LogoutUser {
   constructor(private readonly auth: AuthPort) {}

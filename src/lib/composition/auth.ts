@@ -5,9 +5,10 @@ import { RegisterUser } from "@/application/auth/register-user";
 import type { AuthPort } from "@/application/ports/auth";
 
 /**
- * Auth wiring (spec 05): the ONLY place use cases are bound to an `AuthPort`.
- * `browser-auth.ts` and `server-auth.ts` choose the concrete Supabase
- * adapter per context; tests inject a fake port here instead.
+ * Wiring de auth (spec 05): el ÚNICO lugar donde los casos de uso se
+ * atan a un `AuthPort`. `browser-auth.ts` y `server-auth.ts` eligen el
+ * adapter concreto según el contexto; los tests inyectan aquí un puerto
+ * falso en su lugar.
  */
 export interface AuthServices {
   registerUser: RegisterUser;

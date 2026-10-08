@@ -3,13 +3,14 @@ import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database.types";
 
 /**
- * Server Supabase client for Server Components, Route Handlers and Server
- * Actions (spec 05, REQ-02/REQ-06).
+ * Cliente Supabase de server para Server Components, Route Handlers y
+ * Server Actions (spec 05, REQ-02/REQ-06).
  *
- * Reads/writes the request cookies so the session stays in sync with the
- * browser. Cookie writes from a Server Component throw — `src/proxy.ts` is
- * the component that actually persists refreshed tokens, hence the guard.
- * Only publishable NEXT_PUBLIC_* values are used here (REQ-03).
+ * Lee/escribe las cookies de la petición para que la sesión se mantenga
+ * sincronizada con el navegador. Escribir cookies desde un Server
+ * Component lanza un error — `src/proxy.ts` es quien persiste de verdad
+ * los tokens refrescados, de ahí el guard. Aquí solo se usan valores
+ * publicables NEXT_PUBLIC_* (REQ-03).
  */
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
@@ -28,8 +29,8 @@ export async function createSupabaseServerClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // Called while rendering a Server Component: the proxy already
-            // refreshed the cookies for this request; safe to ignore.
+            // Se ejecuta al renderizar un Server Component: el proxy ya
+            // refrescó las cookies de esta petición; ignorar es seguro.
           }
         },
       },

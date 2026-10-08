@@ -40,11 +40,11 @@ Un dominio puro y testeable que modele el producto multicocina — con `Cuisine`
 
 ## Criterios de aceptación
 
-- [ ] 6 entidades y 5 value objects implementados con los campos/valores exactos del SPEC.
-- [ ] 6 puertos de repositorio como interfaces puras.
-- [ ] Taxonomía de errores de dominio completa.
-- [ ] Tests de normalización y value objects en verde.
-- [ ] Auditoría de imports: dominio 100% libre de infraestructura.
+- [x] 6 entidades y 5 value objects implementados con los campos/valores exactos del SPEC.
+- [x] 6 puertos de repositorio como interfaces puras.
+- [x] Taxonomía de errores de dominio completa.
+- [x] Tests de normalización y value objects en verde.
+- [x] Auditoría de imports: dominio 100% libre de infraestructura.
 
 ## Resultado esperado
 

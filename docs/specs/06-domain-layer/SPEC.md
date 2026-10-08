@@ -40,11 +40,11 @@ Crear el dominio independiente de tecnología: entidades, value objects, interfa
 
 ## Criterios de aceptación
 
-- [ ] Las seis entidades y los cinco value objects existen con exactamente los campos/valores indicados.
-- [ ] Compilar el dominio no requiere paquetes de Supabase/Spoonacular/Next.js/React.
-- [ ] Los puertos de repositorio son interfaces puras utilizables con mocks.
-- [ ] Tests unitarios de normalización: las variantes de mayúsculas resuelven a un solo ingrediente.
-- [ ] Agregar una cocina no requiere cambio de código (datos-driven).
+- [x] Las seis entidades y los cinco value objects existen con exactamente los campos/valores indicados.
+- [x] Compilar el dominio no requiere paquetes de Supabase/Spoonacular/Next.js/React.
+- [x] Los puertos de repositorio son interfaces puras utilizables con mocks.
+- [x] Tests unitarios de normalización: las variantes de mayúsculas resuelven a un solo ingrediente.
+- [x] Agregar una cocina no requiere cambio de código (datos-driven).
 
 ## Verificación
 

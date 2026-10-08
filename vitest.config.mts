@@ -1,16 +1,18 @@
-import { defineConfig, configDefaults } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    // Vite resolves `@/*` from tsconfig.json natively (no plugin needed).
-    tsconfigPaths: true,
-  },
   test: {
-    environment: "jsdom",
-    passWithNoTests: true,
-    // Playwright specs live in e2e/ and must only run under `pnpm test:e2e`.
-    exclude: [...configDefaults.exclude, "e2e/**"],
+    environment: 'jsdom',
+    globals: true,
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx'],
+    exclude: ['e2e/**']
   },
-});
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src')
+    }
+  }
+})

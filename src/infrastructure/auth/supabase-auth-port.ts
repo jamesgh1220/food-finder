@@ -36,8 +36,23 @@ function mapAuthError(
         "weak_password",
         "La contraseña es demasiado débil. Usa al menos 6 caracteres.",
       );
+    case "email_not_confirmed":
+      return authFail(
+        "unknown",
+        "Confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.",
+      );
+    case "email_address_invalid":
+      return authFail("unknown", "El email no es válido.");
+    case "over_email_send_rate_limit":
+    case "rate_limit_exceeded":
+      return authFail(
+        "unknown",
+        "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
+      );
     default:
-      return authFail("unknown", error.message || fallbackMessage);
+      // Nunca se filtra el mensaje crudo de Supabase (puede venir en
+      // inglés): la UI es siempre español y el fallback ya lo es.
+      return authFail("unknown", fallbackMessage);
   }
 }
 

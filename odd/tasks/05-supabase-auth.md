@@ -39,37 +39,55 @@ operen por usuario. Sin esto, los specs 06–11 no tienen consumidor de sesión.
 
 ## Entrega
 
-- Forecast autorado: ~1000 líneas (add+del) → **>400**; estrategia `ask-on-risk`: decisión de
-  chain strategy pendiente ANTES de abrir PR(s). Commits work-unit locales en rama feature.
-- Sin PR pedido por el usuario en esta sesión.
+- Forecast real autorado: **~1314 líneas** (1349 add + 35 del, `250eb1c..HEAD`) → **>400**;
+  estrategia `ask-on-risk`: decisión de chain strategy pendiente ANTES de abrir PR(s).
+- Sin PR pedido por el usuario en esta sesión → commits work-unit locales en rama
+  `feat/05-supabase-auth`; ninguna entrega remota realizada.
 
 ## Tareas
 
-- [ ] T1 — Rama feature `feat/05-supabase-auth` (desde la rama actual si no es la default)
-- [ ] T2 — `pnpm add @supabase/supabase-js @supabase/ssr`
-- [ ] T3 — Puerto `src/application/ports/auth.ts` (`AuthPort`, `AuthUser`, `AuthResult`, `AuthErrorCode`)
-- [ ] T4 — Casos de uso en `src/application/auth/` (RegisterUser, LoginUser, LogoutUser, GetCurrentUser)
-- [ ] T5 — Adapter Supabase `src/infrastructure/auth/supabase-auth-port.ts` + clients
+- [x] T1 — Rama feature `feat/05-supabase-auth` (creada desde `feat/04-security-rls`)
+- [x] T2 — `pnpm add @supabase/supabase-js @supabase/ssr` (2.117.3 / 0.12.7)
+- [x] T3 — Puerto `src/application/ports/auth.ts` (`AuthPort`, `AuthUser`, `AuthResult`, `AuthErrorCode`, `RegisterOutcome`)
+- [x] T4 — Casos de uso en `src/application/auth/` (RegisterUser, LoginUser, LogoutUser, GetCurrentUser)
+- [x] T5 — Adapter `src/infrastructure/auth/supabase-auth-port.ts` + clients
       `src/infrastructure/supabase/{browser,server}-client.ts`
-- [ ] T6 — Composition `src/lib/composition/auth.ts` (única lugar de wiring adapter→casos de uso)
-- [ ] T7 — `src/proxy.ts`: refresh de sesión + `/dashboard`→`/login` (+ authed fuera de `/login|/register`)
-- [ ] T8 — Páginas `/login`, `/register`, `/dashboard` + formularios (minimalist-ui, RHF+Zod, copy español)
-- [ ] T9 — Unit tests `tests/unit/auth-use-cases.test.ts` (puerto mockeado, casos 1–5 de la ISSUE)
-- [ ] T10 — `pnpm lint && pnpm typecheck && pnpm test`
-- [ ] T11 — `pnpm build` + grep `.next` sin `sb_secret_` ni `SUPABASE_SECRET_KEY` en cliente (caso 6)
-- [ ] T12 — Verificación manual/redirect (curl `/dashboard` sin sesión → `/login`)
-- [ ] T13 — Docs: sección de refresh de sesión + decisión admin client + distinción MCP/SDK/Auth en
-      `docs/specs/05-supabase-auth/SPEC.md`; criterios ISSUE/SPEC marcados
-- [ ] T14 — Commits work-unit (conventional, sin atribución AI)
+- [x] T6 — Composition `src/lib/composition/{auth,browser-auth,server-auth}.ts`
+- [x] T7 — `src/proxy.ts`: refresh con `getClaims()` + `/dashboard`→`/login?next=…` + authed fuera de `/login|/register`
+- [x] T8 — Páginas `/login`, `/register`, `/dashboard` + formularios (minimalist-ui, RHF+Zod, copy español;
+      `/dashboard` bajo `<Suspense>` por Cache Components de Next 16)
+- [x] T9 — Unit tests `tests/unit/auth-use-cases.test.ts` (15 tests, puerto mockeado, casos 1–5 de la ISSUE)
+- [x] T10 — `pnpm lint && pnpm typecheck && pnpm test` → PASS (19/19)
+- [x] T11 — `pnpm build` → PASS; grep `.next/static` sin `sb_secret_<valor>` ni `SUPABASE_SECRET_KEY` (caso 6)
+- [x] T12 — Redirects verificados contra `next start` (307 con `next`, cookie falsa → 307, assets → 200)
+- [x] T13 — SPEC actualizado (refresh, decisión admin, MCP/SDK/Auth) + ISSUE con criterios y registro;
+      click-through live queda para spec 16
+- [x] T14 — Commits work-unit (4 commits, conventional, sin atribución AI)
 
 ## Criterios de aceptación
 
-- [ ] 4 casos de uso con tests unitarios (puerto mockeado) → PASS
-- [ ] `/login` y `/register` funcionales y conectadas a los casos de uso
-- [ ] Redirect de `/dashboard` sin sesión verificado
-- [ ] Ninguna secret key accesible desde el cliente (grep de build)
-- [ ] Mecanismo de refresh documentado en SPEC
+- [x] 4 casos de uso con tests unitarios (puerto mockeado) → 15/15 PASS
+- [x] `/login` y `/register` funcionales y conectadas a los casos de uso (click-through live → spec 16)
+- [x] Redirect de `/dashboard` sin sesión → 307 `/login?next=%2Fdashboard`
+- [x] Ninguna secret key accesible desde el cliente (grep de build limpio)
+- [x] Mecanismo de refresh documentado en SPEC
 
 ## Evidencia / progreso
 
-(pendiente)
+**Commits (work units) en `feat/05-supabase-auth`:**
+
+1. `95aa9e9` feat(auth): add auth port, use cases and Supabase clients — 14 files, +626
+2. `a9d62a2` feat(auth): refresh sessions in proxy and protect /dashboard — 3 files, +206
+3. `701ab59` feat(auth): add login and register pages wired to use cases — 5 files, +337
+4. `1e2ef94` docs(specs): record spec 05 auth implementation evidence — 3 files, +150/−11
+
+**Verificación observada:**
+- `pnpm lint` → exit 0 · `pnpm typecheck` → exit 0 · `pnpm test` → 19/19 PASS (3 files)
+- `pnpm build` → OK; rutas: `/login` ○, `/register` ○, `/dashboard` ◐ (PPR), `ƒ Proxy (Middleware)`
+- `GET :3005/dashboard` sin sesión → `307 /login?next=%2Fdashboard`; `/login`,`/register` → 200 (títulos en español); cookie basura → 307; `/favicon.ico` → 200
+- Grep `.next/static`: sin valor `sb_secret_*` ni nombre `SUPABASE_SECRET_KEY` (solo literal librería `startsWith("sb_secret_")`)
+
+**Desviaciones:** delegación de writer no disponible (runtime rechazó el sub-agente: "OpenCode free tier") → ejecución inline.
+
+**Pendiente:** click-through live registro→dashboard→logout contra Supabase real (spec 16 / manual);
+decisión de chain strategy (>400 líneas) antes de abrir PR(s).

@@ -114,6 +114,16 @@ class InMemoryRecipeRepository implements RecipeRepository {
       return true;
     });
   }
+
+  async save(recipe: Recipe): Promise<Recipe> {
+    const index = this.recipes.findIndex((item) => item.id === recipe.id);
+    if (index >= 0) {
+      this.recipes[index] = recipe;
+    } else {
+      this.recipes.push(recipe);
+    }
+    return recipe;
+  }
 }
 
 class InMemoryIngredientRepository implements IngredientRepository {

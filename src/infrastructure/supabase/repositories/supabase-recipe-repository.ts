@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RecipeRepository } from "@/domain/ports";
 import type { Database } from "@/types/database.types";
-import { toRecipe } from "../mappers";
+import { toRecipe, toRecipeRow } from "../mappers";
 import { toRepositoryError } from "./repository-error";
 
 /**
@@ -87,6 +87,21 @@ export function createSupabaseRecipeRepository(
         throw toRepositoryError("No se pudieron obtener las recetas.", error);
       }
       return (data ?? []).map(toRecipe);
+    },
+
+    async save(recipe) {
+      // Inserción pura: la base asigna id/created_at/updated_at. Sin `upsert`
+      // para que una colisión de slug falle y no sobrescriba otra receta.
+      const { data, error } = await client
+        .from("recipes")
+        .insert(toRecipeRow(recipe))
+        .select()
+        .single();
+
+      if (error) {
+        throw toRepositoryError("No se pudo guardar la receta.", error);
+      }
+      return toRecipe(data);
     },
   };
 }

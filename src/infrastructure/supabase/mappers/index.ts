@@ -8,5 +8,5 @@ export {
   toPantryItem,
   toPantryItemWrite,
 } from "./pantry-item-mapper";
-export { toRecipe } from "./recipe-mapper";
+export { toRecipe, toRecipeRow } from "./recipe-mapper";
 export { toUser } from "./user-mapper";

@@ -8,7 +8,7 @@ import { createConsoleLogger } from "@/infrastructure/logging/console-logger";
  * Future specs (03–05) extend `AppServices` with their concrete chain,
  * which follows the documented example:
  *
- *   SupabaseRecipeRepository + SpoonacularRecipeProvider   (infrastructure)
+ *   SupabaseRecipeRepository + GeminiRecipeProvider        (infrastructure)
  *     → RecipeRecommendationService                        (application)
  *     → FindRecipesFromPantry use case                     (application)
  *

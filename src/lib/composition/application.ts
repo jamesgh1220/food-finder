@@ -27,7 +27,7 @@ import { createAuthServices, type AuthServices } from "@/lib/composition/auth";
  *
  * Es el ÚNICO lugar donde los casos de uso de aplicación se atan a puertos
  * concretos. Los tests inyectan puertos falsos aquí; los adapters reales
- * (Supabase, Spoonacular) llegan en la spec 08 y NO se importan desde este
+ * (Supabase, Gemini) llegan en la spec 08 y NO se importan desde este
  * archivo. Sin frameworks de DI: funciones y argumentos explícitos.
  */
 export interface ApplicationDependencies {

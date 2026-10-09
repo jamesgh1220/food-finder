@@ -20,4 +20,12 @@ export interface RecipeRepository {
   findBySlug(slug: string): Promise<Recipe | null>;
   findByIds(ids: string[]): Promise<Recipe[]>;
   findMany(filter?: RecipeFilter): Promise<Recipe[]>;
+  /**
+   * Persiste una receta nueva y devuelve la entidad guardada con el `id` y los
+   * timestamps asignados por la base de datos (spec 09, REQ-07).
+   *
+   * Las recetas generadas por el proveedor externo se persisten aquí para
+   * tener un identificador estable que usen la página de detalle y favoritos.
+   */
+  save(recipe: Recipe): Promise<Recipe>;
 }

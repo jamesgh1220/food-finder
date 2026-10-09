@@ -3,7 +3,7 @@ import type { MealType } from "../value-objects";
 /**
  * Orígenes posibles de una receta (spec 06, REQ-01).
  *
- * Hoy solo se usan INTERNAL y SPOONACULAR; AI_GENERATED y OTHER existen para
+ * Hoy se usan INTERNAL y AI_GENERATED; SPOONACULAR y OTHER existen para
  * que el modelo no requiera rediseño cuando se habiliten más adelante.
  */
 export const RECIPE_SOURCES = [

@@ -22,6 +22,7 @@ function createFakeRecipes(): RecipeRepository {
     findBySlug: vi.fn(async () => null),
     findByIds: vi.fn(async () => []),
     findMany: vi.fn(async () => []),
+    save: vi.fn(async (recipe) => recipe),
   } satisfies RecipeRepository;
 }
 

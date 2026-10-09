@@ -11,7 +11,7 @@ import {
   createSupabaseRecipeRepository,
   createSupabaseUserRepository,
 } from "@/infrastructure/supabase/repositories";
-import { toUser } from "@/infrastructure/supabase/mappers";
+import { toUser, toRecipe, toRecipeRow } from "@/infrastructure/supabase/mappers";
 import type { Tables } from "@/types/database.types";
 import { createFakeSupabaseClient } from "./fake-supabase-client";
 
@@ -464,5 +464,43 @@ describe("Supabase repositories", () => {
     });
     const repo = createSupabaseUserRepository(client);
     await expect(repo.findById("x")).rejects.toBeInstanceOf(RepositoryError);
+  });
+
+  it("recipe.save inserta la fila mapeada y devuelve la receta persistida", async () => {
+    const { client, calls } = createFakeSupabaseClient({
+      response: { data: recipeRow, error: null },
+    });
+    const repo = createSupabaseRecipeRepository(client);
+    const recipe = toRecipe(recipeRow);
+
+    const result = await repo.save(recipe);
+
+    const insertCall = calls.find((c) => c.method === "insert");
+    expect(insertCall).toBeDefined();
+    expect(insertCall?.args[0]).toEqual(toRecipeRow(recipe));
+    // La fila insertada omite id/timestamps: los asigna la base.
+    const insertedRow = insertCall?.args[0] as Record<string, unknown>;
+    expect(insertedRow.id).toBeUndefined();
+    expect(insertedRow.created_at).toBeUndefined();
+    expect(insertedRow.updated_at).toBeUndefined();
+    expect(result).toEqual(toRecipe(recipeRow));
+  });
+
+  it("recipe.save envuelve el error de inserción en RepositoryError", async () => {
+    const supabaseError = { message: "boom", code: "23505" };
+    const { client } = createFakeSupabaseClient({
+      response: { data: null, error: supabaseError },
+    });
+    const repo = createSupabaseRecipeRepository(client);
+
+    let caught: unknown;
+    try {
+      await repo.save(toRecipe(recipeRow));
+    } catch (e) {
+      caught = e;
+    }
+
+    expect(caught).toBeInstanceOf(RepositoryError);
+    expect((caught as RepositoryError).message).not.toContain("boom");
   });
 });

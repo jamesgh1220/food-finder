@@ -2,7 +2,7 @@ import { RECIPE_SOURCES, type Difficulty, type Recipe } from "@/domain/entities"
 import type { RecipeSource } from "@/domain/entities";
 import { RepositoryError } from "@/domain/errors";
 import { isMealType } from "@/domain/value-objects";
-import type { Tables } from "@/types/database.types";
+import type { Tables, TablesInsert } from "@/types/database.types";
 
 /**
  * Mapeador fila↔entidad de recetas (spec 05/06).
@@ -21,6 +21,33 @@ function toDifficulty(value: string | null): Difficulty | null {
   return (DIFFICULTIES as readonly string[]).includes(value ?? "")
     ? (value as Difficulty)
     : null;
+}
+
+/**
+ * Traduce una entidad `Recipe` del dominio a una fila insertable de `recipes`
+ * (spec 09, REQ-07).
+ *
+ * Se omiten `id`, `created_at` y `updated_at` a propósito: en una inserción
+ * los asigna la base de datos, no el cliente.
+ */
+export function toRecipeRow(recipe: Recipe): TablesInsert<"recipes"> {
+  return {
+    name: recipe.name,
+    slug: recipe.slug,
+    description: recipe.description,
+    cuisine_id: recipe.cuisineId,
+    country: recipe.country,
+    region: recipe.region,
+    meal_type: recipe.mealType,
+    instructions: recipe.instructions,
+    preparation_time: recipe.preparationTime,
+    cooking_time: recipe.cookingTime,
+    servings: recipe.servings,
+    difficulty: recipe.difficulty,
+    image_url: recipe.imageUrl,
+    source: recipe.source,
+    source_url: recipe.sourceUrl,
+  };
 }
 
 /** Traduce una fila `recipes` a la entidad `Recipe` del dominio. */

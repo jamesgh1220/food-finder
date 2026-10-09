@@ -29,6 +29,7 @@ function createMockDependencies() {
     findBySlug: vi.fn(async () => null),
     findByIds: vi.fn(async () => []),
     findMany: vi.fn(async () => []),
+    save: vi.fn(async (recipe) => recipe),
   };
   const fakeCuisines: CuisineRepository = {
     findAll: vi.fn(async () => []),

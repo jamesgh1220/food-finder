@@ -14,7 +14,7 @@ Analyze `docs/PROMTP.md` (master prompt, 3339 lines, 100 sections) WITHOUT execu
 - [x] T1. Map PROMTP.md — done inline (Task delegation failed: runtime free-tier restriction; task cancelled by user).
 - [x] T2. Spec decomposition decided: 17 specs in dependency order (numbered folders).
 - [x] T3. Specs 01–04 (scaffold, architecture, database, RLS)
-- [x] T4. Specs 05–10 (auth, domain, application, infra-supabase, spoonacular, recommendation)
+- [x] T4. Specs 05–10 (auth, domain, application, infra-supabase, gemini, recommendation)
 - [x] T5. Specs 11–17 (api, frontend foundation, dashboard/pantry, recipes/favorites, seed, testing, docs/release)
 - [x] T6. Structural readback: glob confirmed 34/34 files (17 folders × SPEC+ISSUE).
 - [x] T7. Full Spanish translation of all 34 files (user-requested override).
@@ -28,7 +28,7 @@ Analyze `docs/PROMTP.md` (master prompt, 3339 lines, 100 sections) WITHOUT execu
 - T7–T8: inline writes + readback (delegation unavailable this session)
 
 ## Decomposition (final)
-17 specs in dependency order: 01-project-scaffold, 02-architecture-foundation, 03-database-schema, 04-security-rls, 05-supabase-auth, 06-domain-layer, 07-application-layer, 08-infrastructure-supabase, 09-spoonacular-adapter, 10-recommendation-engine, 11-api-layer, 12-frontend-foundation, 13-frontend-dashboard-pantry, 14-frontend-recipes-favorites, 15-seed-data, 16-testing-strategy, 17-documentation-release.
+17 specs in dependency order: 01-project-scaffold, 02-architecture-foundation, 03-database-schema, 04-security-rls, 05-supabase-auth, 06-domain-layer, 07-application-layer, 08-infrastructure-supabase, 09-gemini-adapter, 10-recommendation-engine, 11-api-layer, 12-frontend-foundation, 13-frontend-dashboard-pantry, 14-frontend-recipes-favorites, 15-seed-data, 16-testing-strategy, 17-documentation-release.
 
 ## Key findings in PROMTP.md (contradictions flagged in delivery)
 - Route-group vs URL conflict: folder `(dashboard)/page.tsx` maps to `/`, and `(dashboard)/pantry` to `/pantry`, but routes required are `/dashboard` and `/dashboard/pantry`; also `app/page.tsx` and `(dashboard)/page.tsx` would collide at `/`. Specs 13/14 make specified URLs authoritative.

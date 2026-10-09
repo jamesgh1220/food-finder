@@ -62,7 +62,7 @@ export class ConflictError extends DomainError {
   }
 }
 
-/** Un servicio externo (Spoonacular, IA, etc.) falló. */
+/** Un servicio externo (Gemini, IA, etc.) falló. */
 export class ExternalServiceError extends DomainError {
   constructor(message: string, details?: Record<string, unknown>) {
     super("EXTERNAL_SERVICE", message, details);

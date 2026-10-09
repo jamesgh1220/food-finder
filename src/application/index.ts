@@ -12,6 +12,7 @@
 export * from "./ports/user-preferences";
 export * from "./ports/recipe-recommendation";
 export * from "./ports/recipe-recommendation-enhancer";
+export * from "./ports/external-recipe-provider";
 export * from "./shared/require-authenticated-user";
 
 export * from "./pantry/add-pantry-ingredient";

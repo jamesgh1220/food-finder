@@ -48,7 +48,7 @@ Verified against npm registry, official docs, and `node_modules/next/dist/docs/`
 
 `.env.example` is the contract. Copy it to `.env.local`; never commit real values.
 
-**Rule:** secrets never carry the `NEXT_PUBLIC_` prefix. Next.js inlines every `NEXT_PUBLIC_*` variable into the browser bundle at build time — `SUPABASE_SECRET_KEY` and `SPOONACULAR_API_KEY` are server-only, always. Supabase naming follows the current publishable/secret scheme (legacy `anon`/`service_role` names are deprecated).
+**Rule:** secrets never carry the `NEXT_PUBLIC_` prefix. Next.js inlines every `NEXT_PUBLIC_*` variable into the browser bundle at build time — `SUPABASE_SECRET_KEY` and `GEMINI_API_KEY` are server-only, always. Supabase naming follows the current publishable/secret scheme (legacy `anon`/`service_role` names are deprecated).
 
 ## Project constraints — no over-engineering (REQ-09)
 
@@ -64,7 +64,7 @@ Anything added to this repo must justify itself against this list.
 | `src/components/`, `src/lib/` | UI components, shared helpers, composition root       |
 | `src/application/`            | Use cases, DTOs, ports (Application)                  |
 | `src/domain/`                 | Entities, value objects, business rules (pure Domain) |
-| `src/infrastructure/`         | Supabase, Spoonacular, HTTP, logging adapters         |
+| `src/infrastructure/`         | Supabase, Gemini, HTTP, logging adapters              |
 | `src/types/`                  | Shared type declarations                              |
 | `supabase/`                   | DB migrations / config                                |
 | `tests/`                      | Unit tests (Vitest)                                   |
@@ -75,8 +75,8 @@ Anything added to this repo must justify itself against this list.
 ## Architecture rules (spec 02)
 
 - **Layer dependency:** Presentation → Application → Domain → Ports → Infrastructure. Each file lives in exactly one layer.
-- **Pure domain (REQ-02):** `src/domain/` never imports Next.js, React, Supabase, Spoonacular, `fetch`, or UI components. Enforced by lint — a violating import fails `pnpm lint`.
-- **Mappers (REQ-10):** DB rows and external DTOs are converted by mappers before reaching the domain (`SupabaseRow → Mapper → Entity`, `SpoonacularDTO → Mapper → Recipe`). Raw rows/DTOs never cross the boundary.
+- **Pure domain (REQ-02):** `src/domain/` never imports Next.js, React, Supabase, Gemini, `fetch`, or UI components. Enforced by lint — a violating import fails `pnpm lint`.
+- **Mappers (REQ-10):** DB rows and external responses are converted by mappers before reaching the domain (`SupabaseRow → Mapper → Entity`, `Gemini JSON → Zod + Mapper → Recipe`). Raw rows/DTOs never cross the boundary.
 - **No self-fetch hops (REQ-11):** Server Components call use cases directly, never `fetch("/api/...")` on this app's own routes. Enforced by lint.
 - **DI (REQ-08):** one composition root at `src/lib/composition/`, plain functions, no DI framework.
 - **Logging (REQ-09):** single logger (`src/infrastructure/logging/console-logger.ts`) with `debug/info/warn/error`; sensitive keys are redacted before writing.

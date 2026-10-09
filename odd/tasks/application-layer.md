@@ -70,19 +70,19 @@ de la spec 07.
   inyectados. Tests inyectan mocks.
 
 ## Tareas
-- [ ] T1 — Rama `feat/07-application-layer` desde `main`.
-- [ ] T2 — Documento ODD + espejo en Engram.
-- [ ] T3 — Puertos de extensión/IA/preferencias + `requireAuthenticatedUser`.
-- [ ] T4 — Casos de uso Pantry (5) con autorización.
-- [ ] T5 — Casos de uso Recipes (4), cuisine opcional en `FindRecipesFromPantry`.
-- [ ] T6 — Casos de uso Cuisine (2) y Favorites (3) con autorización.
-- [ ] T7 — Barrel `src/application/index.ts`.
-- [ ] T8 — Composition root `createApplicationServices`.
-- [ ] T9 — Regla ESLint de pureza para `src/application/**`.
-- [ ] T10 — Tests unitarios de aplicación con mocks + test de pureza + composition.
-- [ ] T11 — Verificación `pnpm lint && pnpm typecheck && pnpm test`.
-- [ ] T12 — Actualizar `docs/specs/07-application-layer/ISSUE.md` (convención del proyecto).
-- [ ] T13 — Commits de work-unit + merge directo a `main`.
+- [x] T1 — Rama `feat/07-application-layer` desde `main`.
+- [x] T2 — Documento ODD + espejo en Engram.
+- [x] T3 — Puertos de extensión/IA/preferencias + `requireAuthenticatedUser`.
+- [x] T4 — Casos de uso Pantry (5) con autorización.
+- [x] T5 — Casos de uso Recipes (4), cuisine opcional en `FindRecipesFromPantry`.
+- [x] T6 — Casos de uso Cuisine (2) y Favorites (3) con autorización.
+- [x] T7 — Barrel `src/application/index.ts`.
+- [x] T8 — Composition root `createApplicationServices`.
+- [x] T9 — Regla ESLint de pureza para `src/application/**`.
+- [x] T10 — Tests unitarios de aplicación con mocks + test de pureza + composition.
+- [x] T11 — Verificación `pnpm lint && pnpm typecheck && pnpm test`.
+- [x] T12 — Actualizar `docs/specs/07-application-layer/ISSUE.md` (convención del proyecto).
+- [x] T13 — Commits de work-unit + merge directo a `main`.
 
 ## Criterios de aceptación (SPEC 07)
 - [ ] Los casos de uso existen, son testeables de forma independiente con puertos mockeados
@@ -105,4 +105,10 @@ de la spec 07.
 - Auditoría de imports automatizada (test) sobre `src/application/**`.
 
 ## Progreso
-_(pendiente)_
+Completado (2026-10-09). 14 casos de uso nuevos + 4 auth reutilizados (18 cableados), puertos
+de extensión inertes, composition root y regla de pureza. Commits de work-unit:
+`120f714`, `2831fb8`, `42d0303`, `838074c`, `3025282`, `4db39c8` (merge ff a `main`).
+Verificación: `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ (18 archivos / 85 tests).
+Verificación independiente con subagente no disponible por limitación de runtime (fallo de
+transporte, no del código): la evidencia es la autoverificación del writer + re-ejecución de
+los tres checks por el orquestador.

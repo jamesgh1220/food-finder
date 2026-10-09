@@ -12,13 +12,13 @@ export default function RegisterPage() {
       <main className="w-full max-w-sm">
         <Link
           href="/"
-          className="mb-8 block text-center text-base font-serif font-medium text-primary tracking-tight transition-colors hover:text-foreground"
+          className="mb-8 block text-center text-base font-display font-medium text-primary tracking-tight transition-colors hover:text-foreground"
         >
           Food Finder
         </Link>
 
         <section className="rounded-lg border border-border bg-card p-8">
-          <h1 className="text-3xl font-serif font-medium tracking-tight">
+          <h1 className="text-3xl font-display font-medium tracking-tight">
             Crear cuenta
           </h1>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">

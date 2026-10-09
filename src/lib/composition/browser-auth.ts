@@ -1,5 +1,5 @@
 import { createSupabaseAuthPort } from "@/infrastructure/auth/supabase-auth-port";
-import { createSupabaseBrowserClient } from "@/infrastructure/supabase/browser-client";
+import { createSupabaseBrowserClient } from "@/infrastructure/supabase/client/browser-client";
 import { createAuthServices, type AuthServices } from "@/lib/composition/auth";
 
 /**

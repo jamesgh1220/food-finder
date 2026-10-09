@@ -1,5 +1,5 @@
 import { createSupabaseAuthPort } from "@/infrastructure/auth/supabase-auth-port";
-import { createSupabaseServerClient } from "@/infrastructure/supabase/server-client";
+import { createSupabaseServerClient } from "@/infrastructure/supabase/client/server-client";
 import { createAuthServices, type AuthServices } from "@/lib/composition/auth";
 
 /**

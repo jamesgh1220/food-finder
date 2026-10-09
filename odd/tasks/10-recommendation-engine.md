@@ -59,7 +59,7 @@ Approximately 985 authored changed lines across implementation, tests, and docum
 - [x] `pnpm lint` — PASS.
 - [x] `pnpm typecheck` — PASS.
 - [x] `pnpm test` — PASS, 25 files / 176 tests.
-- [ ] Work-unit commit pending. Authored diff is approximately 985 lines excluding generated type output; `stacked-to-main` is selected if a PR chain is needed. The 400-line figure is advisory and no artificial code slicing was done.
+- [x] Work-unit commit `1ff3915` — `feat(recommendations): support optional recipe ingredients`. Authored diff was 958 insertions and 39 deletions; `stacked-to-main` is selected if a PR chain is needed. The 400-line figure is advisory and no artificial code slicing was done.
 
 ## Work-unit evidence
 
@@ -70,4 +70,4 @@ Approximately 985 authored changed lines across implementation, tests, and docum
 
 ## Next step
 
-Create the work-unit commit on `feat/10-recommendation-engine`; record its identity here. `stacked-to-main` is selected if a PR chain is needed. Push, merge, and review remain out of scope.
+Work-unit commit `1ff3915` is complete on `feat/10-recommendation-engine`. Push, merge, and review remain out of scope.

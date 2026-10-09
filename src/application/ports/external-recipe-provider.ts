@@ -1,4 +1,5 @@
-import type { Recipe } from "@/domain/entities";
+import type { RecipeRecommendationCandidate } from "@/domain/entities";
+import type { Difficulty } from "@/domain/entities";
 import type { MealType } from "@/domain/value-objects";
 
 /**
@@ -20,9 +21,12 @@ export interface ExternalRecipeSearchInput {
   cuisineId?: string | null;
   /** Tiempo máximo de preparación en minutos (opcional). */
   maxPreparationTime?: number;
+  difficulty?: Difficulty;
 }
 
 /** Contrato de un proveedor externo de recetas por ingredientes. */
 export interface ExternalRecipeProvider {
-  searchByIngredients(input: ExternalRecipeSearchInput): Promise<Recipe[]>;
+  searchByIngredients(
+    input: ExternalRecipeSearchInput,
+  ): Promise<RecipeRecommendationCandidate[]>;
 }

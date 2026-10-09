@@ -9,9 +9,14 @@ import {
   createSupabaseIngredientRepository,
   createSupabasePantryRepository,
   createSupabaseRecipeRepository,
+  createSupabaseRecipeRecommendationCatalog,
   createSupabaseUserRepository,
 } from "@/infrastructure/supabase/repositories";
-import { toUser, toRecipe, toRecipeRow } from "@/infrastructure/supabase/mappers";
+import {
+  toUser,
+  toRecipe,
+  toRecipeRow,
+} from "@/infrastructure/supabase/mappers";
 import type { Tables } from "@/types/database.types";
 import { createFakeSupabaseClient } from "./fake-supabase-client";
 
@@ -83,6 +88,63 @@ const favoriteRow: Tables<"favorite_recipes"> = {
  * Comprueba que `findByIds([])` no emite ninguna consulta a Supabase.
  */
 describe("Supabase repositories", () => {
+  it("recommendation catalog loads recipe ingredients, staple metadata, and optionality", async () => {
+    const { client, calls } = createFakeSupabaseClient({
+      response: {
+        data: [
+          {
+            ...recipeRow,
+            recipe_ingredients: [
+              {
+                id: "relation-1",
+                recipe_id: recipeRow.id,
+                ingredient_id: ingredientRow.id,
+                quantity: 1,
+                unit: "tsp",
+                notes: null,
+                optional: true,
+                created_at: NOW,
+                ingredients: { ...ingredientRow, is_pantry_staple: true },
+              },
+            ],
+          },
+        ],
+        error: null,
+      },
+    });
+    const catalog = createSupabaseRecipeRecommendationCatalog(client);
+
+    const result = await catalog.findCandidates({
+      mealType: "LUNCH",
+      cuisineId: "cuisine-1",
+      maxPreparationTime: 30,
+      difficulty: "EASY",
+    });
+
+    expect(result[0]?.recipe.id).toBe(recipeRow.id);
+    expect(result[0]?.ingredients).toEqual([
+      {
+        id: ingredientRow.id,
+        name: ingredientRow.name,
+        normalizedName: ingredientRow.normalized_name,
+        isPantryStaple: true,
+        optional: true,
+      },
+    ]);
+    const eqCalls = calls.filter((call) => call.method === "eq");
+    expect(eqCalls.map((call) => call.args[0])).toEqual([
+      "source",
+      "cuisine_id",
+      "meal_type",
+      "difficulty",
+    ]);
+    expect(
+      calls.some(
+        (call) => call.method === "lte" && call.args[0] === "preparation_time",
+      ),
+    ).toBe(true);
+  });
+
   it("findByIds([]) devuelve [] y no realiza ninguna consulta", async () => {
     const { client, calls } = createFakeSupabaseClient();
     const repo = createSupabaseRecipeRepository(client);
@@ -147,7 +209,9 @@ describe("Supabase repositories", () => {
     // Busca llamada upsert.
     const upsertCall = calls.find((c) => c.method === "upsert");
     expect(upsertCall).toBeDefined();
-    expect(upsertCall?.args[1]).toEqual({ onConflict: "user_id,ingredient_id" });
+    expect(upsertCall?.args[1]).toEqual({
+      onConflict: "user_id,ingredient_id",
+    });
     // Resultado mapeado correctamente.
     expect(result.userId).toBe("user-1");
     expect(result.ingredientId).toBe("ingredient-1");
@@ -218,7 +282,11 @@ describe("Supabase repositories", () => {
     const repo = createSupabaseUserRepository(client);
     const result = await repo.findById("user-1");
     expect(authAdmin.getUserById).toHaveBeenCalledWith("user-1");
-    const expected = toUser({ id: "user-1", email: "user@test.dev", created_at: NOW });
+    const expected = toUser({
+      id: "user-1",
+      email: "user@test.dev",
+      created_at: NOW,
+    });
     expect(result).toEqual(expected);
   });
 
@@ -295,7 +363,10 @@ describe("Supabase repositories", () => {
     });
     const repo = createSupabaseUserRepository(client);
     const result = await repo.findByEmail("b@test.com");
-    expect(authAdmin.listUsers).toHaveBeenCalledWith({ page: 1, perPage: 1000 });
+    expect(authAdmin.listUsers).toHaveBeenCalledWith({
+      page: 1,
+      perPage: 1000,
+    });
     expect(result).not.toBeNull();
     expect(result?.email).toBe("b@test.com");
   });
@@ -365,7 +436,9 @@ describe("Supabase repositories", () => {
       response: { data: null, error: { message: "x", code: "999" } },
     });
     const ingRepo2 = createSupabaseIngredientRepository(c4);
-    await expect(ingRepo2.findById("x")).rejects.toBeInstanceOf(RepositoryError);
+    await expect(ingRepo2.findById("x")).rejects.toBeInstanceOf(
+      RepositoryError,
+    );
   });
 
   it("favorite.exists/add/remove funcionan correctamente", async () => {

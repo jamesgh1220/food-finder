@@ -6,12 +6,14 @@ import type { CuisineRepository } from "@/domain/ports";
 import type { PantryRepository } from "@/domain/ports";
 import type { FavoriteRepository } from "@/domain/ports";
 import type { UserRepository } from "@/domain/ports";
+import type { RecipeRecommendationCatalog } from "@/application/ports/recipe-recommendation";
 import { createSupabaseRecipeRepository } from "./supabase-recipe-repository";
 import { createSupabaseIngredientRepository } from "./supabase-ingredient-repository";
 import { createSupabaseCuisineRepository } from "./supabase-cuisine-repository";
 import { createSupabasePantryRepository } from "./supabase-pantry-repository";
 import { createSupabaseFavoriteRepository } from "./supabase-favorite-repository";
 import { createSupabaseUserRepository } from "./supabase-user-repository";
+import { createSupabaseRecipeRecommendationCatalog } from "./supabase-recipe-recommendation-catalog";
 import { toRepositoryError } from "./repository-error";
 
 export { toRepositoryError };
@@ -39,6 +41,7 @@ export interface SupabaseRepositories {
   pantry: PantryRepository;
   favorites: FavoriteRepository;
   users: UserRepository;
+  recommendationCatalog: RecipeRecommendationCatalog;
 }
 
 /**
@@ -60,6 +63,9 @@ export function createSupabaseRepositories(
     pantry: createSupabasePantryRepository(clients.client),
     favorites: createSupabaseFavoriteRepository(clients.client),
     users: createSupabaseUserRepository(adminClient),
+    recommendationCatalog: createSupabaseRecipeRecommendationCatalog(
+      clients.client,
+    ),
   };
 }
 
@@ -69,3 +75,4 @@ export { createSupabaseCuisineRepository } from "./supabase-cuisine-repository";
 export { createSupabasePantryRepository } from "./supabase-pantry-repository";
 export { createSupabaseFavoriteRepository } from "./supabase-favorite-repository";
 export { createSupabaseUserRepository } from "./supabase-user-repository";
+export { createSupabaseRecipeRecommendationCatalog } from "./supabase-recipe-recommendation-catalog";

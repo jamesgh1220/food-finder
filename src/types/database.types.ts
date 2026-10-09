@@ -174,6 +174,7 @@ export type Database = {
           id: string
           ingredient_id: string
           notes: string | null
+          optional: boolean
           quantity: number | null
           recipe_id: string
           unit: string | null
@@ -183,6 +184,7 @@ export type Database = {
           id?: string
           ingredient_id: string
           notes?: string | null
+          optional?: boolean
           quantity?: number | null
           recipe_id: string
           unit?: string | null
@@ -192,6 +194,7 @@ export type Database = {
           id?: string
           ingredient_id?: string
           notes?: string | null
+          optional?: boolean
           quantity?: number | null
           recipe_id?: string
           unit?: string | null

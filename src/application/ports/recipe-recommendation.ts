@@ -1,6 +1,7 @@
 import type { Difficulty, Recipe } from "@/domain/entities";
 import type { MealType, RecipeMatchScore } from "@/domain/value-objects";
 import type { UserPreferences } from "@/application/ports/user-preferences";
+import type { RecipeRecommendationCandidate } from "@/domain/entities";
 
 /**
  * Puerto del motor de recomendación (PROMTP #71, spec 07 REQ-08).
@@ -20,6 +21,20 @@ export interface RecipeRecommendationRequest {
   preferences?: UserPreferences;
 }
 
+export interface RecipeRecommendationCatalogFilter {
+  mealType?: MealType;
+  cuisineId?: string;
+  maxPreparationTime?: number;
+  difficulty?: Difficulty;
+}
+
+/** Supplies recipe aggregates with the catalog metadata required for matching. */
+export interface RecipeRecommendationCatalog {
+  findCandidates(
+    filter: RecipeRecommendationCatalogFilter,
+  ): Promise<RecipeRecommendationCandidate[]>;
+}
+
 export interface RecommendedRecipe {
   recipe: Recipe;
   matchScore: RecipeMatchScore;
@@ -29,7 +44,5 @@ export interface RecommendedRecipe {
 }
 
 export interface RecipeRecommendationService {
-  recommend(
-    request: RecipeRecommendationRequest,
-  ): Promise<RecommendedRecipe[]>;
+  recommend(request: RecipeRecommendationRequest): Promise<RecommendedRecipe[]>;
 }

@@ -4,6 +4,8 @@ import type {
 } from "@/application/ports/external-recipe-provider";
 import type { Logger } from "@/application/ports/logger";
 import type { Recipe } from "@/domain/entities";
+import type { RecipeRecommendationCandidate } from "@/domain/entities";
+import { normalizeIngredientName } from "@/domain/normalization/ingredient-normalizer";
 import { RepositoryError } from "@/domain/errors";
 import type { CuisineRepository, RecipeRepository } from "@/domain/ports";
 import {
@@ -69,6 +71,9 @@ function buildPrompt(input: ExternalRecipeSearchInput): string {
       `El tiempo máximo de preparación es ${input.maxPreparationTime} minutos.`,
     );
   }
+  if (input.difficulty) {
+    lines.push(`La dificultad requerida es ${input.difficulty}.`);
+  }
 
   lines.push(
     "",
@@ -91,8 +96,8 @@ function mapRecipes(
   input: ExternalRecipeSearchInput,
   cuisines: Awaited<ReturnType<CuisineRepository["findAll"]>>,
   logger?: Logger,
-): Recipe[] {
-  const mapped: Recipe[] = [];
+): RecipeRecommendationCandidate[] {
+  const mapped: RecipeRecommendationCandidate[] = [];
   const seenSlugs = new Set<string>();
 
   for (const recipe of recipes) {
@@ -114,7 +119,16 @@ function mapRecipes(
       continue;
     }
     seenSlugs.add(domainRecipe.slug);
-    mapped.push(domainRecipe);
+    mapped.push({
+      recipe: domainRecipe,
+      ingredients: recipe.ingredients.map((ingredient) => ({
+        id: null,
+        name: ingredient.name,
+        normalizedName: normalizeIngredientName(ingredient.name),
+        isPantryStaple: false,
+        optional: ingredient.optional ?? false,
+      })),
+    });
   }
 
   return mapped;
@@ -134,9 +148,7 @@ function logProviderError(error: unknown, logger?: Logger): void {
 }
 
 function isUniqueConstraintViolation(error: unknown): boolean {
-  return (
-    error instanceof RepositoryError && error.details?.code === "23505"
-  );
+  return error instanceof RepositoryError && error.details?.code === "23505";
 }
 
 /** Persists one recipe without letting a repository failure abort the batch. */
@@ -254,20 +266,20 @@ export function createGeminiRecipeProvider(
         }
 
         const mappedRecipes = mapRecipes(recipes, input, cuisines, logger);
-        const persistedRecipes: Recipe[] = [];
+        const persistedCandidates: RecipeRecommendationCandidate[] = [];
 
-        for (const recipe of mappedRecipes) {
+        for (const candidate of mappedRecipes) {
           const persistedRecipe = await persistRecipe(
-            recipe,
+            candidate.recipe,
             recipeRepository,
             logger,
           );
           if (persistedRecipe) {
-            persistedRecipes.push(persistedRecipe);
+            persistedCandidates.push({ ...candidate, recipe: persistedRecipe });
           }
         }
 
-        return persistedRecipes;
+        return persistedCandidates;
       } catch (error) {
         logProviderError(error, logger);
         return [];

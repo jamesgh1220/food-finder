@@ -1,5 +1,10 @@
+import type { Difficulty } from "@/domain/entities";
+import type { UserPreferences } from "@/application/ports/user-preferences";
 import type { MealType } from "@/domain/value-objects";
-import type { RecipeRecommendationService, RecommendedRecipe } from "@/application/ports/recipe-recommendation";
+import type {
+  RecipeRecommendationService,
+  RecommendedRecipe,
+} from "@/application/ports/recipe-recommendation";
 import type { AuthPort } from "@/application/ports/auth";
 import { requireAuthenticatedUser } from "@/application/shared/require-authenticated-user";
 
@@ -8,6 +13,9 @@ export interface FindRecipesFromPantryInput {
   mealType?: MealType;
   /** null/undefined = ALL: sin filtro de cocina (multi-cocina). */
   cuisineId?: string | null;
+  maxPreparationTime?: number;
+  difficulty?: Difficulty;
+  preferences?: UserPreferences;
 }
 
 /**
@@ -32,6 +40,9 @@ export class FindRecipesFromPantry {
       availableIngredientIds: input.ingredientIds,
       mealType: input.mealType,
       cuisineId: input.cuisineId ?? undefined,
+      maxPreparationTime: input.maxPreparationTime,
+      difficulty: input.difficulty,
+      preferences: input.preferences,
     });
   }
 }

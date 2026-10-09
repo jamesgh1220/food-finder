@@ -56,6 +56,9 @@ describe("FindRecipesFromPantry", () => {
       availableIngredientIds: ["ing-1", "ing-2"],
       mealType: undefined,
       cuisineId: undefined,
+      maxPreparationTime: undefined,
+      difficulty: undefined,
+      preferences: undefined,
     });
     expect(output).toHaveLength(2);
     const cuisines = output.map((item) => item.recipe.cuisineId);
@@ -69,12 +72,42 @@ describe("FindRecipesFromPantry", () => {
       createFakeAuthPort(),
     );
 
-    await useCase.execute({ ingredientIds: ["ing-1"], cuisineId: "cuisine-it" });
+    await useCase.execute({
+      ingredientIds: ["ing-1"],
+      cuisineId: "cuisine-it",
+    });
 
     expect(recommendations.recommend).toHaveBeenCalledWith({
       availableIngredientIds: ["ing-1"],
       mealType: undefined,
       cuisineId: "cuisine-it",
+      maxPreparationTime: undefined,
+      difficulty: undefined,
+      preferences: undefined,
+    });
+  });
+
+  it("forwards preparation, difficulty, and preference filters", async () => {
+    const recommendations = createFakeRecommendations([]);
+    const useCase = new FindRecipesFromPantry(
+      recommendations,
+      createFakeAuthPort(),
+    );
+
+    await useCase.execute({
+      ingredientIds: ["ing-1"],
+      maxPreparationTime: 30,
+      difficulty: "EASY",
+      preferences: { preferredCuisines: ["cuisine-it"] },
+    });
+
+    expect(recommendations.recommend).toHaveBeenCalledWith({
+      availableIngredientIds: ["ing-1"],
+      mealType: undefined,
+      cuisineId: undefined,
+      maxPreparationTime: 30,
+      difficulty: "EASY",
+      preferences: { preferredCuisines: ["cuisine-it"] },
     });
   });
 
@@ -107,9 +140,9 @@ describe("GetRecipeById", () => {
     const recipes = createFakeRecipes();
     const useCase = new GetRecipeById(recipes);
 
-    await expect(
-      useCase.execute({ id: "missing" }),
-    ).rejects.toBeInstanceOf(NotFoundError);
+    await expect(useCase.execute({ id: "missing" })).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
   });
 });
 

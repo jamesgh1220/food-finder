@@ -49,8 +49,9 @@ function createFakeRecipeRepository(
 ): RecipeRepository {
   return {
     findById: vi.fn(async () => null),
-    findBySlug: vi.fn(async (slug: string) =>
-      existingRecipes.find((recipe) => recipe.slug === slug) ?? null,
+    findBySlug: vi.fn(
+      async (slug: string) =>
+        existingRecipes.find((recipe) => recipe.slug === slug) ?? null,
     ),
     findByIds: vi.fn(async () => []),
     findMany: vi.fn(async () => []),
@@ -126,7 +127,8 @@ describe("createGeminiRecipeProvider", () => {
     );
 
     expect(result).toHaveLength(1);
-    const recipe = result[0];
+    const candidate = result[0];
+    const recipe = candidate.recipe;
     expect(recipe.source).toBe("AI_GENERATED");
     expect(recipe.slug).toBe("pasta-al-tomate");
     // El mealType respeta el filtro del producto (REQ-11), no el del modelo.
@@ -135,6 +137,18 @@ describe("createGeminiRecipeProvider", () => {
     expect(recipe.cuisineId).toBe("cuisine-it");
     expect(recipe.sourceUrl).toBeNull();
     expect(recipe.id).toBe("persisted-pasta-al-tomate");
+    expect(candidate.ingredients).toEqual([
+      expect.objectContaining({
+        name: "Pasta",
+        normalizedName: "pasta",
+        optional: false,
+      }),
+      expect.objectContaining({
+        name: "Tomate",
+        normalizedName: "tomate",
+        optional: false,
+      }),
+    ]);
     expect(recipeRepository.findBySlug).toHaveBeenCalledWith("pasta-al-tomate");
     expect(recipeRepository.save).toHaveBeenCalledTimes(1);
     expect(generateContent).toHaveBeenCalledTimes(1);
@@ -142,6 +156,31 @@ describe("createGeminiRecipeProvider", () => {
     expect(typeof prompt).toBe("string");
     expect(prompt).toContain("pasta");
     expect(responseSchema).toBeDefined();
+  });
+
+  it("preserves optional ingredient metadata for recommendation matching", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({
+      recipes: [
+        makeGeminiRecipe({
+          ingredients: [
+            { name: "Pasta", quantity: 200, unit: "g", optional: true },
+          ],
+        }),
+      ],
+    });
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository: createFakeRecipeRepository(),
+    });
+
+    const result = await provider.searchByIngredients(makeInput());
+
+    expect(result[0]?.ingredients[0]).toMatchObject({
+      name: "Pasta",
+      optional: true,
+    });
   });
 
   it("devuelve [] sin lanzar cuando el contenido no valida el schema", async () => {
@@ -294,8 +333,8 @@ describe("createGeminiRecipeProvider", () => {
 
     const result = await provider.searchByIngredients(makeInput());
 
-    expect(result).toEqual([existingRecipe]);
-    expect(result[0].id).toBe("stable-recipe-id");
+    expect(result[0].recipe).toEqual(existingRecipe);
+    expect(result[0].recipe.id).toBe("stable-recipe-id");
     expect(recipeRepository.save).not.toHaveBeenCalled();
   });
 
@@ -340,8 +379,8 @@ describe("createGeminiRecipeProvider", () => {
 
     const result = await provider.searchByIngredients(makeInput());
 
-    expect(result).toEqual([existingRecipe]);
-    expect(result[0].id).toBe("raced-recipe-id");
+    expect(result[0].recipe).toEqual(existingRecipe);
+    expect(result[0].recipe.id).toBe("raced-recipe-id");
     expect(recipeRepository.findBySlug).toHaveBeenCalledTimes(2);
   });
 
@@ -370,7 +409,7 @@ describe("createGeminiRecipeProvider", () => {
 
     const result = await provider.searchByIngredients(makeInput());
 
-    expect(result.map((recipe) => recipe.slug)).toEqual([
+    expect(result.map((recipe) => recipe.recipe.slug)).toEqual([
       "pasta-al-tomate",
       "pasta-al-pesto",
     ]);

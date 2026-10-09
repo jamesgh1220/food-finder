@@ -43,14 +43,32 @@ Recomendaciones correctas, explicables y multicocina: el usuario ve qué puede c
 - El orden equilibra `relevance + matchScore + user filters + source quality` (#86), no `Internal > Proveedor externo (Gemini)` automático.
 - Diseñar la firma para recibir `UserPreferences` en el futuro sin implementarlo (#87).
 
+## Decisiones de implementación
+
+- `recipe_ingredients.optional` se conserva en base de datos mediante `003_recipe_ingredient_optionality.sql`, como `BOOLEAN NOT NULL DEFAULT FALSE`. El default mantiene como obligatorias las relaciones creadas antes de esta migración.
+- El score divide los ingredientes obligatorios disponibles entre los obligatorios no-staple. Los pantry staples faltantes siguen apareciendo en `missingIngredients`, pero no reducen el score; los opcionales faltantes se reportan aparte y tampoco lo reducen.
+- Se considera suficiente el catálogo interno cuando al menos una receta alcanza `matchScore >= 0.8` (4/5 obligatorios disponibles); de lo contrario, se consulta Gemini y luego se combinan, deduplican y ordenan ambas fuentes.
+- La consulta interna carga receta, relación e ingrediente asociado en una sola lectura. El proveedor Gemini conserva nombre y opcionalidad de ingredientes generados para que el mismo motor pueda evaluarlos sin alterar el flujo de persistencia estable de recetas.
+- No hay campos actuales para evaluar calidad/confiabilidad ni restricciones dietarias de una receta; el ordenamiento usa score, cantidad disponible y fuente como desempate. `UserPreferences` sigue siendo diseño futuro según spec 07, por lo que las preferencias y restricciones no se aplican en esta versión.
+
 ## Criterios de aceptación
 
-- [ ] Los 7 casos de prueba en verde (unit, mocks para externo).
-- [ ] Resultados con la forma exacta de #71.
-- [ ] Fallback ante fallo del proveedor externo (Gemini) demostrado con mock.
-- [ ] Dedup y ordenamiento cubiertos por tests.
-- [ ] Documentado el algoritmo (para spec 17: docs/decisions).
+- [x] Los 7 casos de prueba en verde (unit, mocks para externo).
+- [x] Resultados con la forma exacta de #71.
+- [x] Fallback ante fallo del proveedor externo (Gemini) demostrado con mock.
+- [x] Dedup y ordenamiento cubiertos por tests.
+- [x] Documentado el algoritmo y el criterio de fallback en esta issue.
 
 ## Resultado esperado
 
 Motor de recomendación funcional y explicable: ingredientes → score → recetas multicocina ordenadas por relevancia, resiliente al fallo del proveedor externo y preparado para evolucionar (sustituciones, preferencias, IA).
+
+## Evidencia de implementación (2026-10-09)
+
+- Se agregó la migración `supabase/migrations/003_recipe_ingredient_optionality.sql`, que añade `optional BOOLEAN NOT NULL DEFAULT FALSE`. No se aplicó a una base remota ni se ejecutó `db:push`.
+- `src/types/database.types.ts` refleja la columna nueva. La regeneración mediante `supabase gen types --local` no estaba disponible porque no existe contenedor Supabase local; se evitó `--linked` para no contactar la base remota.
+- `createSupabaseRecipeRecommendationCatalog` carga recetas internas con relaciones e ingredientes asociados; la clasificación pantry-staple viene del catálogo y la opcionalidad de la nueva columna.
+- `createRecipeRecommendationService` usa disponibles/obligatorios no-staple como score; staples ausentes permanecen en faltantes, sin reducir score. Una receta sin relaciones de ingredientes recibe score 0.
+- Se consulta Gemini cuando ninguna receta interna alcanza `0.8`; un error externo deja intactos los resultados internos. Los candidatos se deduplican por nombre normalizado y se ordenan por score, cantidad de ingredientes disponibles y, solo como desempate, fuente interna.
+- Los filtros de comida, cocina, tiempo y dificultad se aplican al catálogo; los candidatos externos se validan contra tiempo y dificultad después de generar. Las preferencias dietarias no se aplican todavía porque el modelo no las representa.
+- Verificación final: `pnpm lint` PASS; `pnpm typecheck` PASS; `pnpm test` PASS (25 archivos, 176 tests). Vitest emitió solo su aviso existente sobre `__dirname` en `vitest.config.mts` y `configLoader: 'native'`.

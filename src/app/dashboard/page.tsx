@@ -26,13 +26,13 @@ export default function DashboardPage() {
         fallback={
           <div className="flex min-h-screen flex-col">
             <div className="border-b border-border bg-card">
-              <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-4">
-                <span className="text-sm font-semibold tracking-tight">
+              <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
+                <span className="text-lg font-serif font-medium tracking-tight text-primary">
                   Food Finder
                 </span>
               </div>
             </div>
-            <main className="mx-auto w-full max-w-4xl px-6 py-16">
+            <main className="mx-auto w-full max-w-5xl px-6 py-20">
               <p className="text-sm text-muted-foreground">Cargando…</p>
             </main>
           </div>
@@ -57,8 +57,8 @@ async function AuthenticatedDashboard() {
   return (
     <>
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-4">
-          <span className="text-sm font-semibold tracking-tight">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
+          <span className="text-lg font-serif font-medium tracking-tight text-primary">
             Food Finder
           </span>
           <div className="flex items-center gap-4">
@@ -70,8 +70,8 @@ async function AuthenticatedDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-4xl px-6 py-16">
-        <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight">
+      <main className="mx-auto w-full max-w-5xl px-6 py-20">
+        <h1 className="max-w-2xl text-4xl sm:text-5xl font-serif font-medium leading-tight tracking-tight">
           ¿Qué puedo cocinar con lo que tengo?
         </h1>
         <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">

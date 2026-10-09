@@ -64,23 +64,23 @@ row de Supabase cruce hacia dominio/aplicación (REQ-03).
   Slices: S1 clientes+mappers · S2 repositorios+factory · S3 tests · S4 docs/evidencia.
 
 ## Tareas
-- [ ] T1 — Rama `feat/08-infrastructure-supabase` desde `main`.
-- [ ] T2 — Documento ODD + espejo en Engram.
-- [ ] T3 — `client/`: mover browser/server client; añadir `admin-client.ts` server-only.
-- [ ] T4 — Mappers `mappers/`: recipe, ingredient, cuisine, pantry-item, favorite-recipe, user.
-- [ ] T5 — Repositorios `repositories/`: 6 adapters Supabase + `repository-error` helper.
-- [ ] T6 — Factory `createSupabaseRepositories()` (único punto de inyección).
-- [ ] T7 — Tests: mappers (puros) + repositorios (fake client, sin N+1, `RepositoryError`).
-- [ ] T8 — Verificación `pnpm lint && pnpm typecheck && pnpm test`.
-- [ ] T9 — Actualizar evidencia en `docs/specs/08-infrastructure-supabase/{SPEC,ISSUE}.md`.
-- [ ] T10 — Work-unit commits en la rama feature.
+- [x] T1 — Rama `feat/08-infrastructure-supabase` desde `main`.
+- [x] T2 — Documento ODD + espejo en Engram.
+- [x] T3 — `client/`: mover browser/server client; añadir `admin-client.ts` server-only.
+- [x] T4 — Mappers `mappers/`: recipe, ingredient, cuisine, pantry-item, favorite-recipe, user.
+- [x] T5 — Repositorios `repositories/`: 6 adapters Supabase + `repository-error` helper.
+- [x] T6 — Factory `createSupabaseRepositories()` (único punto de inyección).
+- [x] T7 — Tests: mappers (puros) + repositorios (fake client, sin N+1, `RepositoryError`).
+- [x] T8 — Verificación `pnpm lint && pnpm typecheck && pnpm test`.
+- [x] T9 — Actualizar evidencia en `docs/specs/08-infrastructure-supabase/{SPEC,ISSUE}.md`.
+- [x] T10 — Work-unit commits en la rama feature.
 
 ## Criterios de aceptación (SPEC 08)
-- [ ] Cada puerto tiene exactamente una implementación Supabase alcanzable vía la factory.
-- [ ] Cero objetos row salen de `src/infrastructure/` (auditoría de tipos/imports).
-- [ ] Consultas sin N+1 (una query por listado / `findByIds`).
-- [ ] Errores normalizados a `RepositoryError`.
-- [ ] Client server-only; sin service-role en paths de navegador.
+- [x] Cada puerto tiene exactamente una implementación Supabase alcanzable vía la factory.
+- [x] Cero objetos row salen de `src/infrastructure/` (auditoría de tipos/imports).
+- [x] Consultas sin N+1 (una query por listado / `findByIds`).
+- [x] Errores normalizados a `RepositoryError`.
+- [x] Client server-only; sin service-role en paths de navegador.
 
 ## Verificación
 - `pnpm lint && pnpm typecheck && pnpm test`.
@@ -89,4 +89,30 @@ row de Supabase cruce hacia dominio/aplicación (REQ-03).
 - (Diferido a spec 16) integración contra Supabase real.
 
 ## Progreso
-_(pendiente)_
+
+### Verificación (2026-10-09, rama `feat/08-infrastructure-supabase`)
+- `pnpm lint` → **sin errores** (exit 0).
+- `pnpm typecheck` (`tsc --noEmit`) → **sin errores** (exit 0).
+- `pnpm test` → **20 archivos / 121 tests, todos en verde** (exit 0).
+- Evidencia base previa de S1: 19 archivos / 102 tests. S2 añade 1 archivo / 19 tests.
+
+### Entregado
+- **S1** `client/` + `mappers/`: layout `client/{browser,server,admin}-client.ts` + barrel;
+  6 mappers fila↔entidad + barrel. `tests/unit/infrastructure/mappers.test.ts` (14 tests).
+  Commit `2d715b5` (docs ODD) y `d428a5d` (clientes + mappers).
+- **S2** `repositories/`: `repository-error.ts` (`toRepositoryError`, nunca filtra el mensaje
+  crudo de Postgres), 6 repositorios (`createSupabase{Recipe,Ingredient,Cuisine,Pantry,Favorite,User}Repository`)
+  y factory `createSupabaseRepositories({ client, adminClient? })`. Tests de repositorios con
+  `fake-supabase-client.ts` (registra cada llamada de la cadena Postgrest).
+
+### Decisiones tomadas durante S2
+- `findByIds([])` y `findMany({ ids: [] })` cortan **antes** de construir la consulta (sin tocar
+  el cliente): evita traer todo el catálogo por un filtro vacío.
+- `Ingredient.save` devuelve la fila mapeada (`.select().single()`), no la entidad de entrada.
+- `Favorite.add` con `ignoreDuplicates: true` no devuelve fila si ya existía → retorna la entrada.
+- `user.findById` trata 404/"not found" como `null`, no como error.
+
+### Pendiente / fuera de alcance
+- Tests de integración contra Supabase real → spec 16.
+- Cableado en el composition root → spec 02/07 (fuera de alcance por diseño).
+

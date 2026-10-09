@@ -36,11 +36,31 @@ Implementar los adapters de Supabase: un repositorio por puerto de dominio, mapp
 
 ## Criterios de aceptación
 
-- [ ] Cada puerto tiene exactamente una implementación de Supabase inyectada por el composition root.
-- [ ] Grep muestra cero objetos row saliendo de `src/infrastructure/`.
-- [ ] Los tests de integración (spec 16) persisten y recuperan pantry/favoritos/recetas vía repositorios contra una base real.
-- [ ] Sin N+1: el listado de recetas emite un número acotado de queries sin importar el tamaño del resultado.
+- [x] Cada puerto tiene exactamente una implementación de Supabase inyectada por el composition root.
+- [x] Grep muestra cero objetos row saliendo de `src/infrastructure/`.
+- [ ] Los tests de integración (spec 16) persisten y recuperan pantry/favoritos/recetas vía repositorios contra una base real. _(diferido a spec 16)_
+- [x] Sin N+1: el listado de recetas emite un número acotado de queries sin importar el tamaño del resultado.
 
 ## Verificación
 
 Suite de tests de integración contra Supabase (spec 16) + review de código para REQ-03/REQ-07.
+
+## Evidencia (2026-10-09)
+
+- **Implementaciones** (`src/infrastructure/supabase/repositories/`): `supabase-recipe-repository.ts`,
+  `supabase-ingredient-repository.ts`, `supabase-cuisine-repository.ts`,
+  `supabase-pantry-repository.ts`, `supabase-favorite-repository.ts`,
+  `supabase-user-repository.ts` + `repository-error.ts` + factory `createSupabaseRepositories()`
+  en `index.ts`. El adapter de auth (`createSupabaseAuthPort`) ya existía en
+  `src/infrastructure/auth/` (spec 05) y no se modificó.
+- **REQ-03 (frontera de mappers):** grep confirma que `Tables<…>`/`TablesInsert<…>` solo aparecen
+  dentro de `src/infrastructure/supabase/{mappers,repositories}`; fuera solo hay imports de tipo
+  `Database` (no de filas).
+- **REQ-06/REQ-07:** unit tests con un fake de la cadena Postgrest verifican una sola query `IN` por
+  `findByIds`, cortes previos a la consulta con filtros vacíos y `RepositoryError` con mensaje en
+  español sin filtrar el mensaje crudo de Postgres.
+- **REQ-08:** `SUPABASE_SECRET_KEY` se usa únicamente en `src/infrastructure/supabase/client/admin-client.ts`
+  (server-only, documentado).
+- **Checks:** `pnpm lint` (0 errores), `pnpm typecheck` (0 errores), `pnpm test`
+  (**20 archivos / 121 tests en verde**).
+

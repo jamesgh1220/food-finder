@@ -30,9 +30,9 @@ Hacer efectivo el aislamiento de datos y la línea base de seguridad del MVP: po
 | REQ-07 | RLS habilitado en **todas** las tablas con políticas coherentes con REQ-01…REQ-06 (ninguna tabla sin protección). |
 | REQ-08 | Supabase Auth + RLS + autorización a nivel de aplicación presentes; la autorización debe estar respaldada por backend/RLS, **nunca solo por la UI**. |
 | REQ-09 | Validación con Zod de todos los inputs: query params, body, route params, IDs, filtros, cantidades, unidades. Nunca confiar directamente en el input del cliente. |
-| REQ-10 | Nunca enviar secretos al cliente. `SUPABASE_SECRET_KEY` y `SPOONACULAR_API_KEY` solo en servidor (reforzado por el naming de env de la spec 01). |
+| REQ-10 | Nunca enviar secretos al cliente. `SUPABASE_SECRET_KEY` y `GEMINI_API_KEY` solo en servidor (reforzado por el naming de env de la spec 01). |
 | REQ-11 | Manejo seguro de errores: nunca exponer stack traces, API keys, secretos, detalles internos, SQL ni información sensible a los clientes. |
-| REQ-12 | Timeouts en llamadas externas (Spoonacular) para que un proveedor colgado no cuelgue las requests. |
+| REQ-12 | Timeouts en llamadas externas (Gemini) para que un proveedor colgado no cuelgue las requests. |
 
 ## Dependencias
 

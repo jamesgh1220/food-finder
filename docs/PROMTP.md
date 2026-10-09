@@ -201,12 +201,12 @@ El MVP debe permitir:
 19. Consultar favoritos.
 20. Buscar recetas.
 21. Utilizar recetas internas.
-22. Utilizar Spoonacular como fuente externa.
+22. Utilizar Gemini como fuente externa (recetas generadas con IA).
 23. Combinar resultados internos y externos.
-24. Manejar correctamente errores de Spoonacular.
-25. Mantener la aplicación funcional si Spoonacular está caído.
+24. Manejar correctamente errores del proveedor externo (Gemini).
+25. Mantener la aplicación funcional si el proveedor externo (Gemini) está caído.
 26. Tener una arquitectura preparada para futuras fuentes de recetas.
-27. Tener una arquitectura preparada para futuras recomendaciones mediante IA.
+27. Usar IA (Gemini) como fuente externa y mantener la arquitectura preparada para futuras capacidades de IA.
 
 ---
 
@@ -291,7 +291,7 @@ Infrastructure / Adapters
 
 Regla fundamental:
 
-> El dominio NO debe depender de Next.js, React, Supabase, Spoonacular ni ninguna tecnología externa.
+> El dominio NO debe depender de Next.js, React, Supabase, Gemini ni ninguna tecnología externa.
 
 El dominio debe ser independiente.
 
@@ -345,7 +345,7 @@ No importar:
 - Next.js
 - React
 - Supabase
-- Spoonacular
+- Gemini
 - fetch específico
 - componentes UI
 
@@ -357,7 +357,7 @@ Responsable de:
 
 - Supabase
 - PostgreSQL
-- Spoonacular
+- Gemini
 - HTTP
 - persistencia
 - autenticación técnica
@@ -449,9 +449,9 @@ src/
 │   │   ├── mappers/
 │   │   └── auth/
 │   │
-│   ├── spoonacular/
+│   ├── gemini/
 │   │   ├── client/
-│   │   ├── mappers/
+│   │   ├── schemas/
 │   │   └── providers/
 │   │
 │   └── config/
@@ -524,7 +524,7 @@ AI_GENERATED
 OTHER
 ```
 
-No es necesario implementar AI_GENERATED ahora.
+En el MVP: `INTERNAL` para el catálogo interno y `AI_GENERATED` para las recetas generadas por Gemini; `SPOONACULAR` y `OTHER` quedan reservados para fuentes externas futuras.
 
 ---
 
@@ -1188,9 +1188,9 @@ No asumir que el proyecto Supabase está vacío.
 
 ---
 
-# 26. SPOONACULAR
+# 26. PROVEEDOR EXTERNO DE RECETAS (GEMINI)
 
-Integrar Spoonacular como proveedor externo.
+Integrar Gemini como proveedor externo que genera recetas en español.
 
 Crear un port:
 
@@ -1203,90 +1203,90 @@ Ejemplo conceptual:
 ```ts
 interface ExternalRecipeProvider {
   searchByIngredients(...): Promise<...>;
-  getRecipeById(...): Promise<...>;
 }
 ```
 
-No acoplar el dominio a Spoonacular.
+No acoplar el dominio a Gemini.
+
+> El puerto expone solo la obtención de recetas por ingredientes: las recetas generadas se persisten con `source = AI_GENERATED` y se recuperan por el repositorio interno (por eso no hay `getRecipeById` en el puerto externo).
 
 ---
 
-# 27. SPOONACULAR ADAPTER
+# 27. GEMINI ADAPTER
 
 Crear:
 
 ```text
-infrastructure/spoonacular/
+infrastructure/gemini/
 ```
 
 Con componentes como:
 
 ```text
 client
-mappers
+schemas
 providers
 ```
 
 Implementar:
 
 ```text
-SpoonacularRecipeProvider
+GeminiRecipeProvider
 ```
 
 Responsabilidades:
 
-- base URL
+- base URL / SDK
 - API key
 - HTTP
 - timeout
 - retries cuando sean apropiados
 - errores
-- rate limiting
+- rate limiting (429 / RESOURCE_EXHAUSTED)
 - parsing
-- mapping
+- validación de la salida (Zod) y mapping
 
 La API key debe ser únicamente server-side:
 
 ```text
-SPOONACULAR_API_KEY
+GEMINI_API_KEY
 ```
 
 Nunca:
 
 ```text
-NEXT_PUBLIC_SPOONACULAR_API_KEY
+NEXT_PUBLIC_GEMINI_API_KEY
 ```
 
 ---
 
-# 28. SPOONACULAR ENDPOINTS
+# 28. GEMINI API
 
-Antes de implementar, consulta la documentación actual de Spoonacular y utiliza los endpoints actuales.
+Antes de implementar, consulta la documentación actual de Gemini y utiliza el modelo y la API vigentes.
 
 Priorizar capacidades relacionadas con:
 
-- búsqueda por ingredientes
-- información detallada de recetas
-- búsqueda avanzada
-- filtros por cuisine
-- filtros por tipo
-- tiempo de preparación
-- dieta/intolerancias cuando estén disponibles
+- generación de recetas por ingredientes
+- soporte de idioma español
+- salida estructurada (JSON) para validar con schema
+- respeto de filtros: tipo de comida, cocina, tiempo de preparación
 
-No depender de endpoints obsoletos.
+No depender de modelos/endpoints obsoletos ni de la capa gratis como si fuera ilimitada.
 
 ---
 
-# 29. SPOONACULAR MAPPING
+# 29. GEMINI MAPPING
 
-Nunca devolver directamente la respuesta cruda de Spoonacular al frontend.
+Nunca devolver directamente la respuesta cruda del modelo al frontend.
 
 Flujo:
 
 ```text
-Spoonacular DTO
+Respuesta Gemini (JSON)
       ↓
-Spoonacular Mapper
+Schema Zod (validación)
+      ↓
+Mapper
       ↓
 Application DTO
       ↓
@@ -1295,7 +1295,7 @@ Domain/Application model
 API Response
 ```
 
-La aplicación no debe quedar acoplada al JSON de Spoonacular.
+La aplicación no debe quedar acoplada al formato de salida de Gemini. Si la salida no valida, se descarta.
 
 ---
 
@@ -1310,7 +1310,7 @@ AI_GENERATED
 OTHER
 ```
 
-Esto permitirá posteriormente incorporar otros proveedores.
+`AI_GENERATED` es el origen de la fuente externa del MVP (Gemini); `SPOONACULAR` queda reservado para una fuente externa futura. Esto permitirá incorporar otros proveedores.
 
 ---
 
@@ -1335,9 +1335,9 @@ Resultados internos
    ↓
 No
    ↓
-Spoonacular
+Proveedor externo (Gemini)
    ↓
-Mapping
+Validación (Zod) + Mapping
    ↓
 Matching
    ↓
@@ -1352,22 +1352,22 @@ Resultados
 
 La aplicación debe priorizar recetas internas cuando sean buenas coincidencias.
 
-Spoonacular es una fuente complementaria.
+El proveedor externo es una fuente complementaria.
 
-Spoonacular NO debe ser un single point of failure.
+El proveedor externo NO debe ser un single point of failure.
 
 ---
 
-# 32. SPOONACULAR FAILURE HANDLING
+# 32. EXTERNAL PROVIDER FAILURE HANDLING
 
-Si Spoonacular:
+Si el proveedor externo (Gemini):
 
-- devuelve 429
+- devuelve 429 / RESOURCE_EXHAUSTED
 - timeout
 - error 500
 - está temporalmente caído
 - excede cuota
-- devuelve una respuesta inválida
+- devuelve una respuesta inválida (no valida contra el schema)
 
 la aplicación debe continuar funcionando.
 
@@ -1390,7 +1390,7 @@ AxiosError 429...
 Mostrar algo amigable:
 
 ```text
-No pudimos consultar algunas recetas externas,
+No pudimos generar recetas adicionales,
 pero encontramos estas opciones con tus ingredientes.
 ```
 
@@ -1973,7 +1973,7 @@ Optimizar:
 - pagination
 - caching cuando sea apropiado
 - evitar N+1 queries
-- evitar llamadas innecesarias a Spoonacular
+- evitar llamadas innecesarias al proveedor externo (Gemini)
 - evitar renders innecesarios
 
 No sobreoptimizar el MVP.
@@ -1982,7 +1982,7 @@ No sobreoptimizar el MVP.
 
 # 55. RATE LIMITING
 
-Implementar protección básica para endpoints que puedan provocar llamadas a Spoonacular.
+Implementar protección básica para endpoints que puedan provocar llamadas al proveedor externo (Gemini).
 
 Especialmente:
 
@@ -2032,8 +2032,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 
-SPOONACULAR_API_KEY=
-SPOONACULAR_BASE_URL=
+GEMINI_API_KEY=
 
 NEXT_PUBLIC_APP_URL=
 ```
@@ -2048,7 +2047,7 @@ Nunca usar:
 
 ```env
 NEXT_PUBLIC_SUPABASE_SECRET_KEY=
-NEXT_PUBLIC_SPOONACULAR_API_KEY=
+NEXT_PUBLIC_GEMINI_API_KEY=
 ```
 
 ---
@@ -2083,12 +2082,12 @@ RecipeMapper
 Recipe Domain Entity
 ```
 
-Y para Spoonacular:
+Y para el proveedor externo (Gemini):
 
 ```text
-SpoonacularRecipeDTO
+Respuesta Gemini (JSON)
       ↓
-SpoonacularMapper
+Schema Zod + Mapper
       ↓
 Recipe
 ```
@@ -2109,7 +2108,7 @@ Ejemplo conceptual:
 
 ```text
 SupabaseRecipeRepository
-SpoonacularRecipeProvider
+GeminiRecipeProvider
 RecipeRecommendationService
 FindRecipesFromPantry
 ```
@@ -2191,9 +2190,9 @@ Probar:
 
 ---
 
-# 65. SPOONACULAR TESTING
+# 65. EXTERNAL PROVIDER TESTING
 
-Nunca depender de Spoonacular real en unit tests.
+Nunca depender de la API real de Gemini en unit tests.
 
 Crear:
 
@@ -2205,9 +2204,9 @@ Testear:
 
 - success
 - timeout
-- 429
+- 429 / quota exceeded
 - 500
-- malformed response
+- malformed response (no valida contra el schema)
 - empty result
 
 ---
@@ -2369,17 +2368,17 @@ El usuario debe entender por qué la receta fue recomendada.
 
 ---
 
-# 73. FUTURE AI
+# 73. AI EN EL MVP Y A FUTURO
 
-No implementar IA en el MVP.
+**Revisión (2026-10-09):** la IA **sí** forma parte del MVP como fuente externa generativa (Gemini, ver #26–#29). Esto reemplaza la regla original "no implementar IA en el MVP".
 
-Pero dejar un port conceptual preparado para:
+Además, dejar un port conceptual preparado para enriquecer recomendaciones:
 
 ```text
 RecipeRecommendationEnhancer
 ```
 
-Futuro flujo:
+Flujo futuro:
 
 ```text
 RecipeRecommendationService
@@ -2399,7 +2398,7 @@ Esto podría permitir posteriormente:
 - generación de recetas
 - preferencias del usuario
 
-Pero no implementar ahora.
+El `RecipeRecommendationEnhancer` sigue siendo solo-diseño (no se implementa todavía).
 
 ---
 
@@ -2507,7 +2506,7 @@ Crear un README completo que explique:
 - Supabase
 - Supabase Auth
 - Supabase MCP
-- Spoonacular
+- Gemini
 - migraciones
 - seed
 - generación de tipos
@@ -2541,7 +2540,7 @@ Documentar especialmente:
 
 - por qué arquitectura hexagonal
 - por qué Supabase
-- por qué Spoonacular
+- por qué Gemini (en lugar de una API de recetas)
 - por qué `Cuisine` es entidad y no enum
 - estrategia de matching
 - estrategia de fallback
@@ -2565,7 +2564,7 @@ flowchart TD
     APP --> EXT[External Recipe Provider Port]
 
     REPO --> SUPABASE[Supabase Adapter]
-    EXT --> SPOON[Spoonacular Adapter]
+    EXT --> SPOON[Gemini Adapter]
 
     SUPABASE --> DB[(PostgreSQL)]
 
@@ -2644,7 +2643,7 @@ Infrastructure:
 
 - Supabase repositories
 - mappers
-- Spoonacular adapter
+- Gemini adapter
 
 ## Milestone 6
 
@@ -2773,7 +2772,7 @@ Ingredientes faltantes
 
 ### Caso 5
 
-Spoonacular está caído.
+El proveedor externo (Gemini) está caído.
 
 Resultado:
 
@@ -2937,7 +2936,7 @@ La aplicación debe priorizar:
 No ordenar simplemente:
 
 ```text
-Internal > Spoonacular
+Internal > Proveedor externo (Gemini)
 ```
 
 si una receta externa tiene una coincidencia mucho mejor.
@@ -3027,7 +3026,7 @@ No asumir que se dispone de un VPS.
 
 Supabase será utilizado como backend gestionado.
 
-Spoonacular será utilizado como servicio externo.
+Gemini será utilizado como servicio externo (generación de recetas).
 
 Arquitectura conceptual:
 
@@ -3046,7 +3045,7 @@ y:
 ```text
 Next.js
  ↓
-Spoonacular
+Gemini
 ```
 
 cuando sea necesario.
@@ -3127,11 +3126,11 @@ Verificar la documentación actual para:
 
 ---
 
-# 95. IMPORTANT SPOONACULAR RULE
+# 95. IMPORTANT EXTERNAL PROVIDER RULE
 
-Verificar documentación actual de Spoonacular antes de implementar.
+Verificar la documentación actual de Gemini antes de implementar.
 
-No asumir que endpoints, parámetros o límites actuales son idénticos a ejemplos antiguos.
+No asumir que el modelo recomendado, los parámetros, el formato de salida o los límites de la capa gratis son idénticos a ejemplos antiguos.
 
 ---
 
@@ -3158,8 +3157,8 @@ El proyecto se considera terminado cuando:
 - favorites funcionan
 - cuisine filtering funciona
 - multi-cuisine funciona
-- Spoonacular funciona
-- Spoonacular failure handling funciona
+- proveedor externo (Gemini) funciona
+- external provider failure handling funciona
 - no secrets están expuestos
 - API está validada
 - errores están manejados
@@ -3189,7 +3188,7 @@ Al finalizar, entrega un resumen con:
 10. Use Cases.
 11. Repository Ports.
 12. Adapters.
-13. Spoonacular integration.
+13. Gemini integration.
 14. Matching algorithm.
 15. API endpoints.
 16. Frontend screens.
@@ -3199,7 +3198,7 @@ Al finalizar, entrega un resumen con:
 20. Comandos de testing.
 21. Comandos para generar tipos de Supabase.
 22. Setup de Supabase.
-23. Setup de Spoonacular.
+23. Setup de Gemini.
 24. Decisiones arquitectónicas importantes.
 25. Mejoras futuras.
 
@@ -3235,7 +3234,7 @@ No crear abstracciones sin propósito.
 
 No acoplar el dominio a proveedores externos.
 
-No acoplar la aplicación a Spoonacular.
+No acoplar la aplicación a Gemini.
 
 No asumir que la aplicación siempre tendrá recetas colombianas.
 
@@ -3251,7 +3250,7 @@ No confiar únicamente en validaciones del frontend.
 
 No copiar contenido protegido.
 
-No implementar IA innecesariamente.
+No implementar IA innecesariamente fuera del alcance del MVP.
 
 No instalar Capacitor innecesariamente.
 
@@ -3285,7 +3284,7 @@ Después presenta brevemente:
 
 ### D. Estrategia de Supabase
 
-### E. Estrategia de Spoonacular
+### E. Estrategia del proveedor externo (Gemini)
 
 ### F. Estrategia multicocina
 

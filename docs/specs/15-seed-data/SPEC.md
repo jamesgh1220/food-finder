@@ -13,7 +13,7 @@ Sembrar el catálogo con contenido original y multicultural: cocinas, ingredient
 - Reglas de contenido (originalidad/copyright).
 
 ### Fuera del alcance
-- Definición del esquema (spec 03), datos de usuario, contenido de Spoonacular.
+- Definición del esquema (spec 03), datos de usuario, contenido externo (Gemini).
 
 ## Requisitos
 

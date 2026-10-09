@@ -26,7 +26,7 @@ Exponer los casos de uso mediante Route Handlers de Next.js con el conjunto exac
 | REQ-05 | Mapeo error → HTTP: 400 Validation, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 429 Rate Limit, 500 Internal, 502 External Service. |
 | REQ-06 | Nunca exponer stack traces, API keys, secretos, detalles internos, SQL ni información sensible en las respuestas. |
 | REQ-07 | `POST /api/recipes/recommendations` acepta `{ ingredientIds: [], mealType: "LUNCH", cuisineId: null }` y retorna resultados con la forma de la spec 10 (`recipe`, `matchScore`, `availableIngredients`, `missingIngredients`, `optionalMissingIngredients`) dentro del envelope de éxito. |
-| REQ-08 | Rate limiting en los endpoints que pueden disparar llamadas a Spoonacular — especialmente `POST /api/recipes/recommendations` — para que un usuario no pueda generar miles de requests externos. Estrategia sencilla compatible con el entorno; **sin Redis** solo para esto. |
+| REQ-08 | Rate limiting en los endpoints que pueden disparar llamadas al proveedor externo (Gemini) — especialmente `POST /api/recipes/recommendations` — para que un usuario no pueda generar miles de requests externos. Estrategia sencilla compatible con el entorno; **sin Redis** solo para esto. |
 | REQ-09 | Autenticación/autorización aplicada en todos los endpoints de datos de usuario (pantry, favorites): no autenticado → 401; recurso de otro usuario → 403/404 según política; RLS sigue siendo la retaguardia. |
 | REQ-10 | Los Route Handlers son la superficie de integración para clientes externos/APIs; los Server Components pueden invocar casos de uso directamente en su lugar (spec 02, REQ-11). |
 

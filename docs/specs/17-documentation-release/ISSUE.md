@@ -16,7 +16,7 @@ Cualquier desarrollador nuevo (o agente futuro) clona, entiende el sistema, lo l
 
 - `README.md` completo con diagrama Mermaid (#78).
 - `docs/architecture.md`, `database.md`, `api.md`, `setup.md`, `decisions/` (#79).
-- 7 decisiones obligatorias: hexagonal, Supabase, Spoonacular, Cuisine como entidad, matching, fallback, seguridad.
+- 7 decisiones obligatorias: hexagonal, Supabase, Gemini, Cuisine como entidad, matching, fallback, seguridad.
 - Diagrama de arquitectura Mermaid (#80).
 - Abstracción de observabilidad: logs/métricas/tracing preparados, sin plataforma externa (#89).
 - Deployment readiness en plataforma compatible Next.js (Vercel o similar), sin asumir VPS (#90).

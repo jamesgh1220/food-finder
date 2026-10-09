@@ -31,8 +31,8 @@ Inicializar el repositorio de Food Finder como un único proyecto Next.js + Type
 | REQ-04 | Verificar versiones estables actuales y mutuamente compatibles **antes de instalar**: Next.js, React, TypeScript, paquetes de Supabase, Tailwind CSS, shadcn/ui, Zod, React Hook Form, Vitest, Playwright. Sin configuraciones legadas copiadas de tutoriales antiguos. |
 | REQ-05 | ESLint + Prettier + TypeScript `strict` configurados. |
 | REQ-06 | Scripts que existen y funcionan: `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `test:watch`, `test:e2e` (scripts de Supabase opcionales). |
-| REQ-07 | Crear `.env.example` con: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SPOONACULAR_API_KEY`, `SPOONACULAR_BASE_URL`, `NEXT_PUBLIC_APP_URL`. Verificar el naming vigente de las variables de Supabase antes de finalizar. |
-| REQ-08 | Nunca definir `NEXT_PUBLIC_SUPABASE_SECRET_KEY` ni `NEXT_PUBLIC_SPOONACULAR_API_KEY`. |
+| REQ-07 | Crear `.env.example` con: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `GEMINI_API_KEY`, `NEXT_PUBLIC_APP_URL`. Verificar el naming vigente de las variables de Supabase antes de finalizar. |
+| REQ-08 | Nunca definir `NEXT_PUBLIC_SUPABASE_SECRET_KEY` ni `NEXT_PUBLIC_GEMINI_API_KEY`. |
 | REQ-09 | Stack prohibido para el MVP: microservicios, Kafka, Kubernetes, Redis sin necesidad, GraphQL, Elasticsearch, base de datos vectorial, event sourcing, CQRS completo, pagos, subscriptions, push notifications, agentes IA complejos, arquitectura distribuida. |
 
 ## Dependencias

@@ -37,7 +37,7 @@ Confianza verificable en cada capa: el algoritmo probado matemáticamente, la pe
 
 ## Consideraciones técnicas
 
-- Nunca depender de Spoonacular real en tests unitarios (#65): solo mock.
+- Nunca depender de la API real de Gemini en tests unitarios (#65): solo mock.
 - Los tests de seguridad necesitan DOS usuarios reales para probar el aislamiento (#67).
 - La integración debe correr contra una base con migraciones + seed aplicados (specs 03/15).
 - Verificar versiones actuales de Vitest/Playwright antes de instalar (#62).
@@ -47,7 +47,7 @@ Confianza verificable en cada capa: el algoritmo probado matemáticamente, la pe
 - [ ] `pnpm test` verde (unit + integración según configuración).
 - [ ] `pnpm test:e2e` verde con los 11 flujos.
 - [ ] 5/5 checks de seguridad en verde.
-- [ ] Cero llamadas a la API real de Spoonacular en la suite.
+- [ ] Cero llamadas a la API real de Gemini en la suite.
 - [ ] Comandos forman parte del Definition of Done.
 
 ## Resultado esperado

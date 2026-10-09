@@ -38,7 +38,7 @@ Implementar los 16 casos de uso de la aplicación con DTOs, coordinación de rep
 ## Criterios de aceptación
 
 - [ ] Los 16 casos de uso existen, son testeables de forma independiente con puertos mockeados y cubren verificaciones de autorización para datos de usuario.
-- [ ] Ningún caso de uso importa Supabase/Spoonacular/Next.js.
+- [ ] Ningún caso de uso importa Supabase/Gemini/Next.js.
 - [ ] `FindRecipesFromPantry` sin cuisine devuelve resultados multi-cocina (cuisine opcional).
 - [ ] Los puntos de extensión de REQ-09 existen como interfaces/stubs documentados — cero lógica de IA entregada.
 

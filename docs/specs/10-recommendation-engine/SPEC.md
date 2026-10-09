@@ -4,7 +4,7 @@
 
 ## Propósito
 
-Construir `RecipeRecommendationService`: el pipeline ingredientes→recomendaciones con un match score simple y explicable, fuentes priorizando lo interno, complemento con Spoonacular, deduplicación y ordenamiento por relevancia.
+Construir `RecipeRecommendationService`: el pipeline ingredientes→recomendaciones con un match score simple y explicable, fuentes priorizando lo interno, complemento con el proveedor externo (Gemini), deduplicación y ordenamiento por relevancia.
 
 ## Alcance
 
@@ -27,23 +27,23 @@ Construir `RecipeRecommendationService`: el pipeline ingredientes→recomendacio
 | REQ-03 | El algoritmo debe ser simple y explicable para el MVP, permaneciendo extensible hacia: ingredientes opcionales, pantry staples, cantidades, sustituciones, relevancia del ingrediente, preferencias, restricciones dietarias. **Sin algoritmo excesivamente complejo ahora.** |
 | REQ-04 | Los pantry staples (`isPantryStaple = true`: sal, pimienta, aceite, azúcar, agua) **no** deben penalizar fuertemente el score; la clasificación viene del catálogo, nunca se asume uniforme para todos los usuarios. |
 | REQ-05 | El filtro de cocina es opcional con default `ALL`; cuando se define (p. ej. `Peruvian`), los resultados se filtran/priorizan para esa cocina. `FindRecipesFromPantry` nunca trata la cocina como obligatoria. |
-| REQ-06 | Flujo de estrategia: ingredientes del usuario → normalización → catálogo interno → matching → resultados internos → si son insuficientes → Spoonacular → mapeo → matching → merge → dedup → ordenamiento → resultados. Las recetas internas se priorizan **cuando son buenas coincidencias**; Spoonacular es complementario y nunca un single point of failure. |
+| REQ-06 | Flujo de estrategia: ingredientes del usuario → normalización → catálogo interno → matching → resultados internos → si son insuficientes → proveedor externo (Gemini) → validación + mapeo → matching → merge → dedup → ordenamiento → resultados. Las recetas internas se priorizan **cuando son buenas coincidencias**; el proveedor externo es complementario y nunca un single point of failure. |
 | REQ-07 | Deduplicación entre versiones interna y externa de una misma receta usando heurísticas simples para el MVP: nombre normalizado, source, external id, slug. La arquitectura debe permitir mejorar el algoritmo después. Sin algoritmo complejo ahora. |
-| REQ-08 | Prioridad de ordenamiento: (1) calidad del match, (2) disponibilidad de ingredientes, (3) preferencias del usuario, (4) calidad/confiabilidad de la receta, (5) fuente. **No** ordenar simplemente `Internal > Spoonacular` cuando una receta externa coincide mucho mejor — equilibrar `relevance + matchScore + user filters + source quality`. |
+| REQ-08 | Prioridad de ordenamiento: (1) calidad del match, (2) disponibilidad de ingredientes, (3) preferencias del usuario, (4) calidad/confiabilidad de la receta, (5) fuente. **No** ordenar simplemente `Internal > Proveedor externo (Gemini)` cuando una receta externa coincide mucho mejor — equilibrar `relevance + matchScore + user filters + source quality`. |
 | REQ-09 | Forma del resultado expuesta a consumidores (API/UI) según PROMTP #71, incluyendo el ejemplo `matchScore: 0.92` con arrays `availableIngredients`/`missingIngredients`/`optionalMissingIngredients`. |
 | REQ-10 | Input de recomendación desde clientes: `{ ingredientIds, mealType, cuisineId }` (el transporte se ve en la spec 11). |
 
 ## Dependencias
 
-- `06-domain-layer`, `07-application-layer`, `09-spoonacular-adapter` (ruta de fallback), `08-infrastructure-supabase` (recetas internas).
+- `06-domain-layer`, `07-application-layer`, `09-gemini-adapter` (ruta de fallback), `08-infrastructure-supabase` (recetas internas).
 
 ## Criterios de aceptación
 
 - [ ] Score de 4/5 ingredientes obligatorios = 0.8 en tests unitarios (REQ-02).
 - [ ] Faltar un staple (sal) no hace caer el score como faltar un ingrediente principal (REQ-04).
 - [ ] Sin cuisine especificada → resultados que abarcan múltiples cocinas (Casos 2/3 de PROMTP #83).
-- [ ] Con Spoonacular fallando → los resultados internos siguen llegando (Caso 5).
-- [ ] La misma receta desde interna + Spoonacular aparece una sola vez tras dedup.
+- [ ] Con el proveedor externo (Gemini) fallando → los resultados internos siguen llegando (Caso 5).
+- [ ] La misma receta desde interna + proveedor externo (Gemini) aparece una sola vez tras dedup.
 - [ ] Test de ordenamiento: una receta externa con mejor match puede rankear por encima de una interna más débil.
 
 ## Verificación

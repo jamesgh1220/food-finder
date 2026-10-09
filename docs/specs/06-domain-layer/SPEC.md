@@ -22,7 +22,7 @@ Crear el dominio independiente de tecnología: entidades, value objects, interfa
 
 | ID | Requisito |
 |----|-----------|
-| REQ-01 | **Recipe**: `id, name, slug, description, cuisineId, country, region, mealType, instructions, preparationTime, cookingTime, servings, difficulty, imageUrl, source, sourceUrl, timestamps`. `source` ∈ `INTERNAL \| SPOONACULAR \| AI_GENERATED \| OTHER` (ahora solo se usan INTERNAL/SPOONACULAR; los demás valores no deben requerir rediseño de esquema/código a futuro). |
+| REQ-01 | **Recipe**: `id, name, slug, description, cuisineId, country, region, mealType, instructions, preparationTime, cookingTime, servings, difficulty, imageUrl, source, sourceUrl, timestamps`. `source` ∈ `INTERNAL \| SPOONACULAR \| AI_GENERATED \| OTHER` (en el MVP se usan INTERNAL y AI_GENERATED; SPOONACULAR y OTHER quedan reservados para fuentes externas futuras y no deben requerir rediseño de esquema/código). |
 | REQ-02 | **Cuisine**: `id, name, slug, country, region, description, createdAt, updatedAt`. Entidad-catálogo extensible — **nunca** un enum rígido; las nuevas cocinas se agregan solo con datos. |
 | REQ-03 | **Ingredient**: `id, name, normalizedName, category, isPantryStaple, createdAt, updatedAt`. |
 | REQ-04 | **RecipeIngredient**: `recipeId, ingredientId, quantity, unit, optional, notes`. |
@@ -41,7 +41,7 @@ Crear el dominio independiente de tecnología: entidades, value objects, interfa
 ## Criterios de aceptación
 
 - [x] Las seis entidades y los cinco value objects existen con exactamente los campos/valores indicados.
-- [x] Compilar el dominio no requiere paquetes de Supabase/Spoonacular/Next.js/React.
+- [x] Compilar el dominio no requiere paquetes de Supabase/Gemini/Next.js/React.
 - [x] Los puertos de repositorio son interfaces puras utilizables con mocks.
 - [x] Tests unitarios de normalización: las variantes de mayúsculas resuelven a un solo ingrediente.
 - [x] Agregar una cocina no requiere cambio de código (datos-driven).

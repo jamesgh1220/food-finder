@@ -32,7 +32,7 @@ El usuario entiende **por qué** se le recomendó cada receta (score explicado, 
 5. Botón favorito → guarda; recargar/favoritos → persiste (Caso 6).
 6. Eliminar favorito → desaparece de `/dashboard/favorites`.
 7. Sin resultados → `EmptyState`; cargando → skeleton; error → `ErrorState`.
-8. Receta externa (Spoonacular) renderiza igual que interna, mostrando `source`.
+8. Receta externa (generada por Gemini) renderiza igual que interna, mostrando `source`.
 
 ## Consideraciones técnicas
 

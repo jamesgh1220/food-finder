@@ -20,7 +20,7 @@ Persistencia funcional tras una interfaz limpia: las capas superiores usan puert
 - Traducción eficiente de consultas (índices, joins, sin N+1).
 - Wrap de errores de persistencia en `RepositoryError`.
 
-**Fuera de alcance:** esquema/migraciones, RLS, Spoonacular, composition root.
+**Fuera de alcance:** esquema/migraciones, RLS, proveedor externo (Gemini), composition root.
 
 ## Casos de prueba
 

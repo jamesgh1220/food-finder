@@ -30,7 +30,7 @@ Garantizar que cada usuario solo vea y modifique sus propios datos (perfil, desp
 3. Un usuario no autenticado no obtiene filas de tablas RLS de usuario.
 4. Los usuarios autenticados pueden leer `recipes`/`ingredients`/`cuisines` pero no escribir en ellas.
 5. Ninguna respuesta de error incluye stack trace, SQL ni valores de `.env`.
-6. Una llamada a Spoonacular colgada expira por timeout en lugar de bloquear la request.
+6. Una llamada a Gemini colgada expira por timeout en lugar de bloquear la request.
 
 ## Consideraciones técnicas
 

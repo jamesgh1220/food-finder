@@ -6,11 +6,11 @@ Implementar RecipeRecommendationService: algoritmo de matching, staples, filtro 
 
 ## Descripción
 
-El núcleo del producto es "ingredientes → posibilidades culinarias". Esta spec construye el servicio de recomendación: score base explicable (disponibles/obligatorios), regla de pantry staples, filtro de cocina opcional (default ALL), flujo interno-primero con complemento de Spoonacular, deduplicación simple y ordenamiento por relevancia — nunca por fuente de forma ciega.
+El núcleo del producto es "ingredientes → posibilidades culinarias". Esta spec construye el servicio de recomendación: score base explicable (disponibles/obligatorios), regla de pantry staples, filtro de cocina opcional (default ALL), flujo interno-primero con complemento del proveedor externo (Gemini), deduplicación simple y ordenamiento por relevancia — nunca por fuente de forma ciega.
 
 ## Objetivo
 
-Recomendaciones correctas, explicables y multicocina: el usuario ve qué puede cocinar con lo que tiene, con porcentaje de coincidencia, ingredientes disponibles y faltantes, sin que Spoonacular sea punto único de fallo.
+Recomendaciones correctas, explicables y multicocina: el usuario ve qué puede cocinar con lo que tiene, con porcentaje de coincidencia, ingredientes disponibles y faltantes, sin que el proveedor externo (Gemini) sea punto único de fallo.
 
 ## Alcance
 
@@ -31,7 +31,7 @@ Recomendaciones correctas, explicables y multicocina: el usuario ve qué puede c
 2. Receta con ingrediente faltante staple (sal) → score claramente mayor que con ingrediente principal faltante.
 3. Sin cuisine → resultados de Perú, Argentina, España, etc. (multi-cocina).
 4. Con `cuisine = Peruana` → resultados peruanos prioritarios/filtrados.
-5. Spoonacular caído (mock 500/timeout) → siguen llegando recetas internas.
+5. Proveedor externo (Gemini) caído (mock 500/timeout) → siguen llegando recetas internas.
 6. Receta interna y externa equivalentes → aparece una sola vez tras dedup.
 7. Orden: receta externa con mejor match supera a interna con peor match.
 
@@ -40,14 +40,14 @@ Recomendaciones correctas, explicables y multicocina: el usuario ve qué puede c
 - Score simple y explicable para el MVP: sin pesos complejos, sustituciones ni NLP (#15).
 - Staples vienen del catálogo (`is_pantry_staple`), no de suposiciones por usuario (#16).
 - `cuisine` jamás es obligatoria en `FindRecipesFromPantry` (#17, #88).
-- El orden equilibra `relevance + matchScore + user filters + source quality` (#86), no `Internal > Spoonacular` automático.
+- El orden equilibra `relevance + matchScore + user filters + source quality` (#86), no `Internal > Proveedor externo (Gemini)` automático.
 - Diseñar la firma para recibir `UserPreferences` en el futuro sin implementarlo (#87).
 
 ## Criterios de aceptación
 
 - [ ] Los 7 casos de prueba en verde (unit, mocks para externo).
 - [ ] Resultados con la forma exacta de #71.
-- [ ] Fallback ante fallo de Spoonacular demostrado con mock.
+- [ ] Fallback ante fallo del proveedor externo (Gemini) demostrado con mock.
 - [ ] Dedup y ordenamiento cubiertos por tests.
 - [ ] Documentado el algoritmo (para spec 17: docs/decisions).
 

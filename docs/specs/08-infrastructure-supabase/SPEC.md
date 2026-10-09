@@ -15,7 +15,7 @@ Implementar los adapters de Supabase: un repositorio por puerto de dominio, mapp
 - Configuración de infraestructura (cableado de clients según la spec 05).
 
 ### Fuera del alcance
-- Esquema/migraciones (spec 03), RLS (spec 04), Spoonacular (spec 09), composition root (spec 02).
+- Esquema/migraciones (spec 03), RLS (spec 04), proveedor externo (Gemini, spec 09), composition root (spec 02).
 
 ## Requisitos
 

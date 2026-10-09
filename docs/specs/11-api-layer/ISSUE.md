@@ -6,7 +6,7 @@ Exponer los casos de uso como Route Handlers con validación Zod, envelope de re
 
 ## Descripción
 
-La API es la superficie de integración externa de Food Finder: 13 rutas (recetas, recommendations, ingredients, cuisines, pantry, favorites) con validación de todo input, envelope `success/data` o `success/error.code`, mapeo correcto de errores a status HTTP y rate limiting en el endpoint que dispara llamadas a Spoonacular.
+La API es la superficie de integración externa de Food Finder: 13 rutas (recetas, recommendations, ingredients, cuisines, pantry, favorites) con validación de todo input, envelope `success/data` o `success/error.code`, mapeo correcto de errores a status HTTP y rate limiting en el endpoint que dispara llamadas al proveedor externo (Gemini).
 
 ## Objetivo
 
@@ -31,7 +31,7 @@ Una API predecible, segura y documentada: cualquier cliente puede consumirla con
 4. `GET /api/pantry` sin sesión → 401.
 5. Escritura de pantry con sesión de otro usuario → bloqueada (403/404 + RLS).
 6. Más de N requests/min a recommendations → 429.
-7. Error simulado de Spoonacular → 502 mapeado o fallback según spec 10, sin stack trace en la respuesta.
+7. Error simulado del proveedor externo (Gemini) → 502 mapeado o fallback según spec 10, sin stack trace en la respuesta.
 8. Ninguna respuesta contiene SQL, secretos ni trazas.
 
 ## Consideraciones técnicas

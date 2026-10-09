@@ -19,7 +19,7 @@ Una base de datos recién migrada que ya permite probar recomendaciones reales: 
 - Staples marcados `is_pantry_staple` (sal, pimienta, aceite, azúcar, agua).
 - Reglas de contenido original/copyright (#53).
 
-**Fuera de alcance:** esquema (spec 03), datos de usuario, contenido externo de Spoonacular.
+**Fuera de alcance:** esquema (spec 03), datos de usuario, contenido externo (Gemini).
 
 ## Casos de prueba
 

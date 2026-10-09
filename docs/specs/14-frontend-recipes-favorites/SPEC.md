@@ -29,7 +29,7 @@ Construir las superficies de descubrimiento de recetas: cuadrícula de resultado
 | REQ-06 | Modelo de filtros extensible (`maxPreparationTime`, `difficulty`, `diet` reservados); el MVP entrega solo `ingredients/mealType/cuisine` (#70). |
 | REQ-07 | Caso de ingredientes insuficientes (Caso 4): mostrar disponibles **y** faltantes con claridad en tarjetas y detalle. |
 | REQ-08 | El botón de favorito alterna estado optimista/persistente vía los casos de uso de favoritos; Caso 6: el favorito persiste en Supabase entre sesiones. |
-| REQ-09 | El detalle de receta debe manejar de forma transparente recetas internas y con origen Spoonacular (mostrar `source`; los estados de fallo externo degradan con elegancia según la spec 09). |
+| REQ-09 | El detalle de receta debe manejar de forma transparente recetas internas y recetas generadas por IA (mostrar `source`; los estados de fallo externo degradan con elegancia según la spec 09). |
 | REQ-10 | Skeletons de carga, estados vacíos (sin resultados, sin favoritos), estados de error en todas partes. |
 
 ## Dependencias

@@ -65,7 +65,7 @@ El título de la spec dice "16 casos de uso", pero la enumeración autoritativa 
 
 **Cambios vs plan:** ninguno en el alcance. Se documentó la discrepancia de conteo 16 vs 18 (ver nota arriba). La política de proyecto sin PRs se mantiene (commits de work-unit + merge directo a `main`).
 
-**Dependencias:** `02-architecture-foundation` ✅ · `06-domain-layer` ✅ · siguientes: `08-infrastructure-supabase` (adapters concretos), `09-spoonacular-adapter`, `10-recommendation-engine` (implementa `RecipeRecommendationService`), `11-api-layer` (mapea los errores de dominio a HTTP).
+**Dependencias:** `02-architecture-foundation` ✅ · `06-domain-layer` ✅ · siguientes: `08-infrastructure-supabase` (adapters concretos), `09-gemini-adapter`, `10-recommendation-engine` (implementa `RecipeRecommendationService`), `11-api-layer` (mapea los errores de dominio a HTTP).
 
 **Verificación:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ (18 archivos / 85 tests). La verificación independiente con subagente no estuvo disponible por una limitación del runtime (fallo de transporte, no del código); la evidencia se apoya en la autoverificación del writer y la re-ejecución de los tres checks por el orquestador.
 

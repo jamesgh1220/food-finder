@@ -6,7 +6,7 @@ Crear la capa de dominio: entidades, value objects, puertos de repositorio, erro
 
 ## Descripción
 
-El dominio es el corazón de Food Finder y debe ser independiente de toda tecnología (sin Next.js, React, Supabase ni Spoonacular). Esta spec crea las 6 entidades (Recipe, Cuisine, Ingredient, RecipeIngredient, PantryItem, FavoriteRecipe), los 5 value objects, los 6 puertos de repositorio, la taxonomía de errores de dominio y las reglas de normalización de ingredientes.
+El dominio es el corazón de Food Finder y debe ser independiente de toda tecnología (sin Next.js, React, Supabase ni Gemini). Esta spec crea las 6 entidades (Recipe, Cuisine, Ingredient, RecipeIngredient, PantryItem, FavoriteRecipe), los 5 value objects, los 6 puertos de repositorio, la taxonomía de errores de dominio y las reglas de normalización de ingredientes.
 
 ## Objetivo
 
@@ -27,7 +27,7 @@ Un dominio puro y testeable que modele el producto multicocina — con `Cuisine`
 1. `Tomate`, `tomate`, `TOMATE` normalizan al mismo ingrediente.
 2. `MealType` solo acepta los 6 valores del prompt.
 3. `RecipeMatchScore` valida el rango 0–1.
-4. Compilar `src/domain/` no requiere paquetes de Next/React/Supabase/Spoonacular.
+4. Compilar `src/domain/` no requiere paquetes de Next/React/Supabase/Gemini.
 5. Los puertos se pueden instanciar con implementaciones mock en tests.
 6. Agregar una cocina no implica cambiar código del dominio.
 

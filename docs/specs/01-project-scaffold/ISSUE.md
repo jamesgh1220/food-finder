@@ -36,7 +36,7 @@ Que un desarrollador (o agente) pueda clonar el repo, instalarlo y ejecutar `dev
 ## Consideraciones técnicas
 
 - Verificar versiones estables actuales antes de instalar; no copiar configuraciones antiguas de Tailwind/Next.js (PROMTP #92–#93).
-- El secreto de Supabase y la API key de Spoonacular **nunca** llevan el prefijo `NEXT_PUBLIC_`.
+- El secreto de Supabase y la API key de Gemini **nunca** llevan el prefijo `NEXT_PUBLIC_`.
 - Mantener el MVP simple: sin Redis, GraphQL, microservicios ni otras tecnologías de la lista prohibida (PROMTP #75).
 
 ## Criterios de aceptación

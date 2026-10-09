@@ -49,6 +49,48 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // REQ-08 (spec 07): the application layer is pure. Use cases depend only on
+  // ports/domain, never on framework, infrastructure, or UI code, and never
+  // call the global fetch. Adapters are injected from the composition root.
+  {
+    files: ["src/application/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "next",
+                "next/*",
+                "react",
+                "react/*",
+                "react-dom",
+                "react-dom/*",
+                "@supabase/*",
+                "spoonacular",
+                "spoonacular/*",
+                "@spoonacular/*",
+                "@/app/*",
+                "@/components/*",
+                "@/infrastructure/*",
+              ],
+              message:
+                "REQ-08: the application layer must stay independent of Next.js, React, Supabase, Spoonacular, and UI/infrastructure. Depend on a port instead.",
+            },
+          ],
+        },
+      ],
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "fetch",
+          message:
+            "REQ-08: the application layer must not call fetch. HTTP lives in infrastructure adapters behind a port.",
+        },
+      ],
+    },
+  },
   // REQ-11: Server Components invoke use cases directly; never fetch own /api/* routes.
   {
     files: ["src/app/**/*.{ts,tsx}"],

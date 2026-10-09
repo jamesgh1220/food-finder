@@ -14,7 +14,7 @@ The recommendation port and `FindRecipesFromPantry` exist, but the use case curr
 
 - **In scope:** implement the `RecipeRecommendationService` contract and its application/domain matching behavior; pass supported request filters through; load recipe-ingredient and catalog pantry-staple metadata; add a narrow migration for persisted recipe-ingredient optionality; use a simple, explainable required-ingredient score; preserve optional-missing details; treat cuisine as optional; query internal candidates first and use Gemini when no internal candidate scores at least 0.8; merge, deduplicate, and rank by match quality before source tie-break; add focused unit tests and update spec evidence.
 - **Out of scope:** HTTP endpoint/transport (spec 11), UI score rendering (spec 14), normalization primitives (spec 06), changes to Gemini's generation/client internals beyond the narrow mapping needed to retain recipe ingredients, complex recommendation/scoring algorithms, substitutions, quantity-aware scoring, and schema expansion unrelated to this pipeline.
-- **Preserve:** existing user changes; use `pnpm` only; code, identifiers, comments, and commits in English. The user authorized committing `.codex/config.toml` and merging this local feature branch into `main`; push remains out of scope. RDD is clone-local OFF, so do not start a review.
+- **Preserve:** existing user changes; use `pnpm` only; code, identifiers, comments, and commits in English. `.codex/config.toml` was committed as `a2b9349` and the feature branch was fast-forwarded into local `main`; push remains out of scope. RDD is clone-local OFF, so no review was started.
 
 ## Constraints and decisions
 
@@ -70,4 +70,4 @@ Approximately 985 authored changed lines across implementation, tests, and docum
 
 ## Next step
 
-Feature work-unit commit `1ff3915` is complete on `feat/10-recommendation-engine`. The user has additionally authorized committing `.codex/config.toml` and merging the feature branch into local `main`; push remains out of scope.
+Feature commits `1ff3915`, `521ef31`, and `a2b9349` are now included on local `main` by fast-forward from `feat/10-recommendation-engine`. No push was performed.

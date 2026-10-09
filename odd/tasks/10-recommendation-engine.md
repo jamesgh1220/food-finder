@@ -14,7 +14,7 @@ The recommendation port and `FindRecipesFromPantry` exist, but the use case curr
 
 - **In scope:** implement the `RecipeRecommendationService` contract and its application/domain matching behavior; pass supported request filters through; load recipe-ingredient and catalog pantry-staple metadata; add a narrow migration for persisted recipe-ingredient optionality; use a simple, explainable required-ingredient score; preserve optional-missing details; treat cuisine as optional; query internal candidates first and use Gemini when no internal candidate scores at least 0.8; merge, deduplicate, and rank by match quality before source tie-break; add focused unit tests and update spec evidence.
 - **Out of scope:** HTTP endpoint/transport (spec 11), UI score rendering (spec 14), normalization primitives (spec 06), changes to Gemini's generation/client internals beyond the narrow mapping needed to retain recipe ingredients, complex recommendation/scoring algorithms, substitutions, quantity-aware scoring, and schema expansion unrelated to this pipeline.
-- **Preserve:** existing user changes; use `pnpm` only; code, identifiers, comments, and commits in English; no merge or push. RDD is clone-local OFF, so do not start a review.
+- **Preserve:** existing user changes; use `pnpm` only; code, identifiers, comments, and commits in English. The user authorized committing `.codex/config.toml` and merging this local feature branch into `main`; push remains out of scope. RDD is clone-local OFF, so do not start a review.
 
 ## Constraints and decisions
 
@@ -70,4 +70,4 @@ Approximately 985 authored changed lines across implementation, tests, and docum
 
 ## Next step
 
-Work-unit commit `1ff3915` is complete on `feat/10-recommendation-engine`. Push, merge, and review remain out of scope.
+Feature work-unit commit `1ff3915` is complete on `feat/10-recommendation-engine`. The user has additionally authorized committing `.codex/config.toml` and merging the feature branch into local `main`; push remains out of scope.

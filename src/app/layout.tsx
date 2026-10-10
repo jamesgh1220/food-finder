@@ -39,13 +39,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Food Finder",
-  description: "Find recipes from what you already have at home",
+  description: "Encuentra recetas con lo que ya tienes en casa",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${plusJakartaSans.variable} ${fraunces.variable} ${newsreader.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

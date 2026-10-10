@@ -86,6 +86,9 @@ export const messages = {
       title: "Tu despensa, convertida en ideas",
       primaryCta: "Comenzar",
     },
+    footer: {
+      tagline: "Cocina con lo que ya tienes en casa.",
+    },
   },
   mealTypes: {
     label: "Tipo de comida",

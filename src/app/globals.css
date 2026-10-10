@@ -135,3 +135,26 @@
     @apply font-sans;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Reveal — subtle fade-up used by the landing page. Runs only when    */
+/* the user has not requested reduced motion; without it elements stay */
+/* fully visible at rest.                                             */
+/* ------------------------------------------------------------------ */
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: reveal-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}

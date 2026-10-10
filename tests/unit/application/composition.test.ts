@@ -5,6 +5,7 @@ import type { RecipeRecommendationService } from "@/application/ports/recipe-rec
 import type {
   CuisineRepository,
   FavoriteRepository,
+  IngredientRepository,
   PantryRepository,
   RecipeRepository,
 } from "@/domain/ports";
@@ -45,13 +46,20 @@ function createMockDependencies() {
   const fakeRecommendations: RecipeRecommendationService = {
     recommend: vi.fn(async () => []),
   };
-  return {
+    const fakeIngredients: IngredientRepository = {
+    findById: vi.fn(async () => null),
+    findByNormalizedName: vi.fn(async () => null),
+    findMany: vi.fn(async () => []),
+    findByNormalizedNames: vi.fn(async () => []),
+    save: vi.fn(async (ingredient) => ingredient),
+  };  return {
     auth: createFakeAuthPort() as AuthPort,
     pantry: fakePantry,
     recipes: fakeRecipes,
     cuisines: fakeCuisines,
     favorites: fakeFavorites,
     recommendations: fakeRecommendations,
+    ingredients: fakeIngredients,
   };
 }
 
@@ -74,6 +82,7 @@ const EXPECTED_SERVICE_KEYS = [
   "addFavoriteRecipe",
   "removeFavoriteRecipe",
   "getFavoriteRecipes",
+  "searchIngredients",
 ] as const satisfies ReadonlyArray<keyof ApplicationServices>;
 
 describe("createApplicationServices", () => {

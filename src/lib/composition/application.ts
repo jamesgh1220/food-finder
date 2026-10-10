@@ -3,6 +3,7 @@ import type { RecipeRecommendationService } from "@/application/ports/recipe-rec
 import type {
   CuisineRepository,
   FavoriteRepository,
+  IngredientRepository,
   PantryRepository,
   RecipeRepository,
 } from "@/domain/ports";
@@ -20,6 +21,7 @@ import { GetCuisineById } from "@/application/cuisine/get-cuisine-by-id";
 import { AddFavoriteRecipe } from "@/application/favorites/add-favorite-recipe";
 import { RemoveFavoriteRecipe } from "@/application/favorites/remove-favorite-recipe";
 import { GetFavoriteRecipes } from "@/application/favorites/get-favorite-recipes";
+import { SearchIngredients } from "@/application/ingredients/search-ingredients";
 import { createAuthServices, type AuthServices } from "@/lib/composition/auth";
 
 /**
@@ -37,6 +39,7 @@ export interface ApplicationDependencies {
   cuisines: CuisineRepository;
   favorites: FavoriteRepository;
   recommendations: RecipeRecommendationService;
+  ingredients: IngredientRepository;
 }
 
 export interface ApplicationServices extends AuthServices {
@@ -54,6 +57,7 @@ export interface ApplicationServices extends AuthServices {
   addFavoriteRecipe: AddFavoriteRecipe;
   removeFavoriteRecipe: RemoveFavoriteRecipe;
   getFavoriteRecipes: GetFavoriteRecipes;
+  searchIngredients: SearchIngredients;
 }
 
 export function createApplicationServices(
@@ -86,5 +90,6 @@ export function createApplicationServices(
       deps.recipes,
       deps.auth,
     ),
+    searchIngredients: new SearchIngredients(deps.ingredients),
   };
 }

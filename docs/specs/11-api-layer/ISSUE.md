@@ -52,3 +52,17 @@ Una API predecible, segura y documentada: cualquier cliente puede consumirla con
 ## Resultado esperado
 
 API REST completa, validada y resistente al abuso externo, lista para que el frontend consuma recommendations, pantry y favorites con un contrato de respuesta único y fiable.
+
+## Evidencia de implementación (2026-10-10)
+
+- Se implementaron los 13 endpoints de REQ-01 como Route Handlers de Next.js 16 en `src/app/api/**/route.ts` (recipes, recipes/[id], recipes/recommendations, ingredients, ingredients/search, cuisines, pantry, pantry/[id], favorites, favorites/[recipeId]). Los handlers son delgados: componen servicios y delegan en funciones puras en `src/lib/api/handlers/`.
+- Envelope uniforme en `src/lib/api/envelope.ts`: éxito `{"success":true,"data":...}`, error `{"success":false,"error":{code,message,details}}`. El mapeo error→HTTP vive en `src/lib/api/errors.ts` (`toErrorResponse`): 400 VALIDATION_ERROR, 401 UNAUTHORIZED, 403 FORBIDDEN, 404 NOT_FOUND, 409 CONFLICT, 429 RATE_LIMITED, 502 EXTERNAL_SERVICE, 500 REPOSITORY/INTERNAL. Un error desconocido se loguea en servidor y responde 500 con mensaje genérico `Error interno del servidor.`, sin stack ni detalle interno.
+- Validación Zod de query/body/params en `src/lib/api/schemas.ts` + helper `parseOrThrow` (`src/lib/api/validation.ts`) que lanza `ValidationError` con `details.issues`. Cubre UUIDs, mealType (LUNCH/DINNER/SNACK), cantidades positivas, unidades y filtros.
+- Rate limiting en `POST /api/recipes/recommendations`: ventana deslizante in-memory (10 req / 60 s por cliente) en `src/lib/api/rate-limit.ts`; clave `x-forwarded-for` → `x-real-ip` → `"unknown"`. Sin Redis. Excedido → 429 `RATE_LIMITED`.
+- Autorización: los endpoints de datos de usuario (pantry, favorites) dependen de casos de uso que resuelven la sesión vía `requireAuthenticatedUser`; sin sesión el dominio lanza `UnauthorizedError` → 401. RLS permanece como retaguardia. Se probó el mapeo 401/404/502 a nivel handler.
+- `GET /api/recipes` soporta filtros `search`/`mealType`/`cuisineId`; `POST /api/recipes/recommendations` acepta `{ingredientIds, mealType, cuisineId}` (REQ-07) y devuelve la forma de la spec 10 (`recipe`, `matchScore`, `availableIngredients`, `missingIngredients`, `optionalMissingIngredients`) serializada dentro del envelope.
+- Next.js 16: `cacheComponents: true` deshabilita `export const dynamic`; se removió en todas las rutas. Las 13 rutas quedan clasificadas como `ƒ (Dynamic)` en el build. Los Route Handlers usan `new URL(request.url).searchParams` y `context.params` como Promise (`await params`).
+- Wiring: nuevo caso de uso `src/application/ingredients/search-ingredients.ts` conectado en `src/lib/composition/application.ts` (`ApplicationDependencies.ingredients` + `ApplicationServices.searchIngredients`); nuevo composition root de servidor `src/lib/composition/server-application.ts` que arma cliente Supabase server + repositorios + provider Gemini (degradado sin API key) + servicio de recomendación.
+- Verificación observada: `tsc --noEmit` PASS; `eslint .` PASS (0 warnings); `vitest run` PASS (30 archivos, 202 tests); `next build` PASS (exit 0, 0 errores), 13 rutas `ƒ (Dynamic)`.
+- Pendiente honesto: no se añadieron tests de integración que golpeen handlers reales con Supabase (spec 16); la cobertura actual es unitaria con casos de uso mockeados. La verificación de 401/403 contra RLS real queda pendiente de un entorno con base de datos.
+

@@ -74,18 +74,18 @@ antes del commit que cruce el umbral.
 
 ## Tasks
 
-- [ ] T1 — Rama `feat/frontend-foundation`, feature doc + mirror Engram. (inline)
-- [ ] T2 — Tooling de tests: instalar RTL + jest-dom + user-event, `tests/setup.ts`,
+- [x] T1 — Rama `feat/frontend-foundation`, feature doc + mirror Engram. (inline)
+- [x] T2 — Tooling de tests: instalar RTL + jest-dom + user-event, `tests/setup.ts`,
       `vitest.config.mts` con `setupFiles`. (inline, mechanical)
-- [ ] T3 — Primitivas base `src/components/ui/*` + utilidad de reveal en
+- [x] T3 — Primitivas base `src/components/ui/*` + utilidad de reveal en
       `globals.css`. (delegated writer)
-- [ ] T4 — Estados compartidos + componentes presentacionales de receta.
+- [x] T4 — Estados compartidos + componentes presentacionales de receta.
       (delegated writer)
-- [ ] T5 — Componentes interactivos (selectores, ingredientes, pantry, favorito).
+- [x] T5 — Componentes interactivos (selectores, ingredientes, pantry, favorito).
       (delegated writer)
-- [ ] T6 — i18n messages + landing `/`. (inline, design-critical)
-- [ ] T7 — Tests de componentes RTL. (delegated writer)
-- [ ] T8 — Verificación: `pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
+- [x] T6 — i18n messages + landing `/`. (inline, design-critical)
+- [x] T7 — Tests de componentes RTL. (delegated writer)
+- [x] T8 — Verificación: `pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
       (inline, bounded commands)
 
 ## Route declaration
@@ -103,18 +103,63 @@ antes del commit que cruce el umbral.
 
 ## Progress / evidence
 
-- (pendiente)
+Commits de work-unit en `feat/frontend-foundation`:
+
+- `2eee5a1` docs(odd): add spec 12 frontend foundation task doc.
+- `0b0d4ae` chore(test): set up React Testing Library with vitest.
+- `d0aa753` feat(ui): add shared UI primitives, states and recipe components.
+- `48bf175` feat(ui): add filters, ingredient, pantry and favorite components.
+- `a831c6c` feat(landing): build responsive landing page with examples and steps.
+- `2d83ad0` test(ui): add RTL component tests for spec 12.
+
+Verificación final (T8):
+
+- `pnpm lint`: PASS.
+- `pnpm typecheck`: PASS.
+- `pnpm test`: PASS — 41 archivos, 254 tests.
+- `pnpm build`: PASS — `/` prerenderizada estática (○).
+
+Entregables:
+
+- Landing `/` (`src/app/page.tsx`) con titular exacto, CTA `Comenzar` → `/register`,
+  `Iniciar sesión` → `/login`, 3 ejemplos y los 4 pasos; reveal con
+  `prefers-reduced-motion`.
+- 16 componentes: `src/components/ui/*` (button, card, badge, input, skeleton,
+  label), `src/components/shared/*` (empty/loading/error state),
+  `src/components/recipes/*` (recipe-card, recipe-grid, recipe-match-score,
+  missing-ingredients, recipe-ingredients, recipe-instructions),
+  `src/components/filters/*` (meal-type-selector, cuisine-selector),
+  `src/components/ingredients/*` (ingredient-search, ingredient-selector),
+  `src/components/pantry/*` (pantry-list, pantry-item),
+  `src/components/favorites/*` (favorite-button).
+- Copy centralizado en `src/lib/i18n/messages.ts`.
+- 12 archivos de test en `tests/unit/components/`.
+
+Nota: la estrategia de entrega `ask-on-risk` se difiere a la creación de PR (este
+workflow no abre PR); los commits de work-unit en la feature branch no se ven
+afectados. Si se pide un PR, se consulta en ese momento la estrategia de cadena.
+
+Nota TDD (honesta): no se observó RED-first. El runner RTL no existía y las
+unidades (T3/T4/T5) se implementaron y se verificaron con `typecheck`/`lint`
+antes de que existiera una ruta de test dentro de sus superficies de edición; la
+suite de T7 se escribió después contra las APIs observadas y pasó en su primera
+corrida (salvo un ajuste de mecanismo de test, no del producto). Para
+componentes presentacionales sin runner significativo se documentó la excepción
+y se usaron checks estructurales.
 
 ## Acceptance criteria
 
-- [ ] `/` renderiza el mensaje exacto, CTA `Comenzar` y los 4 pasos.
-- [ ] Los 16 componentes del SPEC existen y se exportan desde el árbol.
-- [ ] Viewport móvil sin overflow horizontal; targets táctiles utilizables.
-- [ ] Toda vista de datos tiene loading/empty/error (primitivas disponibles).
-- [ ] Auditoría: sin `'use client'` innecesario; sin Redux ni global state.
-- [ ] RHF + Zod con validación visible (formularios existentes; primitivas listas).
-- [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` en verde.
+- [x] `/` renderiza el mensaje exacto, CTA `Comenzar` y los 4 pasos.
+- [x] Los 16 componentes del SPEC existen y se exportan desde el árbol.
+- [x] Viewport móvil sin overflow horizontal; targets táctiles utilizables.
+- [x] Toda vista de datos tiene loading/empty/error (primitivas disponibles).
+- [x] Auditoría: sin `'use client'` innecesario; sin Redux ni global state
+      (cubierto por `tests/unit/components/client-boundary.test.ts`).
+- [x] RHF + Zod con validación visible (formularios existentes; primitivas listas).
+- [x] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` en verde.
 
 ## Next step
 
-T1: crear rama + feature doc (este archivo) y mirror en Engram.
+Spec 12 completa y verificada. Listo para continuar con spec 13
+(dashboard/pantry) reutilizando estas primitivas; los commits quedan en
+`feat/frontend-foundation` a la espera de decisión del usuario (PR / merge).

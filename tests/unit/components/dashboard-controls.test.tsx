@@ -6,13 +6,16 @@ import type { CuisineOption } from "@/components/filters/cuisine-selector";
 import { mealTypeLabels, messages } from "@/lib/i18n/messages";
 
 /**
- * DashboardControls behavior (spec 13, T6; REQ-01/REQ-04/REQ-06; PROMTP #40/#70).
+ * DashboardControls behavior (spec 13, T6; REQ-01/REQ-04/REQ-06; PROMTP #40/#70;
+ * spec 14 REQ-01).
  *
  * The URL is the single source of truth for the dashboard filters: the
  * selectors rewrite the query string through `router.replace` (preserving the
  * params they do not own) and the **Encontrar recetas** control is a plain GET
- * form to `/dashboard` that flips `search=1`. These tests mock `next/navigation`
- * so the component renders outside a live App Router context.
+ * form to `/dashboard/recipes` that carries the chosen filters. Spec 14 moved
+ * the results to the recipes route, so the form no longer flips a `search` flag.
+ * These tests mock `next/navigation` so the component renders outside a live App
+ * Router context.
  */
 
 const { replaceMock, routerState } = vi.hoisted(() => ({
@@ -57,7 +60,7 @@ beforeEach(() => {
 describe("DashboardControls", () => {
   it("sets the meal type on replace while preserving the existing query params", async () => {
     const user = userEvent.setup();
-    routerState.searchParams = new URLSearchParams("search=1&cuisineId=italiana");
+    routerState.searchParams = new URLSearchParams("cuisineId=italiana");
 
     render(
       <DashboardControls
@@ -74,15 +77,14 @@ describe("DashboardControls", () => {
     expect(url.searchParams.get("mealType")).toBe("LUNCH");
     // Existing params owned by other controls must survive the update.
     expect(url.searchParams.get("cuisineId")).toBe("italiana");
-    expect(url.searchParams.get("search")).toBe("1");
     expect(replaceMock).toHaveBeenCalledWith(expect.any(String), {
       scroll: false,
     });
   });
 
-  it("sets the cuisine id on replace and keeps the meal type and search flag", async () => {
+  it("sets the cuisine id on replace and keeps the meal type", async () => {
     const user = userEvent.setup();
-    routerState.searchParams = new URLSearchParams("search=1&mealType=LUNCH");
+    routerState.searchParams = new URLSearchParams("mealType=LUNCH");
 
     render(
       <DashboardControls
@@ -100,13 +102,12 @@ describe("DashboardControls", () => {
     const url = replacedUrl();
     expect(url.searchParams.get("cuisineId")).toBe("mexicana");
     expect(url.searchParams.get("mealType")).toBe("LUNCH");
-    expect(url.searchParams.get("search")).toBe("1");
   });
 
   it("removes the cuisine param when 'Todas' is selected", async () => {
     const user = userEvent.setup();
     routerState.searchParams = new URLSearchParams(
-      "search=1&mealType=LUNCH&cuisineId=italiana",
+      "mealType=LUNCH&cuisineId=italiana",
     );
 
     render(
@@ -125,11 +126,12 @@ describe("DashboardControls", () => {
     const url = replacedUrl();
     expect(url.searchParams.has("cuisineId")).toBe(false);
     expect(url.searchParams.get("mealType")).toBe("LUNCH");
-    expect(url.searchParams.get("search")).toBe("1");
   });
 
-  it("renders a GET form to /dashboard that submits search=1 and the current filters", () => {
-    routerState.searchParams = new URLSearchParams("mealType=LUNCH&cuisineId=italiana");
+  it("renders a GET form to the recipes route that submits the current filters", () => {
+    routerState.searchParams = new URLSearchParams(
+      "mealType=LUNCH&cuisineId=italiana",
+    );
 
     render(
       <DashboardControls
@@ -147,14 +149,16 @@ describe("DashboardControls", () => {
       throw new Error("Encontrar recetas form not found");
     }
 
-    expect(form).toHaveAttribute("action", "/dashboard");
+    // Spec 14: the dashboard is the search entry; results live on the recipes route.
+    expect(form).toHaveAttribute("action", "/dashboard/recipes");
     expect(form.getAttribute("method")?.toLowerCase()).toBe("get");
 
     const field = (name: string) =>
       form.querySelector<HTMLInputElement>(`input[name="${name}"]`);
-    expect(field("search")).toHaveValue("1");
     expect(field("mealType")).toHaveValue("LUNCH");
     expect(field("cuisineId")).toHaveValue("italiana");
+    // The old inline-search flag is gone.
+    expect(field("search")).toBeNull();
   });
 
   it("omits the hidden cuisine input when no cuisine is selected", () => {
@@ -175,8 +179,8 @@ describe("DashboardControls", () => {
     }
 
     expect(form.querySelector('input[name="cuisineId"]')).toBeNull();
-    expect(form.querySelector<HTMLInputElement>('input[name="mealType"]')).toHaveValue(
-      "ANY",
-    );
+    expect(
+      form.querySelector<HTMLInputElement>('input[name="mealType"]'),
+    ).toHaveValue("ANY");
   });
 });

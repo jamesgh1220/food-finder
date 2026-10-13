@@ -90,6 +90,35 @@ export const messages = {
       tagline: "Cocina con lo que ya tienes en casa.",
     },
   },
+  dashboard: {
+    greeting: (name: string) => `Hola, ${name}`,
+    heading: "¿Qué cocinamos hoy?",
+    subtitle:
+      "Elige el tipo de comida, revisa tu despensa y encuentra tu próxima receta.",
+    findRecipes: "Encontrar recetas",
+    managePantry: "Gestionar despensa",
+    pantryNav: "Despensa",
+    pantrySection: "Tu despensa",
+    resultsTitle: "Recetas para ti",
+    resultsIdle:
+      "Elige un tipo de comida y pulsa «Encontrar recetas» para ver qué puedes cocinar.",
+    resultsNoPantry:
+      "Agrega ingredientes a tu despensa para ver recetas que puedas cocinar.",
+    loading: "Buscando recetas con lo que tienes…",
+    error: {
+      title: "No pudimos cargar tu dashboard",
+      description: "Inténtalo de nuevo en un momento.",
+    },
+    resultsEmpty: {
+      title: "No encontramos recetas",
+      description:
+        "Prueba con otro tipo de comida, cambia la cocina o agrega más ingredientes.",
+    },
+    resultsError: {
+      title: "No pudimos cargar las recetas",
+      description: "Inténtalo de nuevo en un momento.",
+    },
+  },
   mealTypes: {
     label: "Tipo de comida",
     legend: "Tipo de comida",
@@ -105,6 +134,20 @@ export const messages = {
     remove: "Eliminar",
     save: "Guardar",
     cancel: "Cancelar",
+    clear: "Limpiar despensa",
+    clearConfirm: "¿Vaciar toda tu despensa? Esta acción no se puede deshacer.",
+    searchPlaceholder: "Escribe para buscar, por ejemplo: tomate",
+    addToPantry: "Agregar a la despensa",
+    emptyTitle: "Tu despensa está vacía",
+    emptyDescription:
+      "Agrega los ingredientes que tienes en casa para empezar a encontrar recetas.",
+    unknownIngredient: "Ingrediente",
+    itemsCount: (count: number) =>
+      count === 1 ? "1 ingrediente" : `${count} ingredientes`,
+    validation: {
+      quantity: "Ingresa una cantidad válida mayor que cero.",
+      unit: "Ingresa una unidad válida.",
+    },
   },
   recipes: {
     availableLabel: "Ingredientes que ya tienes",

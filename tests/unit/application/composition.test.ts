@@ -12,8 +12,8 @@ import type {
 import { createFakeAuthPort } from "./helpers";
 
 /**
- * Composition root de aplicación (spec 07): cablea los 18 casos de uso
- * (4 de auth reutilizando `createAuthServices` + 14 nuevos) a partir de
+ * Composition root de aplicación (spec 07): cablea los 20 casos de uso
+ * (4 de auth reutilizando `createAuthServices` + 16 nuevos) a partir de
  * puertos inyectados. Los tests solo verifican el cableado, no el
  * comportamiento (eso lo cubren los tests por caso de uso).
  */
@@ -30,6 +30,7 @@ function createMockDependencies() {
     findBySlug: vi.fn(async () => null),
     findByIds: vi.fn(async () => []),
     findMany: vi.fn(async () => []),
+    findIngredients: vi.fn(async () => []),
     save: vi.fn(async (recipe) => recipe),
   };
   const fakeCuisines: CuisineRepository = {
@@ -75,6 +76,7 @@ const EXPECTED_SERVICE_KEYS = [
   "clearUserPantry",
   "findRecipesFromPantry",
   "getRecipeById",
+  "getRecipeIngredients",
   "searchRecipes",
   "getRecipesByMealType",
   "getCuisines",
@@ -86,7 +88,7 @@ const EXPECTED_SERVICE_KEYS = [
 ] as const satisfies ReadonlyArray<keyof ApplicationServices>;
 
 describe("createApplicationServices", () => {
-  it("wires all 18 use cases (4 auth + 14 new) with an execute function", () => {
+  it("wires all 20 use cases (4 auth + 16 new) with an execute function", () => {
     const services = createApplicationServices(createMockDependencies());
 
     expect(Object.keys(services).sort()).toEqual(

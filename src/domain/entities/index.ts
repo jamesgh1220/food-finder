@@ -4,7 +4,7 @@ export type { Ingredient } from "./ingredient";
 export type { PantryItem } from "./pantry-item";
 export type { Difficulty, Recipe, RecipeSource } from "./recipe";
 export { RECIPE_SOURCES } from "./recipe";
-export type { RecipeIngredient } from "./recipe-ingredient";
+export type { RecipeIngredient, RecipeIngredientDetail } from "./recipe-ingredient";
 export type {
   RecipeRecommendationCandidate,
   RecipeRecommendationIngredient,

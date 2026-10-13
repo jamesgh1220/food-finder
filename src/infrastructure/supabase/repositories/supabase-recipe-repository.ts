@@ -1,7 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RecipeRepository } from "@/domain/ports";
+import type { RecipeIngredientDetail } from "@/domain/entities";
 import type { Database } from "@/types/database.types";
-import { toRecipe, toRecipeRow } from "../mappers";
+import {
+  toRecipe,
+  toRecipeIngredientDetail,
+  toRecipeRow,
+  type RecipeIngredientRow,
+} from "../mappers";
 import { toRepositoryError } from "./repository-error";
 
 /**
@@ -87,6 +93,29 @@ export function createSupabaseRecipeRepository(
         throw toRepositoryError("No se pudieron obtener las recetas.", error);
       }
       return (data ?? []).map(toRecipe);
+    },
+
+    async findIngredients(recipeId) {
+      // El embed `ingredients(id, name)` resuelve el nombre en una sola query
+      // (sin N+1) y el orden por `created_at` mantiene estable la lista.
+      const { data, error } = await client
+        .from("recipe_ingredients")
+        .select(
+          "ingredient_id, quantity, unit, optional, notes, ingredients(id, name)",
+        )
+        .eq("recipe_id", recipeId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        throw toRepositoryError(
+          "No se pudieron obtener los ingredientes de la receta.",
+          error,
+        );
+      }
+
+      return ((data ?? []) as unknown as RecipeIngredientRow[])
+        .map(toRecipeIngredientDetail)
+        .filter((detail): detail is RecipeIngredientDetail => detail !== null);
     },
 
     async save(recipe) {

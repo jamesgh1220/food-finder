@@ -9,4 +9,8 @@ export {
   toPantryItemWrite,
 } from "./pantry-item-mapper";
 export { toRecipe, toRecipeRow } from "./recipe-mapper";
+export {
+  toRecipeIngredientDetail,
+  type RecipeIngredientRow,
+} from "./recipe-ingredient-mapper";
 export { toUser } from "./user-mapper";

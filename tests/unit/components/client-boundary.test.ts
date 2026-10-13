@@ -34,12 +34,18 @@ function collectSourceFiles(dir: string): string[] {
 
 const SERVER_SAFE = [
   "src/app/page.tsx",
+  "src/app/dashboard/layout.tsx",
+  "src/app/dashboard/page.tsx",
+  "src/app/dashboard/pantry/page.tsx",
+  "src/components/dashboard/index.ts",
   "src/components/ui/button.tsx",
   "src/components/recipes/recipe-card.tsx",
   "src/components/shared/empty-state.tsx",
 ];
 
 const CLIENT_ONLY = [
+  "src/components/dashboard/dashboard-controls.tsx",
+  "src/components/pantry/pantry-manager.tsx",
   "src/components/ingredients/ingredient-search.tsx",
   "src/components/favorites/favorite-button.tsx",
   "src/components/filters/meal-type-selector.tsx",

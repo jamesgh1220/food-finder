@@ -104,7 +104,7 @@ export const messages = {
       "Elige un tipo de comida y pulsa «Encontrar recetas» para ver qué puedes cocinar.",
     resultsNoPantry:
       "Agrega ingredientes a tu despensa para ver recetas que puedas cocinar.",
-    loading: "Buscando recetas con lo que tienes…",
+    loading: "Cargando tu dashboard…",
     error: {
       title: "No pudimos cargar tu dashboard",
       description: "Inténtalo de nuevo en un momento.",

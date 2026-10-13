@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/shared/error-state";
 import { LoadingState } from "@/components/shared/loading-state";
 import { createServerApplicationServices } from "@/lib/composition/server-application";
 import { createServerAuthServices } from "@/lib/composition/server-auth";
+import { UnauthorizedError } from "@/domain/errors";
 import { messages } from "@/lib/i18n/messages";
 
 export const metadata: Metadata = {
@@ -80,7 +81,12 @@ async function PantryContent() {
       quantity: item.quantity.value,
       unit: item.unit.value,
     }));
-  } catch {
+  } catch (error) {
+    // A session that expired between the check above and these calls must not
+    // degrade to a generic error: send the user back to `/login`.
+    if (error instanceof UnauthorizedError) {
+      redirect("/login");
+    }
     loadFailed = true;
   }
 

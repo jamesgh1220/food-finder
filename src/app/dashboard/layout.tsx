@@ -14,9 +14,10 @@ import { messages } from "@/lib/i18n/messages";
  * pushed behind a `<Suspense>` boundary because it reads `cookies()`. The final
  * URLs remain exactly `/dashboard` and `/dashboard/pantry` — no route groups.
  *
- * Props are typed inline instead of `LayoutProps<"/dashboard">` on purpose: the
- * generated route types are refreshed by `next build`/`next dev`, and typing the
- * static shell by hand keeps `pnpm typecheck` independent of that regeneration.
+ * Props are typed inline rather than with `LayoutProps<"/dashboard">`. Like the
+ * root layout (`src/app/layout.tsx`) and `dashboard/page.tsx`, the generated
+ * route types come from `.next/types`, so `pnpm typecheck` expects a prior
+ * `next dev`/`next build` in the workspace either way.
  */
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (

@@ -14,6 +14,7 @@ import { createServerApplicationServices } from "@/lib/composition/server-applic
 import { createServerAuthServices } from "@/lib/composition/server-auth";
 import { messages } from "@/lib/i18n/messages";
 import { isMealType, type MealType } from "@/domain/value-objects";
+import { UnauthorizedError } from "@/domain/errors";
 import type { Cuisine, Ingredient, PantryItem } from "@/domain/entities";
 import type { RecommendedRecipe } from "@/application/ports/recipe-recommendation";
 import { cn } from "@/lib/utils";
@@ -97,7 +98,12 @@ async function DashboardContent({
     pantryItems = pantry;
     cuisines = cuisineList;
     ingredients = ingredientList;
-  } catch {
+  } catch (error) {
+    // A session that expired between the check above and these calls must not
+    // degrade to a generic error: send the user back to `/login`.
+    if (error instanceof UnauthorizedError) {
+      redirect("/login");
+    }
     loadFailed = true;
   }
 
@@ -128,7 +134,10 @@ async function DashboardContent({
         mealType,
         cuisineId,
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        redirect("/login");
+      }
       searchFailed = true;
     }
   }

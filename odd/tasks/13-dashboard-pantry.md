@@ -105,29 +105,39 @@ cadena se difiere a la creación de PR (este workflow no abre PR).
 
 ## Tasks
 
-- [ ] T1 — Rama `feat/13-dashboard-pantry`, feature doc + mirror Engram. (inline)
-- [ ] T2 — Shell y copy: `dashboard/layout.tsx` (header compartido con Suspense),
+- [x] T1 — Rama `feat/13-dashboard-pantry`, feature doc + mirror Engram. (inline)
+- [x] T2 — Shell y copy: `dashboard/layout.tsx` (header compartido con Suspense),
       refactor de `dashboard/page.tsx` (quitar shell duplicado), claves i18n
       `dashboard.*` y `pantry.*` nuevas en `messages.ts`. (delegated writer)
-- [ ] T3 — Dashboard completo: página server con searchParams
+- [x] T3 — Dashboard completo: página server con searchParams
       (`mealType|cuisineId|search`), enriquecimiento pantry→nombres, fetch de
       cuisines, resultados `FindRecipesFromPantry` con `RecipeGrid`/`RecipeCard`/
-      `RecipeMatchScore`/`MissingIngredients`, chips `IngredientSelector` +
-      link gestionar despensa; `DashboardControls` client (selectores → URL,
-      botón **Encontrar recetas**). (delegated writer)
-- [ ] T4 — Server Actions de pantry (`src/app/dashboard/pantry/actions.ts`,
+      `RecipeMatchScore`/`MissingIngredients`, chips `Badge` (ver nota) + link
+      gestionar despensa; `DashboardControls` client (selectores → URL, botón
+      **Encontrar recetas**). (delegated writer)
+- [x] T4 — Server Actions de pantry (`src/app/dashboard/pantry/actions.ts`,
       `'use server'`): `searchIngredients`, `addPantryIngredient`,
       `updatePantryIngredient`, `removePantryIngredient`, `clearUserPantry` —
       zod + `{ ok, error? }` + `refresh()`. (delegated writer)
-- [ ] T5 — Pantry: `src/app/dashboard/pantry/page.tsx` (server, carga inicial +
+- [x] T5 — Pantry: `src/app/dashboard/pantry/page.tsx` (server, carga inicial +
       enriquecimiento) y contenedor client `PantryManager` que integra
       `IngredientSearch` + `PantryList` + limpiar despensa, con estados
-      loading/empty/error y `EmptyState` guía (REQ-08). (delegated writer)
-- [ ] T6 — Tests RTL: `dashboard-controls`, `pantry-manager` (add/edit/remove/
-      clear con actions mockeadas), estados; reutilizar helpers de spec 12.
+      loading/empty/error y `EmptyState` guía (REQ-08). Tests de
+      `PantryManager` (test-first) entregados en esta tarea. (delegated writer)
+- [x] T6 — Tests RTL: `dashboard-controls`, `dashboard-page` (estados + guardas)
+      y auditoría de frontera server/client; se reutilizan helpers de spec 12.
       (delegated writer)
-- [ ] T7 — Verificación: `pnpm lint && pnpm typecheck && pnpm test && pnpm
+- [x] T7 — Verificación: `pnpm lint && pnpm typecheck && pnpm test && pnpm
       build`. (inline, bounded commands)
+
+### Nota de alcance T3 (chips)
+
+Los chips de despensa se renderizaron con el `Badge` compartido en lugar de
+`IngredientSelector`: ese componente exige `onRemove` (props no opcionales) y
+siempre dibuja un botón de quitar, así que usarlo como display puro obligaría a
+un affordance muerto o a tocar el componente de spec 12. `Badge variant="accent"`
+reproduce el mismo visual. Decisión aceptada; revisable si se quiere un
+`IngredientSelector` con `onRemove` opcional.
 
 ## Route declaration
 
@@ -144,31 +154,90 @@ cadena se difiere a la creación de PR (este workflow no abre PR).
 
 ## Progress / evidence
 
-(Por llenar por tarea: commit hash + verificación observada + tier RDD.)
+Commits de work-unit en `feat/13-dashboard-pantry`:
 
-- T1: rama `feat/13-dashboard-pantry` creada desde `main` limpio; doc +
-  mirror Engram. RDD: off global (sin assess/review).
-- T2..T6: pendientes.
+- `0efcea1` docs(odd): add spec 13 dashboard pantry task doc. (T1)
+- `be02bbd` feat(dashboard): add shared shell, dashboard page and filters. (T2+T3)
+- `d598068` feat(pantry): add pantry page, server actions and manager. (T4+T5)
+- `2746408` fix(dashboard): redirect on expired session and clarify copy.
+- `21514e9` test(dashboard): cover controls, page states and source boundary. (T6)
+
+RDD / verificación (RDD **off** decidido en global — `gentle-ai review mode
+status`): sin review nativo ni lenses (runtime `opencode` no elegible; además el
+switch está apagado). El gate de verificación delegada dio tier `high`
+(`assess` → `unassessable`), así que se aplicó writer self-verification **más un
+verificador independiente read-only** sobre `be02bbd`:
+
+- Veredicto: VERIFIED WITH FINDINGS — 0 blocker, 0 major, 4 minor, 4 nit.
+- Corregido en `2746408`: (1) comentario inexacto del layout sobre tipos
+  generados; (3) sesión expirada en plena carga ahora redirige a `/login` en
+  dashboard y pantry en vez de mostrar error genérico; (4) copy de carga del
+  dashboard neutralizada.
+- Aceptado/documentado sin cambio: (2) cambiar un filtro conserva `search=1` y
+  re-ejecuta recomendaciones (filtrado vivo intencional); (5) chips con `Badge`;
+  (6) `ErrorState` sin retry (el reload del browser reintenta); (7) el
+  enriquecimiento carga todo el catálogo de ingredientes (decisión ya registrada,
+  optimizable con un `findByIds` futuro); (8) claves `pantry.*` adelantadas
+  (consumidas por T4/T5).
+
+Verificación final (T7):
+
+- `pnpm lint`: PASS.
+- `pnpm typecheck`: PASS.
+- `pnpm test`: PASS — 44 archivos, 271 tests (11 nuevos de T6 + 6 de T5).
+- `pnpm build`: PASS — `/dashboard` y `/dashboard/pantry` como `◐` Partial
+  Prerender (shell estático + contenido dinámico en streaming); URLs exactas
+  confirmadas en la tabla de rutas.
+
+Nota TDD (honesta): T5 aplicó test-first real (RED = fallo de resolución del
+módulo del contenedor inexistente → GREEN). T2/T3 y T4-T6 de UI se escribieron y
+verificaron con `typecheck`/`lint`/suite; los tests de `dashboard-*` (T6) se
+autoraron contra las APIs ya observadas y pasaron en su primera corrida salvo el
+harness del page server (limitación documentada, no del producto).
+
+Entregables:
+
+- `src/app/dashboard/layout.tsx`: shell autenticado compartido (Suspense + auth).
+- `src/app/dashboard/page.tsx`: dashboard completo con `searchParams`
+  (`mealType|cuisineId|search`), enriquecimiento pantry→nombres, cuisines,
+  resultados y estados.
+- `src/components/dashboard/{dashboard-controls.tsx,index.ts}`: controles
+  client que escriben la URL + form GET **Encontrar recetas**.
+- `src/app/dashboard/pantry/{page.tsx,actions.ts}`: página server + 5 Server
+  Actions (`'use server'`, zod, `{ ok, message? }`, `refresh()`).
+- `src/components/pantry/pantry-manager.tsx` + barril: contenedor client de CRUD
+  con confirmación de limpiado y `EmptyState` guía.
+- Copy en `src/lib/i18n/messages.ts` (`dashboard.*`, `pantry.*`).
+- Tests: `tests/unit/components/pantry-manager.test.tsx`,
+  `dashboard-controls.test.tsx`, `dashboard-page.test.tsx` y auditoría de
+  frontera ampliada.
 
 ## Acceptance criteria
 
-- [ ] `/dashboard` exige autenticación y muestra: saludo, selector de tipo de
+- [x] `/dashboard` exige autenticación y muestra: saludo, selector de tipo de
       comida, chips de ingredientes disponibles, selector de cocina (default
-      `Todas`), botón **Encontrar recetas** y resultados de recomendación.
-- [ ] CRUD de pantry end-to-end contra datos reales: agregar `papa`, `carne`,
-      `huevo` → visibles; editar cantidad/unidad persiste tras recargar;
-      eliminar y limpiar funcionan.
-- [ ] Búsqueda de ingrediente case-insensitive (`TOMATE` → `Tomate`).
+      `Todas`), botón **Encontrar recetas** y resultados (tests + build).
+- [ ] CRUD de pantry end-to-end contra datos reales — **pendiente**: los tests
+      unitarios cubren el cableado con acciones mockeadas; falta el flujo E2E
+      (spec 16, flujos 3–6) con Supabase sembrado.
 - [ ] Sin cocina → resultados multi-cocina (Caso 2); con `cuisine = Peruana` →
-      resultados peruanos (Caso 3).
-- [ ] Despensa vacía → `EmptyState` amigable, no pantalla rota.
-- [ ] URLs finales exactas `/dashboard` y `/dashboard/pantry`.
-- [ ] Estados loading/empty/error presentes en todas las obtenciones.
-- [ ] Sin hops a `/api/*` desde Server Components; sin Redux/estado global.
-- [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` en verde.
+      resultados peruanos (Caso 3) — **pendiente**: verificación en navegador
+      contra datos sembrados (spec 15/16); no ejecutable en esta pasada unitaria.
+- [x] Búsqueda de ingrediente case-insensitive (`TOMATE` → `Tomate`): la
+      garantiza el repositorio (`ilike` sobre `normalized_name`); el cableado de
+      la Server Action está cubierto por tests.
+- [x] Despensa vacía → `EmptyState` amigable, no pantalla rota (tests).
+- [x] URLs finales exactas `/dashboard` y `/dashboard/pantry` (tabla de build).
+- [x] Estados loading/empty/error presentes en las obtenciones.
+- [x] Sin hops a `/api/*` desde Server Components; sin Redux/estado global
+      (auditoría `client-boundary` + review).
+- [x] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` en verde.
 
 ## Next step
 
-Spec 13 implementada y verificada; seguir con spec 14 (recipes/favorites) sobre
-estos resultados. Commits quedan en `feat/13-dashboard-pantry` a la espera de
-decisión del usuario (PR / merge).
+Núcleo de spec 13 implementado y verificado en unit/build. Falta cerrar la
+aceptación que exige datos reales: correr los flujos E2E 3–6 de spec 16
+(dashboard, agregar ingredientes, elegir meal type, buscar, ver resultados) con
+la base sembrada para validar los Casos 2 y 3 y el CRUD end-to-end. Después,
+continuar con spec 14 (recipes/favorites) sobre estos resultados. Commits en
+`feat/13-dashboard-pantry` a la espera de decisión del usuario (PR / merge).

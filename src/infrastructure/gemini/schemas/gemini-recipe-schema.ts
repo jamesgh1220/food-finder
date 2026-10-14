@@ -56,52 +56,76 @@ export type GeminiRecipesResponse = z.infer<typeof GeminiRecipesResponseSchema>;
  * `responseMimeType: "application/json"` para pedir salida estructurada.
  *
  * Es best-effort: solo guía al modelo. La validación real la hace Zod.
+ *
+ * `cuisineNames` restringe el enum de `cuisine` al catálogo real: la entidad
+ * `Recipe` exige un `cuisineId` resoluble, así que en el flujo de petición
+ * libre conviene acotar las opciones en lugar de descartar recetas después.
  */
-export const geminiResponseSchema: Record<string, unknown> = {
-  type: "object",
-  properties: {
-    recipes: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          description: { type: "string", nullable: true },
-          cuisine: { type: "string" },
-          mealType: { type: "string", enum: [...MEAL_TYPES] },
-          ingredients: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                name: { type: "string" },
-                quantity: { type: "number", nullable: true },
-                unit: { type: "string", nullable: true },
-                optional: { type: "boolean" },
+function buildGeminiResponseSchema(
+  cuisineNames?: string[],
+): Record<string, unknown> {
+  const cuisineProperty =
+    cuisineNames && cuisineNames.length > 0
+      ? { type: "string", enum: cuisineNames }
+      : { type: "string" };
+
+  return {
+    type: "object",
+    properties: {
+      recipes: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            description: { type: "string", nullable: true },
+            cuisine: cuisineProperty,
+            mealType: { type: "string", enum: [...MEAL_TYPES] },
+            ingredients: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  quantity: { type: "number", nullable: true },
+                  unit: { type: "string", nullable: true },
+                  optional: { type: "boolean" },
+                },
+                required: ["name"],
               },
-              required: ["name"],
+            },
+            instructions: { type: "array", items: { type: "string" } },
+            preparationTimeMinutes: { type: "integer" },
+            servings: { type: "integer" },
+            difficulty: {
+              type: "string",
+              enum: ["EASY", "MEDIUM", "HARD"],
+              nullable: true,
             },
           },
-          instructions: { type: "array", items: { type: "string" } },
-          preparationTimeMinutes: { type: "integer" },
-          servings: { type: "integer" },
-          difficulty: {
-            type: "string",
-            enum: ["EASY", "MEDIUM", "HARD"],
-            nullable: true,
-          },
+          required: [
+            "name",
+            "cuisine",
+            "mealType",
+            "ingredients",
+            "instructions",
+            "preparationTimeMinutes",
+            "servings",
+          ],
         },
-        required: [
-          "name",
-          "cuisine",
-          "mealType",
-          "ingredients",
-          "instructions",
-          "preparationTimeMinutes",
-          "servings",
-        ],
       },
     },
-  },
-  required: ["recipes"],
-};
+    required: ["recipes"],
+  };
+}
+
+/** Schema por defecto (cocina libre): lo usa la búsqueda por ingredientes. */
+export const geminiResponseSchema: Record<string, unknown> =
+  buildGeminiResponseSchema();
+
+/** Variante que restringe `cuisine` al catálogo (flujo de petición libre). */
+export function geminiResponseSchemaWithCuisines(
+  cuisineNames: string[],
+): Record<string, unknown> {
+  return buildGeminiResponseSchema(cuisineNames);
+}

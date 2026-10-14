@@ -418,6 +418,131 @@ describe("createGeminiRecipeProvider", () => {
   });
 });
 
+describe("createGeminiRecipeProvider.generateFromPrompt", () => {
+  it("genera, persiste y proyecta una receta desde una petición libre", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({ recipes: [makeGeminiRecipe()] });
+    const recipeRepository = createFakeRecipeRepository();
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository,
+      logger: createFakeLogger(),
+    });
+
+    const result = await provider.generateFromPrompt({
+      prompt: "Tengo pasta y tomate",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe("persisted-pasta-al-tomate");
+    expect(result?.name).toBe("Pasta al tomate");
+    // Sin filtros del producto, el tipo de comida lo decide el modelo.
+    expect(result?.mealType).toBe("DINNER");
+    expect(result?.cuisineName).toBe("Italiana");
+    expect(result?.preparationTimeMinutes).toBe(20);
+    expect(result?.servings).toBe(2);
+    expect(result?.difficulty).toBe("EASY");
+    expect(result?.source).toBe("AI_GENERATED");
+    expect(result?.instructions).toEqual([
+      "Hervir la pasta.",
+      "Preparar la salsa.",
+    ]);
+    expect(result?.ingredients).toEqual([
+      { name: "Pasta", quantity: 200, unit: "g", optional: false },
+      { name: "Tomate", quantity: 2, unit: null, optional: false },
+    ]);
+    expect(recipeRepository.save).toHaveBeenCalledTimes(1);
+
+    const [prompt, responseSchema] = generateContent.mock.calls[0];
+    expect(prompt).toContain("Tengo pasta y tomate");
+    // La cocina se restringe al catálogo dentro del schema de la respuesta.
+    expect(JSON.stringify(responseSchema)).toContain("Italiana");
+  });
+
+  it("devuelve null sin tocar la red cuando no hay API key ni cliente", async () => {
+    const cuisineRepository = createFakeCuisineRepository();
+    const provider = createGeminiRecipeProvider({
+      cuisineRepository,
+      recipeRepository: createFakeRecipeRepository(),
+      logger: createFakeLogger(),
+    });
+
+    await expect(
+      provider.generateFromPrompt({ prompt: "Tengo pasta" }),
+    ).resolves.toBeNull();
+    expect(cuisineRepository.findAll).not.toHaveBeenCalled();
+  });
+
+  it("devuelve null cuando la cocina generada no es resoluble", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({
+      recipes: [makeGeminiRecipe({ cuisine: "Marciana" })],
+    });
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository: createFakeRecipeRepository(),
+      logger: createFakeLogger(),
+    });
+
+    await expect(
+      provider.generateFromPrompt({ prompt: "Tengo pasta" }),
+    ).resolves.toBeNull();
+  });
+
+  it("devuelve null cuando el contenido no valida el schema", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({ recipes: [{ name: "" }] });
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository: createFakeRecipeRepository(),
+      logger: createFakeLogger(),
+    });
+
+    await expect(
+      provider.generateFromPrompt({ prompt: "Tengo pasta" }),
+    ).resolves.toBeNull();
+  });
+
+  it("devuelve null sin lanzar cuando el cliente falla", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockRejectedValue(
+      new GeminiClientError("quota_exceeded", "429"),
+    );
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository: createFakeRecipeRepository(),
+      logger: createFakeLogger(),
+    });
+
+    await expect(
+      provider.generateFromPrompt({ prompt: "Tengo pasta" }),
+    ).resolves.toBeNull();
+  });
+
+  it("devuelve null cuando la persistencia falla", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({ recipes: [makeGeminiRecipe()] });
+    const recipeRepository = createFakeRecipeRepository();
+    vi.mocked(recipeRepository.save).mockRejectedValue(
+      new Error("Database unavailable"),
+    );
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository,
+      logger: createFakeLogger(),
+    });
+
+    await expect(
+      provider.generateFromPrompt({ prompt: "Tengo pasta" }),
+    ).resolves.toBeNull();
+  });
+});
+
 function makePersistedRecipe(overrides: Partial<Recipe> = {}): Recipe {
   return {
     id: "existing-recipe-id",

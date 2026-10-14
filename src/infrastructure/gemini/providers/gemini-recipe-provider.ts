@@ -2,9 +2,13 @@ import type {
   ExternalRecipeProvider,
   ExternalRecipeSearchInput,
 } from "@/application/ports/external-recipe-provider";
+import type {
+  ExternalRecipePromptInput,
+  ExternalRecipePromptProvider,
+  GeneratedRecipe,
+} from "@/application/ports/external-recipe-prompt-provider";
 import type { Logger } from "@/application/ports/logger";
-import type { Recipe } from "@/domain/entities";
-import type { RecipeRecommendationCandidate } from "@/domain/entities";
+import type { Recipe, RecipeRecommendationCandidate } from "@/domain/entities";
 import { normalizeIngredientName } from "@/domain/normalization/ingredient-normalizer";
 import { RepositoryError } from "@/domain/errors";
 import type { CuisineRepository, RecipeRepository } from "@/domain/ports";
@@ -17,6 +21,7 @@ import {
   GeminiRecipeSchema,
   GeminiRecipesResponseSchema,
   geminiResponseSchema,
+  geminiResponseSchemaWithCuisines,
   type GeminiRecipe,
 } from "../schemas";
 import {
@@ -27,14 +32,17 @@ import {
 /**
  * Adapter `GeminiRecipeProvider` (spec 09, REQ-02/REQ-08/REQ-09).
  *
- * Implementa el puerto `ExternalRecipeProvider` orquestando el pipeline
- * completo `prompt → cliente Gemini → schema Zod → mapper → dominio`. Es el
- * único punto que conoce Gemini; fuera de `src/infrastructure/gemini/` no
- * escapa ningún campo crudo del modelo.
+ * Implementa dos puertos: `ExternalRecipeProvider` (búsqueda por ingredientes,
+ * consumida por el motor de recomendación) y `ExternalRecipePromptProvider`
+ * (una receta desde una petición libre, consumida por el dashboard). Ambos
+ * comparten el pipeline `prompt → cliente Gemini → schema Zod → mapper →
+ * dominio`. Es el único punto que conoce Gemini; fuera de
+ * `src/infrastructure/gemini/` no escapa ningún campo crudo del modelo.
  *
- * Degradación elegante (REQ-08): sin API key o ante cualquier fallo devuelve
- * una lista vacía y registra el problema. NUNCA lanza y NUNCA expone el error
- * técnico, para que el proveedor externo no sea un punto único de fallo.
+ * Degradación elegante (REQ-08): sin API key o ante cualquier fallo, la
+ * búsqueda devuelve una lista vacía y la generación por petición devuelve
+ * `null`, registrando el problema. NUNCA lanza y NUNCA expone el error técnico,
+ * para que el proveedor externo no sea un punto único de fallo.
  */
 
 /** Opciones de construcción del proveedor. */
@@ -88,6 +96,82 @@ function buildPrompt(input: ExternalRecipeSearchInput): string {
   );
 
   return lines.join("\n");
+}
+
+/**
+ * Construye el prompt de "chef" para una petición libre del usuario.
+ *
+ * A diferencia de `buildPrompt`, aquí el usuario manda: no hay filtros
+ * estructurados, sino su propia descripción. La cocina se restringe al catálogo
+ * real para que la receta siempre tenga un `cuisineId` resoluble.
+ */
+function buildChefPrompt(
+  input: ExternalRecipePromptInput,
+  cuisineNames: string[],
+): string {
+  const lines = [
+    "Eres un chef profesional. El usuario te cuenta qué ingredientes tiene y qué quiere cocinar.",
+    "Genera UNA receta completa, clara y lista para cocinar, en español.",
+    "",
+    "Petición del usuario:",
+    input.prompt,
+    "",
+    "Reglas:",
+    "1. Usa principalmente los ingredientes que menciona el usuario; puedes asumir básicos de despensa (sal, aceite, agua, pimienta).",
+    "2. Escribe el nombre, la cocina, los ingredientes y los pasos en español.",
+    "3. Asigna cantidades concretas a cada ingrediente (número positivo + unidad); usa null solo cuando no aplique.",
+    "4. Devuelve pasos ordenados y detallados, con tiempos cuando correspondan.",
+    "5. Nunca uses preparaciones inseguras: cocina carnes, aves, huevos y pescados por completo.",
+    "6. Devuelve EXACTAMENTE una receta dentro del arreglo.",
+  ];
+
+  if (cuisineNames.length > 0) {
+    lines.push(
+      `7. Elige la cocina ÚNICAMENTE entre estas opciones: ${cuisineNames.join(", ")}.`,
+    );
+  }
+
+  lines.push(
+    '8. Responde ÚNICAMENTE con un objeto JSON válido con la forma { "recipes": [ ... ] }, sin texto adicional.',
+  );
+
+  return lines.join("\n");
+}
+
+/**
+ * Valida el sobre y cada receta por separado.
+ *
+ * Una receta inválida se descarta sin tumbar el lote (REQ-10); un sobre
+ * inválido descarta la respuesta completa.
+ */
+function parseRecipes(raw: unknown, logger?: Logger): GeminiRecipe[] {
+  const envelope = GeminiRecipesResponseSchema.safeParse(raw);
+  if (!envelope.success) {
+    logger?.warn(
+      "La respuesta de Gemini no tiene la forma esperada; se descarta.",
+      { issues: envelope.error.issues.length },
+    );
+    return [];
+  }
+
+  const recipes: GeminiRecipe[] = [];
+  let discarded = 0;
+  for (const item of envelope.data.recipes) {
+    const parsed = GeminiRecipeSchema.safeParse(item);
+    if (!parsed.success) {
+      discarded += 1;
+      continue;
+    }
+    recipes.push(parsed.data);
+  }
+  if (discarded > 0) {
+    logger?.warn(
+      "Algunas recetas de Gemini se descartaron por no validar el schema.",
+      { discarded },
+    );
+  }
+
+  return recipes;
 }
 
 /** Mapea y deduplica por slug las recetas válidas. */
@@ -197,12 +281,12 @@ async function persistRecipe(
  * Crea el proveedor externo de recetas basado en Gemini.
  *
  * Si no hay API key y no se inyecta un cliente, el proveedor se construye en
- * modo degradado: registra una advertencia y `searchByIngredients` devuelve
- * `[]` sin tocar la red (REQ-08).
+ * modo degradado: registra una advertencia; `searchByIngredients` devuelve `[]`
+ * y `generateFromPrompt` devuelve `null` sin tocar la red (REQ-08).
  */
 export function createGeminiRecipeProvider(
   options: GeminiRecipeProviderOptions,
-): ExternalRecipeProvider {
+): ExternalRecipeProvider & ExternalRecipePromptProvider {
   const { logger, cuisineRepository, recipeRepository } = options;
   const apiKey = options.apiKey?.trim() ?? "";
 
@@ -238,33 +322,7 @@ export function createGeminiRecipeProvider(
           geminiResponseSchema,
         );
 
-        const envelope = GeminiRecipesResponseSchema.safeParse(raw);
-        if (!envelope.success) {
-          logger?.warn(
-            "La respuesta de Gemini no tiene la forma esperada; se descarta.",
-            { issues: envelope.error.issues.length },
-          );
-          return [];
-        }
-
-        // Validación por receta: una inválida se descarta sin tumbar el lote.
-        const recipes: GeminiRecipe[] = [];
-        let discarded = 0;
-        for (const item of envelope.data.recipes) {
-          const parsed = GeminiRecipeSchema.safeParse(item);
-          if (!parsed.success) {
-            discarded += 1;
-            continue;
-          }
-          recipes.push(parsed.data);
-        }
-        if (discarded > 0) {
-          logger?.warn(
-            "Algunas recetas de Gemini se descartaron por no validar el schema.",
-            { discarded },
-          );
-        }
-
+        const recipes = parseRecipes(raw, logger);
         const mappedRecipes = mapRecipes(recipes, input, cuisines, logger);
         const persistedCandidates: RecipeRecommendationCandidate[] = [];
 
@@ -283,6 +341,87 @@ export function createGeminiRecipeProvider(
       } catch (error) {
         logProviderError(error, logger);
         return [];
+      }
+    },
+
+    async generateFromPrompt(input) {
+      if (!client) {
+        return null;
+      }
+
+      try {
+        const cuisines = await cuisineRepository.findAll();
+        const cuisineNames = cuisines.map((cuisine) => cuisine.name);
+        const raw = await client.generateContent(
+          buildChefPrompt(input, cuisineNames),
+          geminiResponseSchemaWithCuisines(cuisineNames),
+        );
+
+        const [recipe] = parseRecipes(raw, logger);
+        if (!recipe) {
+          logger?.warn(
+            "Gemini no devolvió una receta válida para la petición.",
+            { provider: "gemini" },
+          );
+          return null;
+        }
+
+        // El `mealType` lo decide el modelo a partir del texto del usuario; el
+        // input sintético solo satisface el mapper, que no recibe filtros aquí.
+        const mappingInput: ExternalRecipeSearchInput = {
+          availableIngredients: [],
+          mealType: recipe.mealType,
+          cuisineId: null,
+          cuisine: null,
+        };
+
+        const cuisineId = resolveCuisineId(recipe, mappingInput, cuisines);
+        if (!cuisineId) {
+          logger?.warn("Receta generada descartada: cocina no resoluble.", {
+            cuisine: recipe.cuisine,
+          });
+          return null;
+        }
+
+        const domainRecipe = mapGeminiRecipeToDomain({
+          recipe,
+          input: mappingInput,
+          cuisineId,
+        });
+
+        const persistedRecipe = await persistRecipe(
+          domainRecipe,
+          recipeRepository,
+          logger,
+        );
+        if (!persistedRecipe) {
+          return null;
+        }
+
+        const generated: GeneratedRecipe = {
+          id: persistedRecipe.id,
+          name: persistedRecipe.name,
+          description: persistedRecipe.description,
+          cuisineName:
+            cuisines.find((cuisine) => cuisine.id === cuisineId)?.name ?? null,
+          mealType: persistedRecipe.mealType,
+          difficulty: persistedRecipe.difficulty,
+          preparationTimeMinutes: persistedRecipe.preparationTime,
+          servings: persistedRecipe.servings,
+          ingredients: recipe.ingredients.map((ingredient) => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            optional: ingredient.optional ?? false,
+          })),
+          instructions: recipe.instructions,
+          source: persistedRecipe.source,
+        };
+
+        return generated;
+      } catch (error) {
+        logProviderError(error, logger);
+        return null;
       }
     },
   };

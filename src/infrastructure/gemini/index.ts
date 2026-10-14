@@ -27,5 +27,6 @@ export {
   GeminiRecipeSchema,
   GeminiRecipesResponseSchema,
   geminiResponseSchema,
+  geminiResponseSchemaWithCuisines,
 } from "./schemas";
 export type { GeminiRecipe, GeminiRecipesResponse } from "./schemas";

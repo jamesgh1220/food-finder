@@ -38,5 +38,6 @@ export async function createServerApplicationServices(): Promise<ApplicationServ
     favorites: repositories.favorites,
     recommendations,
     ingredients: repositories.ingredients,
+    externalPromptProvider: geminiProvider,
   });
 }

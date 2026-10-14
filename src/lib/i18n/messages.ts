@@ -106,6 +106,23 @@ export const messages = {
       description: "Inténtalo de nuevo en un momento.",
     },
   },
+  chef: {
+    tabsLabel: "Cómo quieres encontrar tu receta",
+    tabPrompt: "Pedir una receta",
+    tabFilters: "Buscar por filtros",
+    promptLabel: "Cuéntale al chef qué tienes y qué quieres cocinar",
+    promptPlaceholder:
+      "Ej: Tengo tomate, huevos y arroz. Quiero un almuerzo rápido y económico.",
+    promptHint:
+      "Menciona tus ingredientes y cualquier preferencia: tiempo, dificultad o tipo de comida.",
+    submit: "Generar recetas",
+    loading: "Generando tu receta…",
+    invalidPrompt: "Escribe una descripción válida (máximo 1000 caracteres).",
+    unauthorized: "Tu sesión expiró. Vuelve a iniciar sesión.",
+    errorTitle: "No pudimos generar la receta",
+    errorDescription: "Inténtalo de nuevo en un momento.",
+    resultTitle: "Tu receta generada",
+  },
   mealTypes: {
     label: "Tipo de comida",
     legend: "Tipo de comida",

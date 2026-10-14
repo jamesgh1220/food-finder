@@ -1,5 +1,6 @@
 import type { AuthPort } from "@/application/ports/auth";
 import type { RecipeRecommendationService } from "@/application/ports/recipe-recommendation";
+import type { ExternalRecipePromptProvider } from "@/application/ports/external-recipe-prompt-provider";
 import type {
   CuisineRepository,
   FavoriteRepository,
@@ -13,6 +14,7 @@ import { RemovePantryIngredient } from "@/application/pantry/remove-pantry-ingre
 import { GetUserPantry } from "@/application/pantry/get-user-pantry";
 import { ClearUserPantry } from "@/application/pantry/clear-user-pantry";
 import { FindRecipesFromPantry } from "@/application/recipes/find-recipes-from-pantry";
+import { GenerateRecipeFromPrompt } from "@/application/recipes/generate-recipe-from-prompt";
 import { GetRecipeById } from "@/application/recipes/get-recipe-by-id";
 import { GetRecipeIngredients } from "@/application/recipes/get-recipe-ingredients";
 import { SearchRecipes } from "@/application/recipes/search-recipes";
@@ -41,6 +43,8 @@ export interface ApplicationDependencies {
   favorites: FavoriteRepository;
   recommendations: RecipeRecommendationService;
   ingredients: IngredientRepository;
+  /** Genera una receta desde texto libre (Gemini como chef). */
+  externalPromptProvider: ExternalRecipePromptProvider;
 }
 
 export interface ApplicationServices extends AuthServices {
@@ -50,6 +54,7 @@ export interface ApplicationServices extends AuthServices {
   getUserPantry: GetUserPantry;
   clearUserPantry: ClearUserPantry;
   findRecipesFromPantry: FindRecipesFromPantry;
+  generateRecipeFromPrompt: GenerateRecipeFromPrompt;
   getRecipeById: GetRecipeById;
   getRecipeIngredients: GetRecipeIngredients;
   searchRecipes: SearchRecipes;
@@ -74,6 +79,10 @@ export function createApplicationServices(
     clearUserPantry: new ClearUserPantry(deps.pantry, deps.auth),
     findRecipesFromPantry: new FindRecipesFromPantry(
       deps.recommendations,
+      deps.auth,
+    ),
+    generateRecipeFromPrompt: new GenerateRecipeFromPrompt(
+      deps.externalPromptProvider,
       deps.auth,
     ),
     getRecipeById: new GetRecipeById(deps.recipes),

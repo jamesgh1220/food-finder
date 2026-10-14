@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createApplicationServices, type ApplicationServices } from "@/lib/composition/application";
 import type { AuthPort } from "@/application/ports/auth";
 import type { RecipeRecommendationService } from "@/application/ports/recipe-recommendation";
+import type { ExternalRecipePromptProvider } from "@/application/ports/external-recipe-prompt-provider";
 import type {
   CuisineRepository,
   FavoriteRepository,
@@ -12,8 +13,8 @@ import type {
 import { createFakeAuthPort } from "./helpers";
 
 /**
- * Composition root de aplicación (spec 07): cablea los 20 casos de uso
- * (4 de auth reutilizando `createAuthServices` + 16 nuevos) a partir de
+ * Composition root de aplicación (spec 07): cablea los 21 casos de uso
+ * (4 de auth reutilizando `createAuthServices` + 17 nuevos) a partir de
  * puertos inyectados. Los tests solo verifican el cableado, no el
  * comportamiento (eso lo cubren los tests por caso de uso).
  */
@@ -47,6 +48,9 @@ function createMockDependencies() {
   const fakeRecommendations: RecipeRecommendationService = {
     recommend: vi.fn(async () => []),
   };
+  const fakeExternalPromptProvider: ExternalRecipePromptProvider = {
+    generateFromPrompt: vi.fn(async () => null),
+  };
     const fakeIngredients: IngredientRepository = {
     findById: vi.fn(async () => null),
     findByNormalizedName: vi.fn(async () => null),
@@ -61,6 +65,7 @@ function createMockDependencies() {
     favorites: fakeFavorites,
     recommendations: fakeRecommendations,
     ingredients: fakeIngredients,
+    externalPromptProvider: fakeExternalPromptProvider,
   };
 }
 
@@ -75,6 +80,7 @@ const EXPECTED_SERVICE_KEYS = [
   "getUserPantry",
   "clearUserPantry",
   "findRecipesFromPantry",
+  "generateRecipeFromPrompt",
   "getRecipeById",
   "getRecipeIngredients",
   "searchRecipes",
@@ -88,7 +94,7 @@ const EXPECTED_SERVICE_KEYS = [
 ] as const satisfies ReadonlyArray<keyof ApplicationServices>;
 
 describe("createApplicationServices", () => {
-  it("wires all 20 use cases (4 auth + 16 new) with an execute function", () => {
+  it("wires all 21 use cases (4 auth + 17 new) with an execute function", () => {
     const services = createApplicationServices(createMockDependencies());
 
     expect(Object.keys(services).sort()).toEqual(

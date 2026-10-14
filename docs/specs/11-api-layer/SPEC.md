@@ -36,12 +36,28 @@ Exponer los casos de uso mediante Route Handlers de Next.js con el conjunto exac
 
 ## Criterios de aceptación
 
-- [ ] Cada endpoint de REQ-01 responde con el envelope y los códigos de estado correctos.
-- [ ] Body/query/param inválido → 400 con `VALIDATION_ERROR` y `details`.
-- [ ] Request no autenticada a pantry/favorites → 401; intento de escritura cruzada de usuario → bloqueado (RLS/autorización).
-- [ ] Requests rápidas y repetidas a recommendations superando el umbral → 429.
-- [ ] Grep de las rutas de error no muestra stack traces/secretos/SQL.
+- [x] Cada endpoint de REQ-01 responde con el envelope y los códigos de estado correctos. *(verificado a nivel handler con casos de uso mockeados; `tests/unit/api/handlers.test.ts` + `response.test.ts`)*
+- [x] Body/query/param inválido → 400 con `VALIDATION_ERROR` y `details`.
+- [ ] Request no autenticada a pantry/favorites → 401; intento de escritura cruzada de usuario → bloqueado (RLS/autorización). *(**parcial**: el 401 está verificado a nivel handler; el bloqueo de escritura cruzada depende de RLS y queda pendiente de un entorno con base de datos)*
+- [x] Requests rápidas y repetidas a recommendations superando el umbral → 429.
+- [x] Grep de las rutas de error no muestra stack traces/secretos/SQL. *(`toErrorResponse` responde 500 con `Error interno del servidor.` genérico y loguea el detalle en servidor)*
 
 ## Verificación
 
 Tests unitarios con casos de uso mockeados por ruta + tests de integración que golpean handlers reales (spec 16).
+
+**Evidencia observada (2026-10-10):** `tsc --noEmit` PASS · `eslint .` PASS (0 warnings) · `vitest run` PASS — 30 archivos / 202 tests · `next build` PASS (13 rutas `ƒ (Dynamic)`). Detalle completo en el registro del `ISSUE.md`.
+
+## Implementación (resultado) — 2026-10-10 · registrado 2026-10-13
+
+**Estado:** completada con dos verificaciones diferidas (integración real y 403 contra RLS). Commit de work-unit: `3578213` `feat(api): add route handlers, zod validation, envelope and rate limiting`.
+
+- **Rutas:** Route Handlers delgados en `src/app/api/**/route.ts` que componen servicios y delegan en funciones puras en `src/lib/api/handlers/`. `next build` clasifica las 13 rutas como `ƒ (Dynamic)`.
+- **Envelope:** `src/lib/api/envelope.ts` — éxito `{"success":true,"data":...}`, error `{"success":false,"error":{code,message,details}}`.
+- **Errores:** `src/lib/api/errors.ts` (`toErrorResponse`) mapea a los 8 códigos de REQ-05. Un error desconocido se loguea en servidor y responde 500 con mensaje genérico, sin stack ni detalle interno (REQ-06).
+- **Validación:** Zod para query/body/params en `src/lib/api/schemas.ts` + `parseOrThrow` (`src/lib/api/validation.ts`), que lanza `ValidationError` con `details.issues`.
+- **Rate limiting:** ventana deslizante in-memory (10 req/60 s por cliente) en `src/lib/api/rate-limit.ts`; clave `x-forwarded-for` → `x-real-ip` → `"unknown"`. Sin Redis (REQ-08).
+- **Autorización:** los endpoints de datos de usuario dependen de casos de uso que resuelven la sesión vía `requireAuthenticatedUser`; sin sesión → `UnauthorizedError` → 401, con RLS como retaguardia (REQ-09).
+- **Wiring:** caso de uso `searchIngredients` conectado en `src/lib/composition/application.ts`; composition root de servidor `src/lib/composition/server-application.ts` (Supabase server + repositorios + provider Gemini degradado sin API key + servicio de recomendación).
+- **Nota Next.js 16:** `cacheComponents: true` deshabilita `export const dynamic` (removido en todas las rutas); los handlers usan `new URL(request.url).searchParams` y `await params`.
+- **Pendiente honesto:** sin tests de integración que golpeen handlers reales contra Supabase (spec 16); la verificación del 403 vía RLS queda para un entorno con base de datos.

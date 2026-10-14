@@ -65,6 +65,8 @@ Motor de recomendación funcional y explicable: ingredientes → score → recet
 
 ## Evidencia de implementación (2026-10-09)
 
+**Estado:** completada. Commit de work-unit `1ff3915` `feat(recommendations): support optional recipe ingredients`; `pnpm test` PASS (25 archivos / 176 tests).
+
 - Se agregó la migración `supabase/migrations/003_recipe_ingredient_optionality.sql`, que añade `optional BOOLEAN NOT NULL DEFAULT FALSE`. No se aplicó a una base remota ni se ejecutó `db:push`.
 - `src/types/database.types.ts` refleja la columna nueva. La regeneración mediante `supabase gen types --local` no estaba disponible porque no existe contenedor Supabase local; se evitó `--linked` para no contactar la base remota.
 - `createSupabaseRecipeRecommendationCatalog` carga recetas internas con relaciones e ingredientes asociados; la clasificación pantry-staple viene del catálogo y la opcionalidad de la nueva columna.

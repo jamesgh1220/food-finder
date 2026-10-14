@@ -39,13 +39,27 @@ Construir `RecipeRecommendationService`: el pipeline ingredientes→recomendacio
 
 ## Criterios de aceptación
 
-- [ ] Score de 4/5 ingredientes obligatorios = 0.8 en tests unitarios (REQ-02).
-- [ ] Faltar un staple (sal) no hace caer el score como faltar un ingrediente principal (REQ-04).
-- [ ] Sin cuisine especificada → resultados que abarcan múltiples cocinas (Casos 2/3 de PROMTP #83).
-- [ ] Con el proveedor externo (Gemini) fallando → los resultados internos siguen llegando (Caso 5).
-- [ ] La misma receta desde interna + proveedor externo (Gemini) aparece una sola vez tras dedup.
-- [ ] Test de ordenamiento: una receta externa con mejor match puede rankear por encima de una interna más débil.
+- [x] Score de 4/5 ingredientes obligatorios = 0.8 en tests unitarios (REQ-02).
+- [x] Faltar un staple (sal) no hace caer el score como faltar un ingrediente principal (REQ-04).
+- [x] Sin cuisine especificada → resultados que abarcan múltiples cocinas (Casos 2/3 de PROMTP #83).
+- [x] Con el proveedor externo (Gemini) fallando → los resultados internos siguen llegando (Caso 5).
+- [x] La misma receta desde interna + proveedor externo (Gemini) aparece una sola vez tras dedup.
+- [x] Test de ordenamiento: una receta externa con mejor match puede rankear por encima de una interna más débil.
 
 ## Verificación
 
 Tests unitarios de dominio/aplicación para scoring, staples, opcionalidad de cuisine, dedup y ordenamiento (spec 16).
+
+**Evidencia observada (2026-10-09):** `pnpm test` PASS — 25 archivos / 176 tests · `pnpm lint` PASS · `pnpm typecheck` PASS. Detalle completo en `odd/tasks/10-recommendation-engine.md` y en la evidencia del `ISSUE.md`.
+
+## Implementación (resultado) — 2026-10-09 · registrado 2026-10-13
+
+**Estado:** completada. Commit de work-unit: `1ff3915` `feat(recommendations): support optional recipe ingredients`.
+
+- **Migración acotada:** `supabase/migrations/003_recipe_ingredient_optionality.sql` añade `recipe_ingredients.optional BOOLEAN NOT NULL DEFAULT FALSE`. `src/types/database.types.ts` refleja la columna. No hubo `supabase gen types` disponible (sin contenedor local); se evitó `--linked`.
+- **Candidatos internos:** `createSupabaseRecipeRecommendationCatalog` carga recetas, relaciones e ingredientes asociados en una sola lectura; la clasificación pantry-staple viene del catálogo, no de una suposición uniforme (REQ-04).
+- **Score explicable:** obligatorios disponibles / obligatorios no-staple, en rango 0–1. Un staple ausente permanece visible en `missingIngredients` sin reducir el score; los opcionales ausentes se reportan aparte y tampoco lo reducen. Una receta sin relaciones recibe score 0.
+- **Fallback externo:** se consulta Gemini únicamente cuando ninguna receta interna alcanza `matchScore >= 0.8`; un error del proveedor deja intactos los resultados internos (REQ-06).
+- **Merge y ordenamiento:** dedup por nombre normalizado, orden por score → cantidad de ingredientes disponibles → fuente interna solo como desempate (REQ-07/REQ-08). Una receta externa con mejor match puede superar a una interna más débil.
+- **Filtros:** meal type, cocina, tiempo de preparación y dificultad llegan al catálogo y al provider; `Recipe` no representa restricciones dietarias, por lo que `UserPreferences` sigue siendo diseño futuro (spec 07) y no se aplica.
+- **Pendiente honesto:** no hay tests de integración contra Supabase real para el catálogo (spec 16).

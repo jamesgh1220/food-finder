@@ -2,6 +2,7 @@ import type { Mock } from "vitest";
 import { describe, expect, it, vi } from "vitest";
 import { FindRecipesFromPantry } from "@/application/recipes/find-recipes-from-pantry";
 import { GetRecipeById } from "@/application/recipes/get-recipe-by-id";
+import { GetRecipeIngredients } from "@/application/recipes/get-recipe-ingredients";
 import { SearchRecipes } from "@/application/recipes/search-recipes";
 import { GetRecipesByMealType } from "@/application/recipes/get-recipes-by-meal-type";
 import type { RecommendedRecipe } from "@/application/ports/recipe-recommendation";
@@ -22,6 +23,7 @@ function createFakeRecipes(): RecipeRepository {
     findBySlug: vi.fn(async () => null),
     findByIds: vi.fn(async () => []),
     findMany: vi.fn(async () => []),
+    findIngredients: vi.fn(async () => []),
     save: vi.fn(async (recipe) => recipe),
   } satisfies RecipeRepository;
 }
@@ -188,5 +190,38 @@ describe("GetRecipesByMealType", () => {
     await useCase.execute({ mealType: "DINNER" });
 
     expect(recipes.findMany).toHaveBeenCalledWith({ mealType: "DINNER" });
+  });
+});
+
+describe("GetRecipeIngredients", () => {
+  it("reads the recipe ingredients with their names from the repository", async () => {
+    const recipes = createFakeRecipes();
+    const ingredients = [
+      {
+        ingredientId: "ing-1",
+        name: "Papa",
+        quantity: 3,
+        unit: "unidades",
+        optional: false,
+        notes: null,
+      },
+    ];
+    (recipes.findIngredients as Mock).mockResolvedValueOnce(ingredients);
+    const useCase = new GetRecipeIngredients(recipes);
+
+    const result = await useCase.execute({ recipeId: "recipe-1" });
+
+    expect(recipes.findIngredients).toHaveBeenCalledWith("recipe-1");
+    expect(result).toEqual(ingredients);
+  });
+
+  it("returns an empty list for an unknown recipe", async () => {
+    const recipes = createFakeRecipes();
+    const useCase = new GetRecipeIngredients(recipes);
+
+    const result = await useCase.execute({ recipeId: "missing" });
+
+    expect(recipes.findIngredients).toHaveBeenCalledWith("missing");
+    expect(result).toEqual([]);
   });
 });

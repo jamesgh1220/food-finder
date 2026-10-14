@@ -5,6 +5,7 @@ import type {
   Ingredient,
   PantryItem,
   Recipe,
+  RecipeIngredientDetail,
 } from "@/domain/entities";
 import type {
   CuisineRepository,
@@ -113,6 +114,11 @@ class InMemoryRecipeRepository implements RecipeRepository {
       }
       return true;
     });
+  }
+
+  async findIngredients(recipeId: string): Promise<RecipeIngredientDetail[]> {
+    void recipeId;
+    return [];
   }
 
   async save(recipe: Recipe): Promise<Recipe> {

@@ -14,6 +14,7 @@ import { GetUserPantry } from "@/application/pantry/get-user-pantry";
 import { ClearUserPantry } from "@/application/pantry/clear-user-pantry";
 import { FindRecipesFromPantry } from "@/application/recipes/find-recipes-from-pantry";
 import { GetRecipeById } from "@/application/recipes/get-recipe-by-id";
+import { GetRecipeIngredients } from "@/application/recipes/get-recipe-ingredients";
 import { SearchRecipes } from "@/application/recipes/search-recipes";
 import { GetRecipesByMealType } from "@/application/recipes/get-recipes-by-meal-type";
 import { GetCuisines } from "@/application/cuisine/get-cuisines";
@@ -50,6 +51,7 @@ export interface ApplicationServices extends AuthServices {
   clearUserPantry: ClearUserPantry;
   findRecipesFromPantry: FindRecipesFromPantry;
   getRecipeById: GetRecipeById;
+  getRecipeIngredients: GetRecipeIngredients;
   searchRecipes: SearchRecipes;
   getRecipesByMealType: GetRecipesByMealType;
   getCuisines: GetCuisines;
@@ -75,6 +77,7 @@ export function createApplicationServices(
       deps.auth,
     ),
     getRecipeById: new GetRecipeById(deps.recipes),
+    getRecipeIngredients: new GetRecipeIngredients(deps.recipes),
     searchRecipes: new SearchRecipes(deps.recipes),
     getRecipesByMealType: new GetRecipesByMealType(deps.recipes),
     getCuisines: new GetCuisines(deps.cuisines),

@@ -98,24 +98,11 @@ export const messages = {
     findRecipes: "Encontrar recetas",
     managePantry: "Gestionar despensa",
     pantryNav: "Despensa",
+    recipesNav: "Recetas",
     pantrySection: "Tu despensa",
-    resultsTitle: "Recetas para ti",
-    resultsIdle:
-      "Elige un tipo de comida y pulsa «Encontrar recetas» para ver qué puedes cocinar.",
-    resultsNoPantry:
-      "Agrega ingredientes a tu despensa para ver recetas que puedas cocinar.",
     loading: "Cargando tu dashboard…",
     error: {
       title: "No pudimos cargar tu dashboard",
-      description: "Inténtalo de nuevo en un momento.",
-    },
-    resultsEmpty: {
-      title: "No encontramos recetas",
-      description:
-        "Prueba con otro tipo de comida, cambia la cocina o agrega más ingredientes.",
-    },
-    resultsError: {
-      title: "No pudimos cargar las recetas",
       description: "Inténtalo de nuevo en un momento.",
     },
   },
@@ -155,9 +142,59 @@ export const messages = {
     allAvailable: "Tienes todo lo necesario",
     optionalNote: "opcional",
   },
+  recipesPage: {
+    heading: "Recetas para ti",
+    subtitle:
+      "Filtra por tipo de comida y cocina, y revisa por qué encaja cada receta.",
+    filtersLegend: "Filtros",
+    noPantryTitle: "Agrega ingredientes a tu despensa",
+    noPantryDescription:
+      "Necesitamos saber qué tienes en casa para recomendarte recetas.",
+    emptyTitle: "No encontramos recetas",
+    emptyDescription:
+      "Prueba con otro tipo de comida, cambia la cocina o agrega más ingredientes.",
+    errorTitle: "No pudimos cargar las recetas",
+    errorDescription: "Inténtalo de nuevo en un momento.",
+    loading: "Cargando recetas…",
+  },
+  recipeDetail: {
+    backLink: "Volver a recetas",
+    cuisine: "Cocina",
+    country: "País",
+    region: "Región",
+    time: "Tiempo",
+    servings: "Porciones",
+    difficulty: "Dificultad",
+    ingredients: "Ingredientes",
+    instructions: "Preparación",
+    source: "Fuente",
+    matchTitle: "Tu coincidencia",
+    minutes: (minutes: number) => `${minutes} min`,
+    servingsValue: (count: number) =>
+      count === 1 ? "1 porción" : `${count} porciones`,
+    noIngredients:
+      "No tenemos el detalle de los ingredientes de esta receta.",
+    notFoundTitle: "No encontramos la receta",
+    notFoundDescription: "Es posible que la receta ya no esté disponible.",
+    errorTitle: "No pudimos cargar la receta",
+    errorDescription: "Inténtalo de nuevo en un momento.",
+    loading: "Cargando la receta…",
+  },
   favorites: {
     add: "Guardar en favoritos",
     remove: "Quitar de favoritos",
+    nav: "Favoritos",
+    heading: "Tus recetas favoritas",
+    subtitle: "Vuelve a las recetas que guardaste.",
+    searchLabel: "Buscar en favoritos",
+    searchPlaceholder: "Busca por nombre de receta",
+    emptyTitle: "Aún no tienes favoritos",
+    emptyDescription:
+      "Guarda las recetas que te gusten para encontrarlas aquí.",
+    noMatches: "Ninguna receta coincide con tu búsqueda.",
+    errorTitle: "No pudimos cargar tus favoritos",
+    errorDescription: "Inténtalo de nuevo en un momento.",
+    loading: "Cargando tus favoritos…",
   },
   matchScore: {
     percentage: (percent: number) => `${percent}% de coincidencia`,

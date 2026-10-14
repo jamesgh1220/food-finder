@@ -1,4 +1,4 @@
-import type { Recipe } from "../entities";
+import type { Recipe, RecipeIngredientDetail } from "../entities";
 import type { MealType } from "../value-objects";
 
 /** Filtro de búsqueda de recetas usado por los casos de uso (spec 06, REQ-08). */
@@ -20,6 +20,14 @@ export interface RecipeRepository {
   findBySlug(slug: string): Promise<Recipe | null>;
   findByIds(ids: string[]): Promise<Recipe[]>;
   findMany(filter?: RecipeFilter): Promise<Recipe[]>;
+  /**
+   * Lee las relaciones receta↔ingrediente con el nombre del ingrediente ya
+   * resuelto (spec 14, REQ-02; PROMTP #10/#43).
+   *
+   * Es una proyección de lectura para la página de detalle: no toca el
+   * agregado `Recipe` (que no expone ingredientes) ni exige sesión.
+   */
+  findIngredients(recipeId: string): Promise<RecipeIngredientDetail[]>;
   /**
    * Persiste una receta nueva y devuelve la entidad guardada con el `id` y los
    * timestamps asignados por la base de datos (spec 09, REQ-07).

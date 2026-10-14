@@ -3,8 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { DashboardControls } from "@/components/dashboard";
-import { RecipeCard } from "@/components/recipes/recipe-card";
-import { RecipeGrid } from "@/components/recipes/recipe-grid";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { LoadingState } from "@/components/shared/loading-state";
@@ -16,7 +14,6 @@ import { messages } from "@/lib/i18n/messages";
 import { isMealType, type MealType } from "@/domain/value-objects";
 import { UnauthorizedError } from "@/domain/errors";
 import type { Cuisine, Ingredient, PantryItem } from "@/domain/entities";
-import type { RecommendedRecipe } from "@/application/ports/recipe-recommendation";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -37,6 +34,10 @@ function firstValue(value: string | string[] | undefined): string | undefined {
  * request-dependent streams in from `DashboardContent`. `searchParams` is a
  * Promise in Next 16 (page.md) and resolving it opts the page into request-time
  * rendering. The shared header lives in `dashboard/layout.tsx`.
+ *
+ * Spec 14 moved the recommendation results to `/dashboard/recipes`: this route is
+ * now the search entry only (greeting, meal type, pantry chips, cuisine and the
+ * **Encontrar recetas** button, which submits to the results route).
  */
 export default function DashboardPage({
   searchParams,
@@ -80,7 +81,6 @@ async function DashboardContent({
   const mealType: MealType = isMealType(mealTypeRaw) ? mealTypeRaw : "ANY";
   const cuisineRaw = firstValue(params.cuisineId);
   const cuisineId = cuisineRaw && cuisineRaw.length > 0 ? cuisineRaw : null;
-  const isSearching = firstValue(params.search) === "1";
 
   const services = await createServerApplicationServices();
 
@@ -116,31 +116,10 @@ async function DashboardContent({
     id: item.ingredientId,
     name: ingredientNames.get(item.ingredientId) ?? messages.pantry.unknownIngredient,
   }));
-  const ingredientIds = pantryItems.map((item) => item.ingredientId);
   const cuisineOptions = cuisines.map((cuisine) => ({
     id: cuisine.id,
     name: cuisine.name,
   }));
-
-  const hasPantry = ingredientIds.length > 0;
-  const shouldSearch = isSearching && hasPantry;
-
-  let recommendations: RecommendedRecipe[] = [];
-  let searchFailed = false;
-  if (shouldSearch) {
-    try {
-      recommendations = await services.findRecipesFromPantry.execute({
-        ingredientIds,
-        mealType,
-        cuisineId,
-      });
-    } catch (error) {
-      if (error instanceof UnauthorizedError) {
-        redirect("/login");
-      }
-      searchFailed = true;
-    }
-  }
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-12">
@@ -207,59 +186,6 @@ async function DashboardContent({
                 }
               />
             )}
-          </section>
-
-          <section className="mt-12">
-            <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-              {messages.dashboard.resultsTitle}
-            </h2>
-
-            <div className="mt-6">
-              {!isSearching ? (
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {messages.dashboard.resultsIdle}
-                </p>
-              ) : !hasPantry ? (
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {messages.dashboard.resultsNoPantry}
-                </p>
-              ) : searchFailed ? (
-                <ErrorState
-                  title={messages.dashboard.resultsError.title}
-                  description={messages.dashboard.resultsError.description}
-                />
-              ) : recommendations.length === 0 ? (
-                <EmptyState
-                  title={messages.dashboard.resultsEmpty.title}
-                  description={messages.dashboard.resultsEmpty.description}
-                  action={
-                    <Link
-                      href="/dashboard/pantry"
-                      className={cn(
-                        buttonVariants({ variant: "secondary", size: "md" }),
-                      )}
-                    >
-                      {messages.dashboard.managePantry}
-                    </Link>
-                  }
-                />
-              ) : (
-                <RecipeGrid>
-                  {recommendations.map((recommendation) => (
-                    <RecipeCard
-                      key={recommendation.recipe.id}
-                      recipe={recommendation.recipe}
-                      matchScore={recommendation.matchScore.value}
-                      availableIngredients={recommendation.availableIngredients}
-                      missingIngredients={recommendation.missingIngredients}
-                      optionalMissingIngredients={
-                        recommendation.optionalMissingIngredients
-                      }
-                    />
-                  ))}
-                </RecipeGrid>
-              )}
-            </div>
           </section>
         </>
       )}

@@ -23,6 +23,7 @@ export * from "./pantry/clear-user-pantry";
 
 export * from "./recipes/find-recipes-from-pantry";
 export * from "./recipes/get-recipe-by-id";
+export * from "./recipes/get-recipe-ingredients";
 export * from "./recipes/search-recipes";
 export * from "./recipes/get-recipes-by-meal-type";
 

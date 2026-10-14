@@ -55,6 +55,7 @@ function createFakeRecipeRepository(
     ),
     findByIds: vi.fn(async () => []),
     findMany: vi.fn(async () => []),
+    findIngredients: vi.fn(async () => []),
     save: vi.fn(async (recipe: Recipe) => ({
       ...recipe,
       id: `persisted-${recipe.slug}`,

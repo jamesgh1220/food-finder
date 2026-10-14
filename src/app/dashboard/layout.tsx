@@ -6,13 +6,15 @@ import { createServerAuthServices } from "@/lib/composition/server-auth";
 import { messages } from "@/lib/i18n/messages";
 
 /**
- * Shared authenticated shell for `/dashboard` and `/dashboard/pantry`
- * (spec 13, REQ-01/REQ-07).
+ * Shared authenticated shell for the `/dashboard/*` routes (spec 13, REQ-01/REQ-07;
+ * spec 14, REQ-01/REQ-03).
  *
- * The layout stays static: the brand and the pantry nav link are plain links,
- * while the session-dependent part (the user email and the logout button) is
- * pushed behind a `<Suspense>` boundary because it reads `cookies()`. The final
- * URLs remain exactly `/dashboard` and `/dashboard/pantry` — no route groups.
+ * The layout stays static: the brand and the nav links (despensa, recetas,
+ * favoritos) are plain links, while the session-dependent part (the user email
+ * and the logout button) is pushed behind a `<Suspense>` boundary because it
+ * reads `cookies()`. The final URLs remain exactly `/dashboard`,
+ * `/dashboard/pantry`, `/dashboard/recipes` and `/dashboard/favorites` — no
+ * route groups.
  *
  * Props are typed inline rather than with `LayoutProps<"/dashboard">`. Like the
  * root layout (`src/app/layout.tsx`) and `dashboard/page.tsx`, the generated
@@ -69,6 +71,18 @@ async function AuthenticatedHeader() {
             className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
           >
             {messages.dashboard.pantryNav}
+          </Link>
+          <Link
+            href="/dashboard/recipes"
+            className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            {messages.dashboard.recipesNav}
+          </Link>
+          <Link
+            href="/dashboard/favorites"
+            className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            {messages.favorites.nav}
           </Link>
         </div>
         <div className="flex items-center gap-4">

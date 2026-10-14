@@ -25,3 +25,7 @@ export {
   parseInstructionSteps,
   type RecipeInstructionsProps,
 } from "./recipe-instructions";
+export {
+  RecipesFilters,
+  type RecipesFiltersProps,
+} from "./recipes-filters";

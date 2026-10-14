@@ -16,9 +16,11 @@ import { cn } from "@/lib/utils";
  *
  * Client-only interactive block. The URL is the single source of truth: the
  * meal-type and cuisine selectors rewrite the query string with `router.replace`
- * (keeping the existing `search` flag and any future params), and the
- * **Encontrar recetas** button is a progressive GET form to `/dashboard` that
- * sets `search=1`. No data is fetched here and no global state is introduced.
+ * (keeping the existing params and any future ones), and the **Encontrar
+ * recetas** button is a progressive GET form to `/dashboard/recipes` that carries
+ * the chosen filters. The dashboard is the search entry; the results live on the
+ * recipes route (spec 14, REQ-01). No data is fetched here and no global state is
+ * introduced.
  *
  * The server passes the initial URL values and the cuisine catalog; those props
  * are the SSR baseline, while `useSearchParams` keeps the controls in sync
@@ -92,12 +94,11 @@ export function DashboardControls({
         className="max-w-xs"
       />
 
-      <form action="/dashboard" method="get">
+      <form action="/dashboard/recipes" method="get">
         <input type="hidden" name="mealType" value={mealType} />
         {cuisineId ? (
           <input type="hidden" name="cuisineId" value={cuisineId} />
         ) : null}
-        <input type="hidden" name="search" value="1" />
         <Button type="submit" size="lg" className="w-full sm:w-auto">
           {messages.dashboard.findRecipes}
         </Button>

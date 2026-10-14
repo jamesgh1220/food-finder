@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Suspense } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import DashboardPage from "@/app/dashboard/page";
@@ -134,8 +135,10 @@ beforeEach(() => {
   mocks.createServerAuthServices.mockResolvedValue({
     getCurrentUser: { execute: mocks.authExecute },
   });
-  // Deliberately omits `findRecipesFromPantry`: if the dashboard still ran the
-  // recommendation use case, this mock would throw and the test would fail.
+  // Deliberately omits `findRecipesFromPantry` and `generateRecipeFromPrompt`:
+  // if the dashboard still ran either use case during initial render, this mock
+  // would throw and the test would fail. The chef action is exercised through
+  // its own form test, not through the initial page render.
   mocks.createServerApplicationServices.mockResolvedValue({
     getUserPantry: { execute: mocks.pantryExecute },
     getCuisines: { execute: mocks.cuisinesExecute },
@@ -144,26 +147,36 @@ beforeEach(() => {
 });
 
 describe("DashboardPage", () => {
-  it("greets the authenticated user and renders the find-recipes control", async () => {
+  it("greets the authenticated user and opens on the chef prompt tab", async () => {
     await renderDashboard();
 
     expect(
       await screen.findByText(messages.dashboard.greeting("ana")),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: messages.dashboard.findRecipes }),
+      screen.getByRole("tab", { name: messages.chef.tabPrompt }),
+    ).toHaveAttribute("aria-selected", "true");
+    expect(
+      screen.getByLabelText(messages.chef.promptLabel),
     ).toBeInTheDocument();
+    // The structured filters live behind their own tab now.
+    expect(
+      screen.queryByRole("button", { name: messages.dashboard.findRecipes }),
+    ).not.toBeInTheDocument();
     expect(mocks.redirect).not.toHaveBeenCalled();
   });
 
-  it("submits the find-recipes control to the recipes route", async () => {
+  it("reveals the find-recipes control on the filters tab and submits to the recipes route", async () => {
+    const user = userEvent.setup();
     await renderDashboard();
 
-    const form = (
-      await screen.findByRole("button", {
-        name: messages.dashboard.findRecipes,
-      })
-    ).closest("form");
+    await user.click(
+      screen.getByRole("tab", { name: messages.chef.tabFilters }),
+    );
+
+    const form = screen
+      .getByRole("button", { name: messages.dashboard.findRecipes })
+      .closest("form");
 
     expect(form).toHaveAttribute("action", "/dashboard/recipes");
   });

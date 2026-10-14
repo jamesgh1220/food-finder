@@ -43,12 +43,15 @@ const SERVER_SAFE = [
   "src/components/dashboard/index.ts",
   "src/components/recipes/index.ts",
   "src/components/ui/button.tsx",
+  "src/components/ui/textarea.tsx",
   "src/components/recipes/recipe-card.tsx",
   "src/components/shared/empty-state.tsx",
 ];
 
 const CLIENT_ONLY = [
   "src/components/dashboard/dashboard-controls.tsx",
+  "src/components/dashboard/dashboard-tabs.tsx",
+  "src/components/dashboard/prompt-recipe-form.tsx",
   "src/components/pantry/pantry-manager.tsx",
   "src/components/ingredients/ingredient-search.tsx",
   "src/components/favorites/favorite-button.tsx",

@@ -36,12 +36,25 @@ Fijar la experiencia y las reglas del frontend: sensación moderna mobile-first 
 
 ## Criterios de aceptación
 
-- [ ] La landing renderiza en `/` con el mensaje exacto, el CTA y los 4 pasos explicados.
-- [ ] Los 15 componentes de REQ-03 existen y se usan o exportan desde el árbol de componentes.
-- [ ] Viewport móvil: sin overflow horizontal; targets táctiles utilizables.
-- [ ] Toda vista de datos tiene estados de carga/vacío/error.
-- [ ] Auditoría: sin boundaries `'use client'` innecesarios; sin librería de Redux/global state instalada.
+- [x] La landing renderiza en `/` con el mensaje exacto, el CTA y los 4 pasos explicados. *(`tests/unit/components/landing-page.test.tsx` + `pnpm build`)*
+- [x] Los 15 componentes de REQ-03 existen y se usan o exportan desde el árbol de componentes. *(REQ-03 enumera 16 nombres; se implementaron los 16 — ver nota de conteo en el `ISSUE.md`)*
+- [x] Viewport móvil: sin overflow horizontal; targets táctiles utilizables. *(verificación estructural sobre las primitivas mobile-first; sin pase visual manual)*
+- [x] Toda vista de datos tiene estados de carga/vacío/error. *(`EmptyState`/`LoadingState`/`ErrorState` + `tests/unit/components/states.test.tsx`)*
+- [x] Auditoría: sin boundaries `'use client'` innecesarios; sin librería de Redux/global state instalada. *(`tests/unit/components/client-boundary.test.ts`)*
 
 ## Verificación
 
 Tests de componentes (RTL) para las primitivas + pase visual/manual de la landing; chequeo de accesibilidad (HTML semántico, labels).
+
+**Evidencia observada (2026-10-10):** `pnpm lint` PASS · `pnpm typecheck` PASS · `pnpm test` PASS — 41 archivos / 254 tests · `pnpm build` PASS (`/` prerenderizada estática). Detalle completo en el registro del `ISSUE.md`.
+
+## Implementación (resultado) — 2026-10-10 · registrado 2026-10-13
+
+**Estado:** completada (unit/estructural).
+
+- **Landing:** `src/app/page.tsx` con el mensaje central, CTA `Comenzar`, ejemplos visuales y los 4 pasos; reveal con `prefers-reduced-motion`.
+- **Componentes compartidos:** `src/components/ui/` (button, card, badge, input, skeleton, label), `src/components/shared/` (empty/loading/error state), `src/components/recipes/` (card, grid, match score, missing ingredients, ingredients, instructions), `src/components/filters/` (meal type, cuisine), `src/components/ingredients/` (search, selector), `src/components/pantry/` (list, item), `src/components/favorites/` (button).
+- **Estado y frontera client/server:** regla de Server Components por defecto; `'use client'` solo para interacción. Auditoría automatizada en `tests/unit/components/client-boundary.test.ts` (sin Redux, sin boundaries innecesarios).
+- **i18n:** copy centralizado en `src/lib/i18n/messages.ts` para extracción posterior.
+- **Estándar visual:** `minimalist-ui` es la autoridad de diseño del proyecto (AGENTS.md); los tokens y las prohibiciones del skill rigen estas primitivas.
+- **Pendiente honesto:** el pase visual manual y la auditoría de accesibilidad no se ejecutaron; la evidencia es de estructura y tests RTL.

@@ -34,12 +34,25 @@ Construir el inicio autenticado (`/dashboard`) y el gestor de despensa (`/dashbo
 
 ## Criterios de aceptación
 
-- [ ] `/dashboard` exige autenticación y muestra todos los elementos de REQ-01.
-- [ ] El CRUD de pantry funciona end-to-end contra datos reales (agregar `papa`, `carne`, `huevo` → visibles en la lista; editar/eliminar/limpiar funcionan).
-- [ ] Seleccionando tipo de comida, sin cocina, y buscando → resultados multi-cocina (Caso 2).
-- [ ] Con `cuisine = Peruana` → resultados predominantemente/solo peruanos (Caso 3).
-- [ ] Las URLs finales son exactamente `/dashboard` y `/dashboard/pantry`.
+- [x] `/dashboard` exige autenticación y muestra todos los elementos de REQ-01. *(protección de sesión + elementos; verificado a nivel unit/estructural y por `pnpm build`)*
+- [ ] El CRUD de pantry funciona end-to-end contra datos reales (agregar `papa`, `carne`, `huevo` → visibles en la lista; editar/eliminar/limpiar funcionan). *(**parcial**: implementado y verificado con casos de uso mockeados; el E2E real de la spec 16 no se ejecutó)*
+- [ ] Seleccionando tipo de comida, sin cocina, y buscando → resultados multi-cocina (Caso 2). *(**pendiente**: E2E de la spec 16; el catálogo real ya está sembrado — 29 recetas de 6 cocinas — así que el bloqueo de datos no aplica)*
+- [ ] Con `cuisine = Peruana` → resultados predominantemente/solo peruanos (Caso 3). *(**pendiente**: misma razón que el Caso 2; el seed incluye 4 recetas peruanas)*
+- [x] Las URLs finales son exactamente `/dashboard` y `/dashboard/pantry`.
 
 ## Verificación
 
 Flujos E2E 3–6 de la spec 16 (dashboard, agregar ingredientes, seleccionar meal type, buscar recetas, ver resultados).
+
+**Evidencia observada (2026-10-13):** `pnpm lint` PASS · `pnpm typecheck` PASS · `pnpm test` PASS — 44 archivos / 271 tests · `pnpm build` PASS (`/dashboard` y `/dashboard/pantry` como `◐` Partial Prerender) · revisión independiente VERIFIED WITH FINDINGS (0 blocker, 0 major). Detalle completo en el registro del `ISSUE.md`.
+
+## Implementación (resultado) — 2026-10-13
+
+**Estado:** completada a nivel unit/estructural; los casos 2 y 3 quedan bloqueados por datos.
+
+- **Rutas y protección:** `/dashboard` y `/dashboard/pantry` bajo el shell autenticado; sin sesión → `/login`.
+- **Dashboard:** saludo, `MealTypeSelector`, chips de ingredientes, `CuisineSelector` opcional, botón `Encontrar recetas`; el envío navega a `/dashboard/recipes`.
+- **Pantry:** búsqueda case-insensitive, alta al seleccionar un resultado (cantidad 1 / unidad por defecto), edición de cantidad y unidad, borrado y limpieza de despensa.
+- **Estados:** `EmptyState`, `LoadingState` y `ErrorState` en ambas rutas; despensa vacía guía a agregar ingredientes.
+- **Modelo de filtros:** `{ingredientIds, mealType, cuisineId}` en la URL, extensible sin rehacer el estado.
+- **Pendiente honesto:** E2E 3–6 (spec 16) no ejecutados. El catálogo real se sembró el 2026-10-14, así que los Casos 2 y 3 ya no tienen bloqueo de datos.

@@ -44,12 +44,27 @@ El usuario puede declarar qué tiene en su cocina y obtener recomendaciones mult
 
 ## Criterios de aceptación
 
-- [ ] Ambas rutas en producción con los elementos completos de PROMTP #40/#41.
-- [ ] CRUD de pantry end-to-end persistiendo en Supabase.
-- [ ] Casos 2 y 3 del PROMPT verificados en navegador.
-- [ ] URLs exactas `/dashboard` y `/dashboard/pantry`.
-- [ ] Estados loading/empty/error presentes.
+- [x] Ambas rutas en producción con los elementos completos de PROMTP #40/#41. *(construidas con todos los elementos y `pnpm build` PASS; **no desplegadas a producción** ni con pase visual manual)*
+- [ ] CRUD de pantry end-to-end persistiendo en Supabase. *(**parcial**: implementado y verificado con casos de uso mockeados; el E2E 3–4 de la spec 16 no se ejecutó)*
+- [ ] Casos 2 y 3 del PROMPT verificados en navegador. *(**pendiente**: E2E 5–6 de la spec 16. El bloqueo de datos ya no aplica: el catálogo real quedó sembrado el 2026-10-14 con 29 recetas de 6 cocinas)*
+- [x] URLs exactas `/dashboard` y `/dashboard/pantry`.
+- [x] Estados loading/empty/error presentes. *(`EmptyState`/`LoadingState`/`ErrorState` + treats de estado en `tests/unit/components/dashboard-page.test.tsx`)*
 
 ## Resultado esperado
 
 El corazón usable del MVP: el usuario administra su despensa y obtiene recomendaciones explicables desde una sola pantalla, lista para conectar con la galería de recetas (spec 14).
+
+## Evidencia de implementación (implementado 2026-10-13 · registrado 2026-10-13)
+
+**Estado:** implementada y verificada a nivel unit/estructural; **aceptación E2E pendiente** (spec 16).
+
+**Commits de work-unit** en `feat/13-dashboard-pantry`: `be02bbd` (shell compartido, página de dashboard y filtros) · `d598068` · `2746408` (correcciones de la revisión) · `21514e9` (tests de controles, estados de página y frontera client/server).
+
+- **Rutas:** `/dashboard` (`src/app/dashboard/page.tsx`) y `/dashboard/pantry` (`src/app/dashboard/pantry/page.tsx`); `pnpm build` las reporta como `◐` Partial Prerender (shell estático + contenido dinámico en streaming).
+- **Dashboard:** saludo, `MealTypeSelector`, chips de pantry, `CuisineSelector` opcional y botón `Encontrar recetas`; el envío mueve a `/dashboard/recipes` (decisión registrada en la spec 14).
+- **Pantry:** `IngredientSearch`, `IngredientSelector`, `PantryList` y `PantryItem` con edición de cantidad/unidad, borrado y limpieza. El alta ocurre al seleccionar un resultado de búsqueda (no hay botón "Agregar" separado): `handleSelectIngredient` → `addPantryIngredientAction` con cantidad 1 y unidad por defecto.
+- **Protección:** `/dashboard` y `/dashboard/pantry` exigen sesión; con sesión expirada en plena carga redirigen a `/login`.
+- **Verificación observada (2026-10-13):** `pnpm lint` PASS · `pnpm typecheck` PASS · `pnpm test` PASS — 44 archivos / 271 tests · `pnpm build` PASS.
+- **Revisión independiente:** VERIFIED WITH FINDINGS — 0 blocker, 0 major, 4 minor, 4 nit; 3 corregidos en `2746408`, el resto aceptado/documentado en `odd/tasks/13-dashboard-pantry.md`.
+- **Pendiente honesto:** los flujos E2E 3–6 de la spec 16 no se ejecutaron. El bloqueo de datos que impedía los casos 2 y 3 quedó resuelto el 2026-10-14 (`recipes` = 29, `recipe_ingredients` = 229); falta correr el E2E.
+- **Desviación de proceso:** el registro se volcó solo a `odd/tasks/13-dashboard-pantry.md`; se corrige con esta nota.

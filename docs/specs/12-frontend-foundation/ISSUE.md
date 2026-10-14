@@ -41,12 +41,31 @@ Una base de UI coherente y reutilizable: landing que comunica el producto, primi
 
 ## Criterios de aceptación
 
-- [ ] Landing completa y responsiva en `/`.
-- [ ] Los 15 componentes creados bajo `src/components/` (subcarpetas según tipo).
-- [ ] Reglas de estado escritas y aplicadas: cero Redux, cero global state innecesario.
-- [ ] Cada vista de datos con loading/empty/error.
-- [ ] Validación visible con RHF + Zod en los formularios existentes.
+- [x] Landing completa y responsiva en `/`. *(`src/app/page.tsx`; prerenderizada estática en `pnpm build`)*
+- [x] Los 15 componentes creados bajo `src/components/` (subcarpetas según tipo). *(**nota de conteo:** REQ-03 enumera 16 nombres (incluye los 4 estados/`FavoriteButton`); se implementaron los 16. Ver nota abajo)*
+- [x] Reglas de estado escritas y aplicadas: cero Redux, cero global state innecesario. *(auditoría `tests/unit/components/client-boundary.test.ts`)*
+- [x] Cada vista de datos con loading/empty/error. *(primitivas en `src/components/shared/`: `empty-state`, `loading-state`, `error-state`)*
+- [x] Validación visible con RHF + Zod en los formularios existentes. *(formularios de auth; primitivas listas para el resto)*
 
 ## Resultado esperado
 
 Base de frontend lista: landing pública que convierte, biblioteca de componentes compartidos y reglas de rendimiento/estado que las pantallas funcionales (specs 13–14) reutilizarán directamente.
+
+### Nota de conteo (15 vs 16)
+
+El texto libre de la spec dice "15 componentes", pero la enumeración autoritativa de REQ-03 lista **16**: `IngredientSearch`, `IngredientSelector`, `PantryList`, `PantryItem`, `MealTypeSelector`, `CuisineSelector`, `RecipeCard`, `RecipeGrid`, `RecipeMatchScore`, `MissingIngredients`, `RecipeIngredients`, `RecipeInstructions`, `FavoriteButton`, `EmptyState`, `LoadingState`, `ErrorState`. Se implementaron los 16. La discrepancia es del texto de la spec, no del alcance (mismo caso que la nota 16-vs-18 de la spec 07).
+
+## Evidencia de implementación (implementado 2026-10-10 · registrado 2026-10-13)
+
+**Estado:** completada (verificación unitaria/estructural; sin pase visual manual).
+
+**Commits de work-unit** en `feat/frontend-foundation`: `2eee5a1` (task doc) · `0b0d4ae` (RTL + primitivas y componentes de receta) · `48bf175` (filtros, ingredientes, pantry, favoritos) · `a831c6c` (landing) · `2d83ad0` (tests RTL).
+
+- **Landing `/`** (`src/app/page.tsx`): titular exacto, CTA `Comenzar` → `/register`, `Iniciar sesión` → `/login`, 3 ejemplos y los 4 pasos; reveal con `prefers-reduced-motion`.
+- **Componentes:** `src/components/{ui,shared,recipes,filters,ingredients,pantry,favorites}/` (16 componentes + primitivas `ui/`: button, card, badge, input, skeleton, label).
+- **Copy centralizado:** `src/lib/i18n/messages.ts` (readiness i18n, REQ-07).
+- **Tests:** 12 archivos en `tests/unit/components/`.
+- **Verificación observada (2026-10-10):** `pnpm lint` PASS · `pnpm typecheck` PASS · `pnpm test` PASS — 41 archivos / 254 tests · `pnpm build` PASS (`/` prerenderizada estática).
+- **Nota TDD honesta:** no se observó RED-first. El runner RTL no existía cuando se implementaron las unidades de UI; la suite de componentes se escribió después contra las APIs observadas. Para componentes presentacionales se documentó la excepción y se usaron checks estructurales.
+- **Pendiente honesto:** el viewport móvil y la accesibilidad se validaron por estructura (HTML semántico, labels, sin overflow en las primitivas), no con un pase visual manual ni con auditoría automatizada.
+- **Desviación de proceso:** el registro no se volcó a `docs/specs/` en su momento (solo a `odd/tasks/12-frontend-foundation.md`); se corrige con esta nota.

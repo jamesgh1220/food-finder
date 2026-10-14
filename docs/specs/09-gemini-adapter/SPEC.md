@@ -44,13 +44,15 @@ Integrar Gemini como proveedor externo complementario que **genera** recetas en 
 
 ## Criterios de aceptación
 
-- [ ] La aplicación compila y funciona con la key de Gemini eliminada/proveedor caído: las recetas internas siguen retornando (sin crash, sin error crudo al usuario).
-- [ ] Ninguna forma de la respuesta cruda de Gemini aparece fuera de `src/infrastructure/gemini/`.
-- [ ] Timeout aplicado en cada llamada externa.
-- [ ] Una receta generada que no valida contra el schema se descarta sin excepción.
-- [ ] Una receta generada y persistida aparece en `/dashboard/recipes/[id]` y puede guardarse como favorito.
-- [ ] Modelo/API verificados contra la documentación oficial actual (referencia registrada en el PR).
+- [x] La aplicación compila y funciona con la key de Gemini eliminada/proveedor caído: las recetas internas siguen retornando (sin crash, sin error crudo al usuario). *(sin `GEMINI_API_KEY` el provider devuelve `[]` sin tocar la red; `pnpm build` PASS)*
+- [x] Ninguna forma de la respuesta cruda de Gemini aparece fuera de `src/infrastructure/gemini/`. *(grep: `responseSchema`, `candidates[0]`, `generativelanguage` solo dentro de ese directorio)*
+- [x] Timeout aplicado en cada llamada externa. *(`AbortController` en `client/gemini-client.ts`; test “clasifica un AbortError como timeout”)*
+- [x] Una receta generada que no valida contra el schema se descarta sin excepción. *(tests “devuelve `[]` sin lanzar cuando el contenido no valida el schema” y “descarta recetas individuales inválidas sin tumbar las válidas”)*
+- [x] Una receta generada y persistida aparece en `/dashboard/recipes/[id]` y puede guardarse como favorito. *(`RecipeRepository.save` persiste con `source = AI_GENERATED` e `id` estable; la página de detalle y favoritos leen de la BD. El E2E con Gemini real queda en la spec 16)*
+- [x] Modelo/API verificados contra la documentación oficial actual (referencia registrada en el PR). *(verificado el 2026-10-09 contra docs oficiales; **no hay PR** en este workflow — la referencia quedó en `odd/tasks/09-gemini-adapter.md`)*
 
 ## Verificación
 
-Tests unitarios con `MockExternalRecipeProvider` (success, timeout, 429/cuota, 5xx, malformado, vacío, contenido inválido) en la spec 16 + prueba manual de corte de red y de key ausente.
+Tests unitarios con un client HTTP falso (success, timeout, 429/cuota, 5xx, malformado, vacío, contenido inválido, sin API key) en `tests/unit/infrastructure/gemini/` + la prueba manual de corte de red y de key ausente contra Gemini real, que pertenece a la spec 16.
+
+**Evidencia observada (2026-10-09):** `pnpm test` PASS — 24 archivos / 161 tests · `pnpm lint` PASS · `pnpm typecheck` PASS. El detalle y el mapeo caso→test están en el registro del `ISSUE.md`.

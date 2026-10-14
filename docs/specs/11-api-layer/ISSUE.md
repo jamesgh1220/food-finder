@@ -43,11 +43,11 @@ Una API predecible, segura y documentada: cualquier cliente puede consumirla con
 
 ## Criterios de aceptación
 
-- [ ] Los 13 endpoints implementados y probados con el envelope correcto.
-- [ ] Mapeo completo de los 8 códigos HTTP del SPEC.
-- [ ] Zod en todas las entradas; tests de validación en verde.
-- [ ] Rate limiting activo y verificado en recommendations.
-- [ ] Autorización verificada (401/403) en pantry y favorites.
+- [x] Los 13 endpoints implementados y probados con el envelope correcto. *(10 archivos `route.ts` en `src/app/api/**` cubren los 13 endpoints de REQ-01; envelope en `src/lib/api/envelope.ts`)*
+- [x] Mapeo completo de los 8 códigos HTTP del SPEC. *(`src/lib/api/errors.ts`: 400/401/403/404/409/429/500/502)*
+- [x] Zod en todas las entradas; tests de validación en verde. *(`src/lib/api/schemas.ts` + `parseOrThrow`; `tests/unit/api/validation.test.ts`)*
+- [x] Rate limiting activo y verificado en recommendations. *(ventana deslizante in-memory 10 req/60 s en `src/lib/api/rate-limit.ts`; `tests/unit/api/rate-limit.test.ts`)*
+- [ ] Autorización verificada (401/403) en pantry y favorites. *(**parcial**: el 401 está verificado a nivel handler — “maps an unauthorized service error to 401” — y el mapeo de 403 existe en `errors.ts`; la verificación del 403 contra RLS real queda pendiente de un entorno con base de datos, igual que los tests de integración)*
 
 ## Resultado esperado
 

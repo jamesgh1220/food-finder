@@ -111,10 +111,27 @@ Gemini: se usan clientes/repositorios falsos (patrón ya existente en
 - Harness de runtime: N/A — no hay runtime boundary propio más allá de la Server
   Action, cubierta por test de componente con la action mockeada.
 - TDD estricto: no hay activación explícita en el proyecto; runner `pnpm test`.
-- RDD: **activado** (`gentle-ai review mode status` → `on (decided by default)`,
-  global y clone-local `unset`). Se ejecuta la preflight de revisión nativa sobre
-  el rango de la rama; se corrigió una afirmación previa errónea de esta misma
-  lista que lo daba por desactivado sin comprobarlo.
+- RDD: **desactivado para este clon** (`gentle-ai review mode disable --scope
+  clone`; verificado con `gentle-ai review mode status` → `off (decided by
+  clone_local)`, global `unset`). Decisión del usuario del 2026-10-14.
+- Revisión nativa: **no completada, no aprobada**. La preflight se ejecutó
+  (`assess` → `risk: medium`, `review_due: true`, `slice_budget_reached`, 23
+  rutas / 1480 líneas), el humano concedió consentimiento y `review.start` creó
+  el lineage `review-6bc9dae5fb68a723` (una sola lente, `review-reliability`).
+  La lente no pudo ejecutarse: este runtime no puede lanzar subagentes (la
+  herramienta `task` falla con el mensaje de free tier; fallo determinista,
+  repetido en la sesión). Se declaró el slot inalcanzable con
+  `gentle-ai review capture-unachievable` (motivo `host_subagent_launch_refused`)
+  y STATUS devolvió `stop` / `unachievable_lens_slot` (horizonte terminal).
+  **No se inventó PASS ni se consumió aprobación**; la autoridad queda
+  preservada con el comando de retiro `--withdraw=true` disponible.
+- Contradicción de estado detectada: una decisión previa del 2026-10-08
+  registraba `review mode disable --scope clone` por este mismo bloqueo, pero
+  hoy el modo figuraba como `on (decided by default)` con clone-local `unset`
+  (la baja se había perdido). Se volvió a aplicar a petición del usuario.
+- Se corrigió una afirmación previa errónea de esta misma lista que daba RDD por
+  desactivado sin comprobarlo, y luego otra que lo daba por activado una vez que
+  la baja se había perdido.
 
 ### Defecto detectado y corregido durante el cierre
 
@@ -135,7 +152,7 @@ Lección: **typecheck por commit**, no solo en HEAD.
 | 3 | `fbbdaa9` | composition + Server Action + i18n `chef` + test | 97 |
 | 4 | `536ad04` | `Textarea` + `PromptRecipeForm` + test | 377 |
 | 5 | `531db23` | `DashboardTabs` + page + boundary/page tests | 186 |
-| 6 | documentación (HEAD) | este documento | 109 |
+| 6 | `8a14b43` | documentación de la feature (este documento) | 150 |
 
 Total ~1439 líneas autoradas. El slice 2 excede el presupuesto en ~13% y se
 mantiene unido a propósito: el schema y su único consumidor forman una sola

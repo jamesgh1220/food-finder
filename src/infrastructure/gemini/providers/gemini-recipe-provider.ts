@@ -58,7 +58,9 @@ export interface GeminiRecipeProviderOptions {
   client?: GeminiClient;
   /** Catálogo de cocinas para resolver la cocina generada (REQ-09). */
   cuisineRepository: CuisineRepository;
-  /** Persistencia interna de recetas para asignar IDs estables (REQ-07). */
+  /** Persistencia interna de recetas para asignar IDs estables (REQ-07).
+   * Debe ser un repositorio privilegiado (cliente admin): el catálogo global
+   * es de solo lectura bajo RLS y un cliente con RLS rechazaría el INSERT. */
   recipeRepository: RecipeRepository;
 }
 

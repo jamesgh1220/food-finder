@@ -24,7 +24,7 @@ export { toRepositoryError };
  * El cliente `client` sirve para lecturas/escrituras con RLS activo (frontend
  * y casos de uso en general). `adminClient` permite acceder a Auth Admin y
  * realizar operaciones privilegiadas cuando sea necesario (p. ej. búsquedas por
- * email, borrados masivos).
+ * email, borrados masivos, persistir recetas generadas por IA).
  */
 export interface SupabaseRepositoryClients {
   client: SupabaseClient<Database>;
@@ -33,9 +33,16 @@ export interface SupabaseRepositoryClients {
 
 /**
  * Grupo de repositorios concretos para inyectar en la composición raíz.
+ *
+ * `recipes` es el repositorio con RLS para lecturas y escrituras del usuario.
+ * `recipeWriter` apunta al mismo catálogo pero con el cliente admin: el
+ * servidor necesita persistir las recetas generadas por IA (spec 09 REQ-07)
+ * aunque el catálogo global sea de solo lectura para los usuarios bajo RLS
+ * (spec 04 REQ-04).
  */
 export interface SupabaseRepositories {
   recipes: RecipeRepository;
+  recipeWriter: RecipeRepository;
   ingredients: IngredientRepository;
   cuisines: CuisineRepository;
   pantry: PantryRepository;
@@ -48,8 +55,9 @@ export interface SupabaseRepositories {
  * Crea un único entry point que expone todos los repositorios Supabase.
  *
  * Este es el punto de inyección simple que consume la composition root
- * (spec 02/07). El repositorio de usuarios usa `adminClient` si está
- * disponible, de lo contrario recurre a `client`.
+ * (spec 02/07). El repositorio de usuarios y el escritor privilegiado de
+ * recetas usan `adminClient` si está disponible, de lo contrario recurren a
+ * `client`.
  */
 export function createSupabaseRepositories(
   clients: SupabaseRepositoryClients,
@@ -58,6 +66,7 @@ export function createSupabaseRepositories(
 
   return {
     recipes: createSupabaseRecipeRepository(clients.client),
+    recipeWriter: createSupabaseRecipeRepository(adminClient),
     ingredients: createSupabaseIngredientRepository(clients.client),
     cuisines: createSupabaseCuisineRepository(clients.client),
     pantry: createSupabasePantryRepository(clients.client),

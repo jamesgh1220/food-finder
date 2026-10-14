@@ -10,6 +10,7 @@ import {
   createSupabasePantryRepository,
   createSupabaseRecipeRepository,
   createSupabaseRecipeRecommendationCatalog,
+  createSupabaseRepositories,
   createSupabaseUserRepository,
 } from "@/infrastructure/supabase/repositories";
 import {
@@ -18,7 +19,7 @@ import {
   toRecipeRow,
 } from "@/infrastructure/supabase/mappers";
 import type { Tables } from "@/types/database.types";
-import { createFakeSupabaseClient } from "./fake-supabase-client";
+import { createFakeSupabaseClient, type FakeQueryCall } from "./fake-supabase-client";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 
@@ -575,5 +576,75 @@ describe("Supabase repositories", () => {
 
     expect(caught).toBeInstanceOf(RepositoryError);
     expect((caught as RepositoryError).message).not.toContain("boom");
+  });
+});
+
+/**
+ * El catálogo global `recipes` es de solo lectura para los usuarios bajo RLS
+ * (spec 04 REQ-04), pero el servidor debe poder persistir las recetas generadas
+ * por IA para asignarles un id estable (spec 09 REQ-07). Ese privilegio vive en
+ * `recipeWriter`, que debe operar siempre con el cliente admin, mientras el
+ * repositorio `recipes` de cara al usuario sigue atado al cliente RLS.
+ */
+describe("createSupabaseRepositories (corte RLS/admin de recipes)", () => {
+  const recipeCalls = (calls: FakeQueryCall[], method: string): FakeQueryCall[] =>
+    calls.filter((call) => call.table === "recipes" && call.method === method);
+
+  it("recipeWriter escribe con el cliente admin y recipes con el cliente RLS", async () => {
+    const user = createFakeSupabaseClient({
+      response: { data: recipeRow, error: null },
+    });
+    const admin = createFakeSupabaseClient({
+      response: { data: recipeRow, error: null },
+    });
+
+    const repositories = createSupabaseRepositories({
+      client: user.client,
+      adminClient: admin.client,
+    });
+
+    await repositories.recipes.save(toRecipe(recipeRow));
+    await repositories.recipeWriter.save(toRecipe(recipeRow));
+
+    // Cada repositorio emite su INSERT en su propio cliente: si `recipeWriter`
+    // volviera al cliente RLS, el INSERT del admin desaparecería y el de RLS
+    // pasaría a 2 (la regresión que reintroduce el bug 42501).
+    expect(recipeCalls(user.calls, "insert")).toHaveLength(1);
+    expect(recipeCalls(admin.calls, "insert")).toHaveLength(1);
+  });
+
+  it("las lecturas de recipes siguen usando el cliente RLS y recipeWriter el admin", async () => {
+    const user = createFakeSupabaseClient({ response: { data: null, error: null } });
+    const admin = createFakeSupabaseClient({
+      response: { data: recipeRow, error: null },
+    });
+
+    const repositories = createSupabaseRepositories({
+      client: user.client,
+      adminClient: admin.client,
+    });
+
+    expect(await repositories.recipes.findMany()).toEqual([]);
+    expect((await repositories.recipeWriter.findBySlug("tortilla"))?.slug).toBe(
+      "tortilla",
+    );
+
+    expect(user.calls.some((call) => call.table === "recipes")).toBe(true);
+    expect(admin.calls.some((call) => call.table === "recipes")).toBe(true);
+    expect(recipeCalls(admin.calls, "select")).toHaveLength(1);
+  });
+
+  it("sin adminClient, recipeWriter cae al cliente RLS (fallback documentado)", async () => {
+    const user = createFakeSupabaseClient({
+      response: { data: recipeRow, error: null },
+    });
+
+    const repositories = createSupabaseRepositories({ client: user.client });
+
+    await repositories.recipeWriter.save(toRecipe(recipeRow));
+
+    // El fallback existe por consistencia con `users`, pero la composición de
+    // servidor SIEMPRE pasa `adminClient`; omitirlo reintroduce el bug 42501.
+    expect(recipeCalls(user.calls, "insert")).toHaveLength(1);
   });
 });

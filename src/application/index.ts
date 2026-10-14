@@ -13,6 +13,7 @@ export * from "./ports/user-preferences";
 export * from "./ports/recipe-recommendation";
 export * from "./ports/recipe-recommendation-enhancer";
 export * from "./ports/external-recipe-provider";
+export * from "./ports/external-recipe-prompt-provider";
 export * from "./shared/require-authenticated-user";
 
 export * from "./pantry/add-pantry-ingredient";
@@ -22,6 +23,7 @@ export * from "./pantry/get-user-pantry";
 export * from "./pantry/clear-user-pantry";
 
 export * from "./recipes/find-recipes-from-pantry";
+export * from "./recipes/generate-recipe-from-prompt";
 export * from "./recipes/get-recipe-by-id";
 export * from "./recipes/get-recipe-ingredients";
 export * from "./recipes/search-recipes";

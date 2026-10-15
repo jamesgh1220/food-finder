@@ -22,11 +22,16 @@ Fuera de alcance: el puntaje de coincidencia del detalle (`RecipeMatchScore`). D
 
 ## Tasks
 
-- [ ] **T1** — Tipo de entrada `RecipeIngredientInput` (dominio) + firma del puerto `RecipeRepository.save(recipe, ingredients)`; RED primero. (S1,S2,S3) · inline · —
-- [ ] **T2** — Implementación Supabase: resolución/creación de ingredientes con el mismo cliente, deduplicación, inserción de filas después de la receta, degradación con `warn`. (S1–S5,S7) · inline · —
-- [ ] **T3** — Provisto de Gemini: `persistRecipe` propaga los ingredientes en los dos flujos (chef y filtros). (S1,S8) · inline · —
-- [ ] **T4** — Actualizar `docs/specs/09-gemini-adapter/SPEC.md` (REQ-07) y `docs/specs/14-frontend-recipes-favorites/` si corresponde. (S6) · inline · —
-- [ ] **T5** — Sonda contra la base real: generar/insertar una receta con ingredientes, verificar filas y limpiar. (S1,S2) · inline · —
+- [x] **T1** — Tipo de entrada `RecipeIngredientInput` (dominio) + firma del puerto `RecipeRepository.save(recipe, ingredients)`; RED primero. (S1,S2,S3) · inline · `00043ba`
+  - RED observado: 2 fallos (`expected undefined to deeply equal [...]`, `ingredientWrites` vacío). GREEN: 29/29 en `supabase-repositories.test.ts`.
+- [x] **T2** — Implementación Supabase: resolución/creación de ingredientes con el mismo cliente, deduplicación, inserción de filas después de la receta, degradación con `warn`. (S1–S5,S7) · inline · `00043ba`
+  - El segundo argumento es **obligatorio** (sin default): olvidarlo es un error ruidoso, no una degradación silenciosa. Se actualizaron los 5 call sites del test.
+- [x] **T3** — Provisto de Gemini: `persistRecipe` propaga los ingredientes en los dos flujos (chef y filtros). (S1,S8) · inline · `00043ba`
+  - RED observado en ambos flujos (`Number of calls: 1` con el argumento esperado ausente). GREEN: 50/50 en los dos archivos tocados.
+- [x] **T4** — Actualizar `docs/specs/09-gemini-adapter/SPEC.md` (REQ-07) y `docs/specs/14-frontend-recipes-favorites/` si corresponde. (S6) · inline · `485da03`
+  - Se actualizó además `docs/specs/04-security-rls/SPEC.md` (REQ-04): era la excepción real de escritura al catálogo global.
+- [x] **T5** — Sonda contra la base real: generar/insertar una receta con ingredientes, verificar filas y limpiar. (S1,S2) · inline · sin artefacto (sonda temporal, borrada)
+  - Evidencia: `1 passed` con el repo real + cliente real + RLS real. `anon insert ingredients → 42501`; `findIngredients` devolvió 2 filas (el duplicado normalizado colapsó, S3) con `quantity/unit/optional` correctos; el catálogo quedó con 2 filas nuevas. Post-check independiente: 0 ingredientes y 0 recetas de sonda sobrantes.
 - [ ] **T6** — Verificación independiente (riesgo alto: escritura en catálogo global con service-role). · delegated · —
 - [ ] **T7** — Cierre del documento con evidencia. · inline · —
 
@@ -48,4 +53,10 @@ Fuera de alcance: el puntaje de coincidencia del detalle (`RecipeMatchScore`). D
 
 **Riesgo declarado.** Crear filas en el catálogo global `ingredients` a partir de nombres inventados por un modelo. Acotado: solo se crea lo que no existe (clave: nombre normalizado) y es reversible borrando filas sin referencias. Carrera conocida: sin UNIQUE sobre `normalized_name`, dos requests concurrentes podrían crear el mismo ingrediente duplicado; se acepta y se registra como decisión aparte (candidato: índice UNIQUE en una migración futura).
 
-**Presupuesto de entrega.** Pronóstico ~320 líneas autoradas (suma de altas y bajas, sin generados). Por debajo de ~400 → un solo PR; no hace falta encadenar.
+**Presupuesto de entrega — corregido (2026-10-14).** Pronóstico ~320 líneas autoradas; **real: 456** (437 altas + 19 bajas, sin generados). Supera el umbral de ~400, así que la estrategia `ask-on-risk` exige decidir el encadenado antes del próximo commit/PR. Recomendación: **un solo PR**, porque las tres capas deben moverse juntas para que el repo compile (el proveedor no puede llamar a `save` con la firma vieja mientras el puerto ya exige el segundo argumento); partirlo en dos dejaría el primer slice sin `typecheck`. Queda a decisión del usuario.
+
+**L3 (2026-10-14) — corrección de un diagnóstico falso.** En la sesión anterior informé que `src/domain/ports/recipe-repository.ts` tenía un comentario basura commiteado (`Manages the persistence layer` ×3, 44 líneas, commit `8d4cea2`). **Era falso.** El render de salida de esa sesión estaba degradado e *inventaba* contenido, no solo lo duplicaba; los números (`44`, `manages=3`) también eran fabricados. El archivo real tiene 39 líneas, está limpio, y el "defecto preexistente" no existe en ningún commit. Se descartó la tarea de limpieza que se había planeado a partir de ese diagnóstico.
+
+**Evidencia de implementación (2026-10-14).** RED observado antes de cada GREEN: 2 fallos en `supabase-repositories.test.ts`, 2 fallos en `gemini-recipe-provider.test.ts`. Suite completa: **358 passed / 52 archivos** (antes 352 → +6 tests). `pnpm typecheck` y `pnpm lint` limpios. Dos work-unit commits: `00043ba` (código + tests) y `485da03` (specs + doc).
+
+**Hallazgo operativo (2026-10-14).** La base real ya tenía **3 recetas `AI_GENERATED`** de pruebas anteriores del usuario (`pollo-agridulce-con-papa-criolla-y-arroz`, `arroz-con-huevo-a-la-criolla`, `atun-encebollado-a-la-espanola`) con **0 filas** de `recipe_ingredients`. Este fix **no las repara**: sus ingredientes nunca se guardaron en ningún lado y son irrecuperables. Solo aplica a generaciones nuevas. Total de filas en `recipe_ingredients` hoy: 229 (todas de recetas internas).

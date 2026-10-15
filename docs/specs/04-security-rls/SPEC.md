@@ -24,7 +24,7 @@ Hacer efectivo el aislamiento de datos y la línea base de seguridad del MVP: po
 | REQ-01 | `profiles`: el usuario solo puede consultar/modificar **su propio** perfil. |
 | REQ-02 | `pantry_items`: el usuario solo puede seleccionar/insertar/actualizar/borrar **sus propias** filas — nunca las de otro usuario. |
 | REQ-03 | `favorite_recipes`: el usuario solo administra sus propios favoritos. |
-| REQ-04 | `recipes`: las recetas públicas/internas pueden leerse estando autenticado; ningún usuario puede modificar el catálogo global. |
+| REQ-04 | `recipes` e `ingredients`: las recetas públicas/internas y el catálogo de ingredientes pueden leerse estando autenticado; **ningún usuario** puede modificar el catálogo global. La única escritura es la del **servidor** con el cliente privilegiado (service-role) al persistir recetas generadas por IA junto a los ingredientes que necesitan (spec 09 REQ-07); el corte RLS/admin vive en `createSupabaseRepositories`. |
 | REQ-05 | `ingredients`: legibles por usuarios autenticados; sin escrituras arbitrarias. |
 | REQ-06 | `cuisines`: legibles; sin modificaciones arbitrarias desde el frontend. |
 | REQ-07 | RLS habilitado en **todas** las tablas con políticas coherentes con REQ-01…REQ-06 (ninguna tabla sin protección). |

@@ -7,6 +7,7 @@ import type { PantryRepository } from "@/domain/ports";
 import type { FavoriteRepository } from "@/domain/ports";
 import type { UserRepository } from "@/domain/ports";
 import type { RecipeRecommendationCatalog } from "@/application/ports/recipe-recommendation";
+import type { Logger } from "@/application/ports/logger";
 import { createSupabaseRecipeRepository } from "./supabase-recipe-repository";
 import { createSupabaseIngredientRepository } from "./supabase-ingredient-repository";
 import { createSupabaseCuisineRepository } from "./supabase-cuisine-repository";
@@ -29,6 +30,8 @@ export { toRepositoryError };
 export interface SupabaseRepositoryClients {
   client: SupabaseClient<Database>;
   adminClient?: SupabaseClient<Database>;
+  /** Logger opcional para reportar degradaciones (p. ej. ingredientes de IA). */
+  logger?: Logger;
 }
 
 /**
@@ -66,7 +69,13 @@ export function createSupabaseRepositories(
 
   return {
     recipes: createSupabaseRecipeRepository(clients.client),
-    recipeWriter: createSupabaseRecipeRepository(adminClient),
+    // El escritor privilegiado resuelve y crea ingredientes con el MISMO
+    // cliente admin: `recipe_ingredients.ingredient_id` es `NOT NULL` y ninguna
+    // de las dos tablas admite INSERT bajo RLS.
+    recipeWriter: createSupabaseRecipeRepository(adminClient, {
+      ingredients: createSupabaseIngredientRepository(adminClient),
+      logger: clients.logger,
+    }),
     ingredients: createSupabaseIngredientRepository(clients.client),
     cuisines: createSupabaseCuisineRepository(clients.client),
     pantry: createSupabasePantryRepository(clients.client),

@@ -8,7 +8,11 @@ import type {
   GeneratedRecipe,
 } from "@/application/ports/external-recipe-prompt-provider";
 import type { Logger } from "@/application/ports/logger";
-import type { Recipe, RecipeRecommendationCandidate } from "@/domain/entities";
+import type {
+  Recipe,
+  RecipeIngredientInput,
+  RecipeRecommendationCandidate,
+} from "@/domain/entities";
 import { normalizeIngredientName } from "@/domain/normalization/ingredient-normalizer";
 import { RepositoryError } from "@/domain/errors";
 import type { CuisineRepository, RecipeRepository } from "@/domain/ports";
@@ -240,6 +244,7 @@ function isUniqueConstraintViolation(error: unknown): boolean {
 /** Persists one recipe without letting a repository failure abort the batch. */
 async function persistRecipe(
   recipe: Recipe,
+  ingredients: RecipeIngredientInput[],
   recipeRepository: RecipeRepository,
   logger?: Logger,
 ): Promise<Recipe | null> {
@@ -257,7 +262,7 @@ async function persistRecipe(
     }
 
     try {
-      return await recipeRepository.save(recipe);
+      return await recipeRepository.save(recipe, ingredients);
     } catch (error) {
       if (isUniqueConstraintViolation(error)) {
         const racedRecipe = await recipeRepository.findBySlug(recipe.slug);
@@ -331,6 +336,14 @@ export function createGeminiRecipeProvider(
         for (const candidate of mappedRecipes) {
           const persistedRecipe = await persistRecipe(
             candidate.recipe,
+            // El candidato de búsqueda no trae cantidad ni unidad: el motor de
+            // recomendación sólo necesita el vínculo con el ingrediente.
+            candidate.ingredients.map((ingredient) => ({
+              name: ingredient.name,
+              quantity: null,
+              unit: null,
+              optional: ingredient.optional,
+            })),
             recipeRepository,
             logger,
           );
@@ -393,6 +406,12 @@ export function createGeminiRecipeProvider(
 
         const persistedRecipe = await persistRecipe(
           domainRecipe,
+          recipe.ingredients.map((ingredient) => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            optional: ingredient.optional ?? false,
+          })),
           recipeRepository,
           logger,
         );

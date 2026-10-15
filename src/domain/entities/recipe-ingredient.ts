@@ -31,3 +31,21 @@ export interface RecipeIngredientDetail {
   optional: boolean;
   notes: string | null;
 }
+
+/**
+ * Entrada de escritura de la relación receta↔ingrediente (spec 09, REQ-07).
+ *
+ * El nombre viaja **sin resolver** a propósito: el catálogo `ingredients` es
+ * global y quien genera la receta (un proveedor externo) no conoce —ni debe
+ * conocer— los ids del catálogo. Resolverlo o crearlo es responsabilidad de la
+ * capa de persistencia.
+ *
+ * `quantity`/`unit` son anulables por la misma razón que en el read model: la
+ * columna lo es y la generación puede no traer cantidad ni unidad.
+ */
+export interface RecipeIngredientInput {
+  name: string;
+  quantity: number | null;
+  unit: string | null;
+  optional: boolean;
+}

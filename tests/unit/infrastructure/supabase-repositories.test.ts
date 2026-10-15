@@ -547,7 +547,7 @@ describe("Supabase repositories", () => {
     const repo = createSupabaseRecipeRepository(client);
     const recipe = toRecipe(recipeRow);
 
-    const result = await repo.save(recipe);
+    const result = await repo.save(recipe, []);
 
     const insertCall = calls.find((c) => c.method === "insert");
     expect(insertCall).toBeDefined();
@@ -569,13 +569,161 @@ describe("Supabase repositories", () => {
 
     let caught: unknown;
     try {
-      await repo.save(toRecipe(recipeRow));
+      await repo.save(toRecipe(recipeRow), []);
     } catch (e) {
       caught = e;
     }
 
     expect(caught).toBeInstanceOf(RepositoryError);
     expect((caught as RepositoryError).message).not.toContain("boom");
+  });
+
+  it("recipe.save resuelve el catálogo por nombre normalizado y persiste las filas de recipe_ingredients", async () => {
+    const createdIngredientRow: Tables<"ingredients"> = {
+      ...ingredientRow,
+      id: "ingredient-2",
+      name: "Cebolla",
+      normalized_name: "cebolla",
+    };
+
+    const { client, calls } = createFakeSupabaseClient({
+      response: (lastCall) => {
+        if (lastCall.table === "ingredients") {
+          // `in` es la lectura del catálogo; el resto es el upsert del faltante.
+          return lastCall.method === "in"
+            ? { data: [ingredientRow], error: null }
+            : { data: createdIngredientRow, error: null };
+        }
+        if (lastCall.table === "recipes") {
+          return { data: recipeRow, error: null };
+        }
+        return { data: null, error: null };
+      },
+    });
+    const repo = createSupabaseRecipeRepository(client);
+
+    const result = await repo.save(toRecipe(recipeRow), [
+      // "TOMATE" reutiliza la fila existente (clave: nombre normalizado).
+      { name: "TOMATE", quantity: 2, unit: "kg", optional: false },
+      // "Cebolla" no existe: se crea en el catálogo global.
+      { name: "Cebolla", quantity: null, unit: null, optional: true },
+    ]);
+
+    const ingredientWrites = calls.filter(
+      (call) => call.table === "ingredients" && call.method === "upsert",
+    );
+    expect(ingredientWrites).toHaveLength(1);
+    const createdWrite = ingredientWrites[0]?.args[0] as Record<string, unknown>;
+    expect(createdWrite.name).toBe("Cebolla");
+    expect(createdWrite.normalized_name).toBe("cebolla");
+
+    const joinInsert = calls.find(
+      (call) => call.table === "recipe_ingredients" && call.method === "insert",
+    );
+    expect(joinInsert?.args[0]).toEqual([
+      {
+        recipe_id: "recipe-1",
+        ingredient_id: "ingredient-1",
+        quantity: 2,
+        unit: "kg",
+        optional: false,
+      },
+      {
+        recipe_id: "recipe-1",
+        ingredient_id: "ingredient-2",
+        quantity: null,
+        unit: null,
+        optional: true,
+      },
+    ]);
+    expect(result).toEqual(toRecipe(recipeRow));
+  });
+
+  it("recipe.save deduplica ingredientes que resuelven al mismo ingrediente", async () => {
+    const { client, calls } = createFakeSupabaseClient({
+      response: (lastCall) => {
+        if (lastCall.table === "ingredients") {
+          return { data: [ingredientRow], error: null };
+        }
+        if (lastCall.table === "recipes") {
+          return { data: recipeRow, error: null };
+        }
+        return { data: null, error: null };
+      },
+    });
+    const repo = createSupabaseRecipeRepository(client);
+
+    await repo.save(toRecipe(recipeRow), [
+      { name: "Tomate", quantity: 1, unit: "kg", optional: false },
+      { name: "tomate", quantity: 2, unit: "kg", optional: false },
+    ]);
+
+    // `idx_recipe_ingredient_unique (recipe_id, ingredient_id)`: gana el primero.
+    const joinInsert = calls.find(
+      (call) => call.table === "recipe_ingredients" && call.method === "insert",
+    );
+    expect(joinInsert?.args[0]).toEqual([
+      {
+        recipe_id: "recipe-1",
+        ingredient_id: "ingredient-1",
+        quantity: 1,
+        unit: "kg",
+        optional: false,
+      },
+    ]);
+  });
+
+  it("recipe.save degrada sin perder la receta cuando falla la persistencia de ingredientes", async () => {
+    const { client, calls } = createFakeSupabaseClient({
+      response: (lastCall) => {
+        if (lastCall.table === "ingredients") {
+          return { data: null, error: { message: "boom", code: "42501" } };
+        }
+        if (lastCall.table === "recipes") {
+          return { data: recipeRow, error: null };
+        }
+        return { data: null, error: null };
+      },
+    });
+    const repo = createSupabaseRecipeRepository(client);
+
+    const result = await repo.save(toRecipe(recipeRow), [
+      { name: "Tomate", quantity: 1, unit: "kg", optional: false },
+    ]);
+
+    // La receta se devuelve igual: el usuario nunca pierde lo que generó.
+    expect(result).toEqual(toRecipe(recipeRow));
+    expect(
+      calls.some(
+        (call) =>
+          call.table === "recipe_ingredients" && call.method === "insert",
+      ),
+    ).toBe(false);
+  });
+
+  it("recipe.save no escribe ingredientes cuando falla el insert de la receta", async () => {
+    const { client, calls } = createFakeSupabaseClient({
+      response: (lastCall) => {
+        if (lastCall.table === "ingredients") {
+          return { data: [ingredientRow], error: null };
+        }
+        return { data: null, error: { message: "boom", code: "23505" } };
+      },
+    });
+    const repo = createSupabaseRecipeRepository(client);
+
+    await expect(
+      repo.save(toRecipe(recipeRow), [
+        { name: "Tomate", quantity: 1, unit: "kg", optional: false },
+      ]),
+    ).rejects.toBeInstanceOf(RepositoryError);
+
+    expect(
+      calls.some(
+        (call) =>
+          call.table === "recipe_ingredients" && call.method === "insert",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -603,8 +751,8 @@ describe("createSupabaseRepositories (corte RLS/admin de recipes)", () => {
       adminClient: admin.client,
     });
 
-    await repositories.recipes.save(toRecipe(recipeRow));
-    await repositories.recipeWriter.save(toRecipe(recipeRow));
+    await repositories.recipes.save(toRecipe(recipeRow), []);
+    await repositories.recipeWriter.save(toRecipe(recipeRow), []);
 
     // Cada repositorio emite su INSERT en su propio cliente: si `recipeWriter`
     // volviera al cliente RLS, el INSERT del admin desaparecería y el de RLS
@@ -641,7 +789,7 @@ describe("createSupabaseRepositories (corte RLS/admin de recipes)", () => {
 
     const repositories = createSupabaseRepositories({ client: user.client });
 
-    await repositories.recipeWriter.save(toRecipe(recipeRow));
+    await repositories.recipeWriter.save(toRecipe(recipeRow), []);
 
     // El fallback existe por consistencia con `users`, pero la composición de
     // servidor SIEMPRE pasa `adminClient`; omitirlo reintroduce el bug 42501.

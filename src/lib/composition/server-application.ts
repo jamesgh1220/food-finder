@@ -20,7 +20,7 @@ export async function createServerApplicationServices(): Promise<ApplicationServ
   // Handlers.
   const adminClient = createSupabaseAdminClient();
 
-  const repositories = createSupabaseRepositories({ client, adminClient });
+  const repositories = createSupabaseRepositories({ client, adminClient, logger });
 
   const auth = createSupabaseAuthPort(client);
 

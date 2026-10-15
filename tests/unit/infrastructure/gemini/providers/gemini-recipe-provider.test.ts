@@ -159,6 +159,30 @@ describe("createGeminiRecipeProvider", () => {
     expect(responseSchema).toBeDefined();
   });
 
+  it("pasa los ingredientes del candidato a la persistencia", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({ recipes: [makeGeminiRecipe()] });
+    const recipeRepository = createFakeRecipeRepository();
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository,
+      logger: createFakeLogger(),
+    });
+
+    await provider.searchByIngredients(makeInput());
+
+    // S1/S8: los ingredientes viajan a `save` para que la receta tenga filas en
+    // `recipe_ingredients`. El candidato no trae cantidad ni unidad: van nulas.
+    expect(recipeRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: "pasta-al-tomate" }),
+      [
+        { name: "Pasta", quantity: null, unit: null, optional: false },
+        { name: "Tomate", quantity: null, unit: null, optional: false },
+      ],
+    );
+  });
+
   it("preserves optional ingredient metadata for recommendation matching", async () => {
     const { client, generateContent } = createFakeClient();
     generateContent.mockResolvedValue({
@@ -458,6 +482,30 @@ describe("createGeminiRecipeProvider.generateFromPrompt", () => {
     expect(prompt).toContain("Tengo pasta y tomate");
     // La cocina se restringe al catálogo dentro del schema de la respuesta.
     expect(JSON.stringify(responseSchema)).toContain("Italiana");
+  });
+
+  it("pasa los ingredientes generados a la persistencia", async () => {
+    const { client, generateContent } = createFakeClient();
+    generateContent.mockResolvedValue({ recipes: [makeGeminiRecipe()] });
+    const recipeRepository = createFakeRecipeRepository();
+    const provider = createGeminiRecipeProvider({
+      client,
+      cuisineRepository: createFakeCuisineRepository(),
+      recipeRepository,
+      logger: createFakeLogger(),
+    });
+
+    await provider.generateFromPrompt({ prompt: "Tengo pasta y tomate" });
+
+    // S1: con cantidad y unidad reales, la receta queda puntuable y su detalle
+    // muestra los ingredientes en vez del placeholder.
+    expect(recipeRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: "pasta-al-tomate" }),
+      [
+        { name: "Pasta", quantity: 200, unit: "g", optional: false },
+        { name: "Tomate", quantity: 2, unit: null, optional: false },
+      ],
+    );
   });
 
   it("devuelve null sin tocar la red cuando no hay API key ni cliente", async () => {

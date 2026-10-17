@@ -16,6 +16,7 @@ Cierra el pendiente explícito de `odd/tasks/05-supabase-auth.md`: *"el camino '
 - **S6 — Sin regresión.** `RegisterUser`, `LoginUser`, `LogoutUser` y `GetCurrentUser` conservan su comportamiento observable. El mensaje de `email_not_confirmed` no cambia; solo cambia su **código** (de `unknown` a `email_not_confirmed`) para que la UI pueda ofrecer el enlace.
 - **S7 — Hexagonal intacta.** La capa `application` sigue sin importar `@supabase/*`, Next.js ni React. Los casos de uso nuevos se suman a `AuthServices`; `ApplicationServices` los hereda.
 - **S8 — Fuera del repo (paso manual del mantenedor).** La plantilla **Confirm sign up** del dashboard debe incluir `{{ .Token }}`. El código generado no depende de la plantilla, pero el mail no lo muestra hasta que se agregue. No es automatizable por el agente.
+  **Bloqueado (2026-10-17):** la edición de plantillas exige un SMTP propio y el usuario no tiene dominio. El paso queda delegado en `odd/tasks/gmail-smtp-email-delivery.md` (S3).
 
 Fuera de alcance: el flujo de *magic link* con `token_hash` + ruta `/auth/confirm` (opción B, descartada por el usuario), el deploy en Vercel y el SMTP propio de producción.
 
@@ -79,3 +80,14 @@ Fuera de alcance: el flujo de *magic link* con `token_hash` + ruta `/auth/confir
 - **Advisory 2 confirmado como fuera de alcance** (decisión registrada en L-negociación): registrar una cuenta ya existente/confirmada cae en `/confirm` con un código que nunca llega. Supabase oscurece esto deliberadamente para evitar enumeración; las salidas existentes (link "Iniciar sesión", "Reenviar código") ya estaban. El baseline era igual de engañoso.
 - **E2E no ejecutado** (`pnpm test:e2e`): es una suite Playwright en vivo contra el proyecto real (`vhjxhqaowxonmtgusskt`) y necesita un buzón real para recibir el código de 6 dígitos. Pendiente de prueba manual.
 - **Paso manual del usuario:** agregar `{{ .Token }}` a la plantilla de email **Confirm sign up** en el dashboard de Supabase. Sin eso el código se genera pero nunca se muestra en el correo.
+
+**L4 (2026-10-17, verbatim):** "No tengo dominio y no pienso comprar uno, esta app es solo para pruebas, que se puede hacer? O en su defecto, devolvemos el cambio del codigo OTP y yo me encargo de crear los usuarios desde el dashboard de supabase"
+
+**L5 (2026-10-17, verbatim):** "ya desactive el confirm email desde supabase, con la opcion B crea unicamente el odd, para abordarlo luego pero tener ahi la documentacion"
+
+**Resolución (2026-10-17) — S8 bloqueado, feature cerrada igual.**
+- El bloqueo es de **infraestructura, no de código**: editar plantillas exige SMTP propio, y Resend y Brevo exigen dominio verificado (chequeado en sus docs). El usuario no tiene ni va a comprar dominio.
+- **Se aplicó la Opción A**: el usuario apagó *Confirm email* en Supabase → el registro va directo a sesión, sin correo. `register-form.tsx:33-42` ya manejaba esa rama; la feature queda operativa en ese estado.
+- **El revert del OTP fue descartado**: la Opción A logra lo mismo sin destruir 5 commits y 376 tests verdes. El código queda dormido (solo se activa con `sessionStarted: false`).
+- **La Opción B queda documentada** en `odd/tasks/gmail-smtp-email-delivery.md` para abordarla después: Gmail SMTP con App Password, sin dominio.
+- **Estado de la rama:** todo fusionado a `main` (`fd23a12`). La feature está cerrada; S8 queda delegado, no resuelto.

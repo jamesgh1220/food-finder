@@ -16,10 +16,21 @@ export interface AuthCredentials {
   password: string;
 }
 
+/**
+ * Entrada de confirmación de cuenta: el código de 6 dígitos que Supabase
+ * envía por email (variable `{{ .Token }}` de la plantilla "Confirm sign up").
+ */
+export interface ConfirmRegistrationInput {
+  email: string;
+  token: string;
+}
+
 export type AuthErrorCode =
   | "invalid_credentials"
+  | "email_not_confirmed"
   | "email_already_registered"
   | "weak_password"
+  | "invalid_token"
   | "invalid_input"
   | "unknown";
 
@@ -48,8 +59,7 @@ export interface RegisterOutcome {
   /**
    * Falso cuando el proyecto exige confirmación de email: la cuenta se
    * creó pero aún no existe sesión, así que la UI no debe redirigir a
-   * /dashboard (el caso de prueba 1 de la ISSUE asume confirmación
-   * desactivada).
+   * /dashboard sino a la pantalla de confirmación.
    */
   sessionStarted: boolean;
 }
@@ -57,6 +67,18 @@ export interface RegisterOutcome {
 export interface AuthPort {
   /** Registro con email/password; inicia sesión si no se requiere confirmación. */
   register(credentials: AuthCredentials): Promise<AuthResult<RegisterOutcome>>;
+  /**
+   * Confirma la cuenta con el código de 6 dígitos del email e inicia sesión.
+   *
+   * No depende de estado del navegador, a diferencia del link PKCE cuyo
+   * `code_verifier` vive solo en el navegador donde se inició el registro.
+   * Por eso funciona leyendo el email desde cualquier máquina o dispositivo.
+   */
+  confirmRegistration(
+    input: ConfirmRegistrationInput,
+  ): Promise<AuthResult<AuthUser>>;
+  /** Reenvía un código de confirmación nuevo a una cuenta sin confirmar. */
+  resendConfirmation(email: string): Promise<AuthResult<void>>;
   /** Inicio de sesión con email/password. */
   login(credentials: AuthCredentials): Promise<AuthResult<AuthUser>>;
   /** Cierra la sesión y elimina sus cookies. */

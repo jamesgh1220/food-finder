@@ -1,3 +1,4 @@
+import { EMAIL_PATTERN } from "@/application/auth/email-validation";
 import type {
   AuthCredentials,
   AuthPort,
@@ -6,7 +7,6 @@ import type {
 } from "@/application/ports/auth";
 import { authFail } from "@/application/ports/auth";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
 
 /** Validación compartida de entrada: todos los casos de uso fallan antes de tocar el puerto. */

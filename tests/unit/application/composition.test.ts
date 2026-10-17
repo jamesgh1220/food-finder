@@ -71,6 +71,8 @@ function createMockDependencies() {
 
 const EXPECTED_SERVICE_KEYS = [
   "registerUser",
+  "confirmRegistration",
+  "resendConfirmation",
   "loginUser",
   "logoutUser",
   "getCurrentUser",
@@ -94,7 +96,7 @@ const EXPECTED_SERVICE_KEYS = [
 ] as const satisfies ReadonlyArray<keyof ApplicationServices>;
 
 describe("createApplicationServices", () => {
-  it("wires all 21 use cases (4 auth + 17 new) with an execute function", () => {
+  it("wires all 23 use cases (6 auth + 17 new) with an execute function", () => {
     const services = createApplicationServices(createMockDependencies());
 
     expect(Object.keys(services).sort()).toEqual(

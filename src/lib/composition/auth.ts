@@ -1,7 +1,9 @@
+import { ConfirmRegistration } from "@/application/auth/confirm-registration";
 import { GetCurrentUser } from "@/application/auth/get-current-user";
 import { LoginUser } from "@/application/auth/login-user";
 import { LogoutUser } from "@/application/auth/logout-user";
 import { RegisterUser } from "@/application/auth/register-user";
+import { ResendConfirmation } from "@/application/auth/resend-confirmation";
 import type { AuthPort } from "@/application/ports/auth";
 
 /**
@@ -12,6 +14,8 @@ import type { AuthPort } from "@/application/ports/auth";
  */
 export interface AuthServices {
   registerUser: RegisterUser;
+  confirmRegistration: ConfirmRegistration;
+  resendConfirmation: ResendConfirmation;
   loginUser: LoginUser;
   logoutUser: LogoutUser;
   getCurrentUser: GetCurrentUser;
@@ -20,6 +24,8 @@ export interface AuthServices {
 export function createAuthServices(port: AuthPort): AuthServices {
   return {
     registerUser: new RegisterUser(port),
+    confirmRegistration: new ConfirmRegistration(port),
+    resendConfirmation: new ResendConfirmation(port),
     loginUser: new LoginUser(port),
     logoutUser: new LogoutUser(port),
     getCurrentUser: new GetCurrentUser(port),

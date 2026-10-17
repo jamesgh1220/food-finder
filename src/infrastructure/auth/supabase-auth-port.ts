@@ -7,6 +7,7 @@ import type {
   AuthPort,
   AuthResult,
   AuthUser,
+  ConfirmRegistrationInput,
   RegisterOutcome,
 } from "@/application/ports/auth";
 import { authFail, authOk } from "@/application/ports/auth";
@@ -37,9 +38,18 @@ function mapAuthError(
         "La contraseña es demasiado débil. Usa al menos 6 caracteres.",
       );
     case "email_not_confirmed":
+      // Código propio (no "unknown"): la UI necesita distinguirlo para
+      // ofrecer el camino de confirmación en vez de dejar al usuario sin
+      // salida en la pantalla de login. El mensaje no cambia.
       return authFail(
-        "unknown",
+        "email_not_confirmed",
         "Confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.",
+      );
+    case "otp_expired":
+      // Supabase agrupa "token has expired or is invalid" bajo este código.
+      return authFail(
+        "invalid_token",
+        "El código es incorrecto o expiró. Pide uno nuevo.",
       );
     case "email_address_invalid":
       return authFail("unknown", "El email no es válido.");
@@ -76,6 +86,35 @@ export function createSupabaseAuthPort(client: AuthClient): AuthPort {
         user: toAuthUser(data.user),
         sessionStarted: data.session !== null,
       });
+    },
+
+    async confirmRegistration(
+      input: ConfirmRegistrationInput,
+    ): Promise<AuthResult<AuthUser>> {
+      // `type: "signup"` verifica el código de 6 dígitos de la plantilla
+      // "Confirm sign up". El token viaja en el cuerpo de la petición y no
+      // en una URL, así que no depende del `code_verifier` PKCE del
+      // navegador: funciona leyendo el email desde cualquier dispositivo.
+      const { data, error } = await client.auth.verifyOtp({
+        email: input.email,
+        token: input.token,
+        type: "signup",
+      });
+      if (error) {
+        return mapAuthError(error, "No se pudo confirmar la cuenta.");
+      }
+      if (!data.user) {
+        return authFail("unknown", "No se pudo confirmar la cuenta.");
+      }
+      return authOk(toAuthUser(data.user));
+    },
+
+    async resendConfirmation(email: string): Promise<AuthResult<void>> {
+      const { error } = await client.auth.resend({ type: "signup", email });
+      if (error) {
+        return mapAuthError(error, "No se pudo reenviar el código.");
+      }
+      return authOk(undefined);
     },
 
     async login(credentials): Promise<AuthResult<AuthUser>> {

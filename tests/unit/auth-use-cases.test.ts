@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
+import { ConfirmRegistration } from "@/application/auth/confirm-registration";
 import { GetCurrentUser } from "@/application/auth/get-current-user";
 import { LoginUser } from "@/application/auth/login-user";
 import { LogoutUser } from "@/application/auth/logout-user";
 import { RegisterUser } from "@/application/auth/register-user";
+import { ResendConfirmation } from "@/application/auth/resend-confirmation";
 import type {
   AuthCredentials,
   AuthPort,
@@ -21,6 +23,8 @@ function createFakeAuthPort() {
     getCurrentUser: vi.fn(
       async (): Promise<AuthResult<AuthUser | null>> => authOk(user),
     ),
+    confirmRegistration: vi.fn(async () => authOk(user)),
+    resendConfirmation: vi.fn(async () => authOk(undefined)),
   } satisfies AuthPort;
 }
 
@@ -82,6 +86,96 @@ describe("RegisterUser", () => {
   });
 });
 
+describe("ConfirmRegistration", () => {
+  const validConfirmation = { email: "ana@example.com", token: "123456" };
+
+  it("confirms with email and a 6-digit code, with no browser-bound state (S1)", async () => {
+    const port = createFakeAuthPort();
+    const useCase = new ConfirmRegistration(port);
+
+    const result = await useCase.execute(validConfirmation);
+
+    expect(result).toEqual({ ok: true, data: user });
+    expect(port.confirmRegistration).toHaveBeenCalledWith(validConfirmation);
+  });
+
+  it("rejects a code shorter than 6 digits without touching the port", async () => {
+    const port = createFakeAuthPort();
+    const useCase = new ConfirmRegistration(port);
+
+    const result = await useCase.execute({
+      email: "ana@example.com",
+      token: "12345",
+    });
+
+    expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(port.confirmRegistration).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-numeric code without touching the port", async () => {
+    const port = createFakeAuthPort();
+    const useCase = new ConfirmRegistration(port);
+
+    const result = await useCase.execute({
+      email: "ana@example.com",
+      token: "abcdef",
+    });
+
+    expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(port.confirmRegistration).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid email without touching the port", async () => {
+    const port = createFakeAuthPort();
+    const useCase = new ConfirmRegistration(port);
+
+    const result = await useCase.execute({
+      email: "no-es-email",
+      token: "123456",
+    });
+
+    expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(port.confirmRegistration).not.toHaveBeenCalled();
+  });
+
+  it("surfaces an expired or wrong code as a controlled error (S4)", async () => {
+    const port = createFakeAuthPort();
+    port.confirmRegistration.mockResolvedValueOnce(
+      authFail(
+        "invalid_token",
+        "El código es incorrecto o expiró. Pide uno nuevo.",
+      ),
+    );
+    const useCase = new ConfirmRegistration(port);
+
+    const result = await useCase.execute(validConfirmation);
+
+    expect(result).toMatchObject({ ok: false, code: "invalid_token" });
+  });
+});
+
+describe("ResendConfirmation", () => {
+  it("asks for a new code for a valid email (S5)", async () => {
+    const port = createFakeAuthPort();
+    const useCase = new ResendConfirmation(port);
+
+    const result = await useCase.execute("ana@example.com");
+
+    expect(result.ok).toBe(true);
+    expect(port.resendConfirmation).toHaveBeenCalledWith("ana@example.com");
+  });
+
+  it("rejects an invalid email without touching the port", async () => {
+    const port = createFakeAuthPort();
+    const useCase = new ResendConfirmation(port);
+
+    const result = await useCase.execute("no-es-email");
+
+    expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(port.resendConfirmation).not.toHaveBeenCalled();
+  });
+});
+
 describe("LoginUser", () => {
   it("returns the user for correct credentials (ISSUE test case 2)", async () => {
     const port = createFakeAuthPort();
@@ -116,6 +210,21 @@ describe("LoginUser", () => {
 
     expect(result).toMatchObject({ ok: false, code: "invalid_input" });
     expect(port.login).not.toHaveBeenCalled();
+  });
+
+  it("keeps a distinguishable code for an unconfirmed account (S3/S6)", async () => {
+    const port = createFakeAuthPort();
+    port.login.mockResolvedValueOnce(
+      authFail(
+        "email_not_confirmed",
+        "Confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.",
+      ),
+    );
+    const useCase = new LoginUser(port);
+
+    const result = await useCase.execute(validCredentials);
+
+    expect(result).toMatchObject({ ok: false, code: "email_not_confirmed" });
   });
 });
 

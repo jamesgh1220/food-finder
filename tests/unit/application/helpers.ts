@@ -28,6 +28,8 @@ export function createFakeAuthPort(user: AuthUser | null = sessionUser): AuthPor
     getCurrentUser: vi.fn(
       async (): Promise<AuthResult<AuthUser | null>> => authOk(user),
     ),
+    confirmRegistration: vi.fn(async () => authOk(sessionUser)),
+    resendConfirmation: vi.fn(async () => authOk(undefined)),
   } satisfies AuthPort;
 }
 

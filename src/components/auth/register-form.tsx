@@ -11,9 +11,6 @@ import { createBrowserAuthServices } from "@/lib/composition/browser-auth";
 export function RegisterForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
-  const [confirmationNotice, setConfirmationNotice] = useState<string | null>(
-    null,
-  );
   const {
     register,
     handleSubmit,
@@ -25,7 +22,6 @@ export function RegisterForm() {
 
   async function onSubmit(values: RegisterValues) {
     setFormError(null);
-    setConfirmationNotice(null);
     const { registerUser } = createBrowserAuthServices();
     const result = await registerUser.execute(values);
 
@@ -40,9 +36,10 @@ export function RegisterForm() {
       return;
     }
 
-    setConfirmationNotice(
-      "Cuenta creada. Revisa tu email para confirmarla y luego inicia sesión.",
-    );
+    // El proyecto pide confirmar el email: la cuenta ya existe pero todavía no
+    // hay sesión. Se confirma en /confirm con el código de 6 dígitos, no con el
+    // link del email, que depende del navegador donde se inició el registro.
+    router.push(`/confirm?email=${encodeURIComponent(values.email)}`);
   }
 
   return (
@@ -97,15 +94,6 @@ export function RegisterForm() {
           role="alert"
         >
           {formError}
-        </p>
-      )}
-
-      {confirmationNotice && (
-        <p
-          className="rounded-md bg-secondary px-3 py-2 text-sm text-secondary-foreground"
-          role="status"
-        >
-          {confirmationNotice}
         </p>
       )}
 

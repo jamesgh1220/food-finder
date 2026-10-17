@@ -13,7 +13,7 @@ import type { Database } from "@/types/database.types";
  */
 
 const PROTECTED_PREFIXES = ["/dashboard"];
-const AUTH_PAGES = ["/login", "/register"];
+const AUTH_PAGES = ["/login", "/register", "/confirm"];
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

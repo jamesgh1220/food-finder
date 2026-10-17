@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -11,9 +12,11 @@ import { createBrowserAuthServices } from "@/lib/composition/browser-auth";
 export function LoginForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -22,11 +25,16 @@ export function LoginForm() {
 
   async function onSubmit(values: LoginValues) {
     setFormError(null);
+    setNeedsConfirmation(false);
     const { loginUser } = createBrowserAuthServices();
     const result = await loginUser.execute(values);
 
     if (!result.ok) {
       setFormError(result.message);
+      // La cuenta existe con el email sin confirmar. Sin este camino el usuario
+      // queda encerrado en el login: el registro no lo dejó confirmar. El
+      // código de 6 dígitos se completa en /confirm.
+      setNeedsConfirmation(result.code === "email_not_confirmed");
       return;
     }
 
@@ -84,12 +92,20 @@ export function LoginForm() {
       </div>
 
       {formError && (
-        <p
+        <div
           className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
           role="alert"
         >
-          {formError}
-        </p>
+          <p>{formError}</p>
+          {needsConfirmation && (
+            <Link
+              href={`/confirm?email=${encodeURIComponent(getValues("email"))}`}
+              className="mt-1 inline-block font-medium underline underline-offset-4"
+            >
+              Confirmar mi cuenta
+            </Link>
+          )}
+        </div>
       )}
 
       <button

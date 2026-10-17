@@ -18,8 +18,19 @@ export const registerSchema = z.object({
     .min(6, "La contraseña debe tener al menos 6 caracteres."),
 });
 
+export const confirmRegistrationSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Introduce tu email.")
+    .email("Introduce un email válido."),
+  token: z.string().regex(/^\d{6}$/, "El código debe tener 6 dígitos."),
+});
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
+export type ConfirmRegistrationValues = z.infer<
+  typeof confirmRegistrationSchema
+>;
 
 /** Solo rutas absolutas del mismo origen son destinos de redirect seguros. */
 export function safeNextPath(raw: string | null): string {

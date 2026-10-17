@@ -4,9 +4,13 @@ import { expect, test } from "@playwright/test";
  * Spec 05 — flujo live contra Supabase (ISSUE test cases 1-5).
  *
  * La cuenta está creada y confirmada vía admin API para que el flujo de
- * sesión sea determinista. El proyecto tiene `mailer_autoconfirm: false`,
- * así que el registro con esta cuenta existente NO crea sesión: debe
- * responder con un aviso/controlado en español (nunca un error crudo).
+ * sesión sea determinista. El proyecto tiene `mailer_autoconfirm: false`, así
+ * que el registro con esta cuenta existente NO crea sesión. La salida debe ser
+ * controlada y en español: o un aviso en /register, o el redirect a /confirm
+ * para tipear el código de 6 dígitos. Nunca un error crudo ni /dashboard.
+ *
+ * No cubre el camino feliz de la confirmación en sí: eso requiere un código
+ * real de la bandeja de entrada.
  */
 const EMAIL = "ff-e2e-auth@example.com";
 const PASSWORD = "E2eTest123!";
@@ -28,22 +32,34 @@ test("auth live: session guard, controlled register, login, logout, login", asyn
     await page.getByRole("button", { name: "Crear cuenta" }).click();
 
     const form = page.locator("form");
+
+    // Dos salidas válidas según cómo responda Supabase para una cuenta ya
+    // existente: aviso controlado en /register, o redirect a /confirm para
+    // tipear el código. Ambos waitFor se capturan para que el que pierde la
+    // carrera no deje un rejection pendiente.
     await Promise.race([
-      form.getByRole("status").waitFor({ timeout: 30_000 }),
-      form.getByRole("alert").waitFor({ timeout: 30_000 }),
+      form
+        .getByRole("alert")
+        .waitFor({ timeout: 30_000 })
+        .catch(() => null),
+      page.waitForURL(/\/confirm(\?|$)/, { timeout: 30_000 }).catch(() => null),
     ]);
 
-    const feedback = await form
-      .getByRole("status")
-      .or(form.getByRole("alert"))
-      .first()
-      .innerText();
+    if (/\/confirm/.test(page.url())) {
+      // El registro sin sesión lleva a la pantalla del código, con el email
+      // ya precargado desde la query.
+      await expect(page).toHaveURL(/\/confirm\?email=/);
+      await expect(
+        page.getByRole("heading", { name: "Confirma tu cuenta" }),
+      ).toBeVisible();
+      await expect(page.locator("#email")).toHaveValue(EMAIL);
+      return;
+    }
 
-    // Aviso de confirmación (mailer_autoconfirm=false), "ya existe"
-    // (si el proyecto desactiva la confirmación) o rate-limit mapeado.
-    expect(feedback).toMatch(
-      /Revisa tu email|Ya existe una cuenta|Demasiados intentos/,
-    );
+    const feedback = await form.getByRole("alert").first().innerText();
+    // "Ya existe" (si el proyecto desactiva la confirmación) o rate-limit
+    // mapeado. Nunca un mensaje crudo en inglés.
+    expect(feedback).toMatch(/Ya existe una cuenta|Demasiados intentos/);
     // No debe iniciar sesión ni redirigir a /dashboard.
     await expect(page).toHaveURL(/\/register$/);
   });

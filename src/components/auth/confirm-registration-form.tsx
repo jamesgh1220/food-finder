@@ -59,16 +59,23 @@ export function ConfirmRegistrationForm({
     if (!(await trigger("email"))) return;
 
     setIsResending(true);
-    const { resendConfirmation } = createBrowserAuthServices();
-    const result = await resendConfirmation.execute(getValues("email"));
-    setIsResending(false);
+    // try/finally: si algo escapa de AuthResult (p. ej. falta la URL de
+    // Supabase en el deploy) el botón no puede quedar trabado en "Enviando…".
+    try {
+      const { resendConfirmation } = createBrowserAuthServices();
+      const result = await resendConfirmation.execute(getValues("email"));
 
-    if (!result.ok) {
-      setFormError(result.message);
-      return;
+      if (!result.ok) {
+        setFormError(result.message);
+        return;
+      }
+
+      setNotice("Te enviamos un código nuevo. Revisa tu email.");
+    } catch {
+      setFormError("No se pudo reenviar el código. Inténtalo de nuevo.");
+    } finally {
+      setIsResending(false);
     }
-
-    setNotice("Te enviamos un código nuevo. Revisa tu email.");
   }
 
   return (

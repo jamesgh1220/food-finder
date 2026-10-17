@@ -30,13 +30,14 @@ Fuera de alcance: el flujo de *magic link* con `token_hash` + ruta `/auth/confir
 - [x] **T6** — Docs: `docs/specs/05-supabase-auth/SPEC.md` (REQ-04, REQ-05, REQ-08 nueva, verificación) + este documento. (S8)
 - [x] **T7** — Verificación: `pnpm lint && pnpm typecheck && pnpm test` → PASS · `pnpm build` → PASS (riesgo alto: auth).
 - [x] **T8** — `odd/tasks/05-supabase-auth.md`: el pendiente de `mailer_autoconfirm` queda cerrado, con el paso manual de la plantilla como pendiente nuevo.
+- [x] **T9** — Advisory 1 del verificador: `ConfirmRegistrationForm` envuelve el reenvío en `try/catch/finally` para que una excepción no-`AuthError` no deje el botón trabado; regresión en `tests/unit/components/confirm-registration-form.test.tsx`. (S5)
 
 **Verificación observada (2026-10-17):**
 
 - `pnpm lint` → exit 0 · `pnpm typecheck` → exit 0
-- `pnpm test` → 372/372 PASS (52 files). Baseline previa: 346 tests. Neto +26.
+- `pnpm test` → **376/376 PASS** (53 files). Baseline previa: 346 tests. Neto +30 (19 del feature + 4 del advisory 1 + 7 de fakes/aserciones actualizadas).
 - `pnpm build` → PASS. `/confirm` → `◐` (Partial Prerender); `/login` y `/register` → `○` (estáticas); `Proxy (Middleware)` registrado.
-- Estrategia RED→GREEN respetada: los tests de casos de uso se escribieron primero y fallaron por módulo inexistente antes de implementar.
+- Estrategia RED→GREEN respetada: los tests de casos de uso se escribieron primero y fallaron por módulo inexistente antes de implementar. El advisory 1 se verificó por **mutación**: revertido el fix, el test correspondiente falla; restaurado, vuelve a verde.
 - **No ejecutado:** `pnpm test:e2e` (Playwright live). El camino feliz de `verifyOtp` requiere un código real de un buzón real, y el proyecto apunta a Supabase real. El spec quedó actualizado para la nueva salida (redirect a `/confirm`).
 
 ## Log
@@ -68,3 +69,13 @@ Fuera de alcance: el flujo de *magic link* con `token_hash` + ruta `/auth/confir
 **Desviaciones registradas.**
 - Comentarios de código en **español** (preferencia de proyecto `preferences/code-comments-spanish`, confirmada por el código vecino). `AGENTS.md` dice lo contrario ("comments … in English") y está desincronizado con el repo; se sigue la convención real del código.
 - Commit messages en inglés, sin atribución AI (`AGENTS.md` + regla de persona).
+
+**Verificación (2026-10-17).**
+- Compuerta: `pnpm lint` 0 · `pnpm typecheck` 0 · `pnpm test` **376/376** (53 archivos; 346 previos + 19 del feature + 1 del advisory 1) · `pnpm build` PASS con `/confirm` ◐ (Partial Prerender), `/login` ○, `/register` ○.
+- Verificador independiente (no escribió el código): **S1–S7 covered, S8 partial, 0 blockers**, 2 advisories.
+  - Confirmó que `pnpm typecheck` cubre `tests/` de verdad (inyectó un `TS2322` positivo control y lo detectó).
+  - Confirmó que el mensaje `email_not_confirmed` es **byte-idéntico** al baseline (`cmp` contra `git show 161efa0:…`), así que `T1` no altera output existente.
+- **Advisory 1 cerrado** (`15a3570`): auth-js solo captura `AuthError` y re-lanza el resto, así que una excepción inesperada (p. ej. `NEXT_PUBLIC_SUPABASE_URL` ausente en un deploy nuevo) dejaba el botón de reenvío trabado en "Enviando…". Fix: `try/catch/finally` en `ConfirmRegistrationForm` + mensaje "No se pudo reenviar el código. Inténtalo de nuevo.". Regresión en `tests/unit/components/confirm-registration-form.test.tsx` (4 tests). **RED verificado con mutación**: revertido el fix, el test 1 falla; restaurado, 376/376.
+- **Advisory 2 confirmado como fuera de alcance** (decisión registrada en L-negociación): registrar una cuenta ya existente/confirmada cae en `/confirm` con un código que nunca llega. Supabase oscurece esto deliberadamente para evitar enumeración; las salidas existentes (link "Iniciar sesión", "Reenviar código") ya estaban. El baseline era igual de engañoso.
+- **E2E no ejecutado** (`pnpm test:e2e`): es una suite Playwright en vivo contra el proyecto real (`vhjxhqaowxonmtgusskt`) y necesita un buzón real para recibir el código de 6 dígitos. Pendiente de prueba manual.
+- **Paso manual del usuario:** agregar `{{ .Token }}` a la plantilla de email **Confirm sign up** en el dashboard de Supabase. Sin eso el código se genera pero nunca se muestra en el correo.

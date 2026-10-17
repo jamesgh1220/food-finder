@@ -119,6 +119,15 @@ operen por usuario. Sin esto, los specs 06–11 no tienen consumidor de sesión.
 **Desviaciones:** delegación de writer no disponible (runtime rechazó el sub-agente: "OpenCode free tier") → ejecución inline.
 
 **Pendiente:** ninguno de entrega (fusión a `main` hecha, `f8e7d48`). Solo quedan pendientes
-del mantenedor: el camino "registro fresco → sesión directa" requiere desactivar
-`mailer_autoconfirm` en el proyecto Supabase (cubierto por spec 16 si aplica), y borrar la
-cuenta E2E `ff-e2e-auth@example.com` cuando ya no se necesite.
+del mantenedor: borrar la cuenta E2E `ff-e2e-auth@example.com` cuando ya no se necesite, y el
+paso manual de la plantilla de email de confirmación (ver abajo).
+
+**Actualización 2026-10-17 (cerrado por `feat/email-confirmation-code`):**
+- ~~El camino "registro fresco → sesión directa" requiere desactivar `mailer_autoconfirm`~~
+  → **cerrado sin desactivar nada.** Con la confirmación por código de 6 dígitos el usuario
+  confirma con el `{{ .Token }}` del email y `verifyOtp` inicia sesión. No hace falta tocar
+  `mailer_autoconfirm`, y además el link PKCE era cross-device-broken (el `code_verifier`
+  vive en el navegador donde se registró). Detalle en `odd/tasks/email-confirmation-code.md`
+  y en `docs/specs/05-supabase-auth/SPEC.md` (REQ-08).
+- **Pendiente nuevo del mantenedor:** agregar `{{ .Token }}` a la plantilla **Confirm sign up**
+  del dashboard. El código se genera igual, pero el mail no lo muestra hasta ese paso.

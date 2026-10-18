@@ -32,8 +32,9 @@ Fuera de alcance: el puntaje de coincidencia del detalle (`RecipeMatchScore`). D
   - Se actualizó además `docs/specs/04-security-rls/SPEC.md` (REQ-04): era la excepción real de escritura al catálogo global.
 - [x] **T5** — Sonda contra la base real: generar/insertar una receta con ingredientes, verificar filas y limpiar. (S1,S2) · inline · sin artefacto (sonda temporal, borrada)
   - Evidencia: `1 passed` con el repo real + cliente real + RLS real. `anon insert ingredients → 42501`; `findIngredients` devolvió 2 filas (el duplicado normalizado colapsó, S3) con `quantity/unit/optional` correctos; el catálogo quedó con 2 filas nuevas. Post-check independiente: 0 ingredientes y 0 recetas de sonda sobrantes.
-- [ ] **T6** — Verificación independiente (riesgo alto: escritura en catálogo global con service-role). · delegated · —
-- [ ] **T7** — Cierre del documento con evidencia. · inline · —
+- [x] **T6** — Verificación independiente (riesgo alto: escritura en catálogo global con service-role). · delegated · — **asumida por el usuario (2026-10-17)**
+  - El agente **no** la ejecutó: el runtime de subagentes devolvió `This API key has expired` y OpenCode quedó caído. Por decisión explícita del usuario (L4), la verificación independiente queda **a cargo del usuario**. No hay veredicto del agente para T6.
+- [x] **T7** — Cierre del documento con evidencia. · inline · (este commit)
 
 ## Log
 
@@ -60,3 +61,13 @@ Fuera de alcance: el puntaje de coincidencia del detalle (`RecipeMatchScore`). D
 **Evidencia de implementación (2026-10-14).** RED observado antes de cada GREEN: 2 fallos en `supabase-repositories.test.ts`, 2 fallos en `gemini-recipe-provider.test.ts`. Suite completa: **358 passed / 52 archivos** (antes 352 → +6 tests). `pnpm typecheck` y `pnpm lint` limpios. Dos work-unit commits: `00043ba` (código + tests) y `485da03` (specs + doc).
 
 **Hallazgo operativo (2026-10-14).** La base real ya tenía **3 recetas `AI_GENERATED`** de pruebas anteriores del usuario (`pollo-agridulce-con-papa-criolla-y-arroz`, `arroz-con-huevo-a-la-criolla`, `atun-encebollado-a-la-espanola`) con **0 filas** de `recipe_ingredients`. Este fix **no las repara**: sus ingredientes nunca se guardaron en ningún lado y son irrecuperables. Solo aplica a generaciones nuevas. Total de filas en `recipe_ingredients` hoy: 229 (todas de recetas internas).
+
+**Sesión 2026-10-17 — estado y bloqueo de T6.** `main` ya contiene los tres commits (`00043ba`, `485da03` y `161efa0 feat: md actualoizado`, este último del usuario, commiteado encima); la rama `feat/recipe-ingredient-persistence` quedó congelada en `485da03`. `main` está **2 commits adelante de `origin/main`: nada pusheado**. Árbol limpio. Re-verificado en HEAD: `pnpm typecheck` y `pnpm lint` limpios, **358 passed / 52 archivos**.
+
+**T6 sigue bloqueada.** El verificador independiente no arrancó: el runtime de subagentes devolvió `This API key has expired. Create a new API key in OpenCode Console...`. Es una credencial vencida del runtime — no un defecto del código, del cambio ni de Gentle AI. Además, el render de salida de esta sesión volvió a duplicar líneas (por eso los chequeos se re-ejecutaron con comandos chicos y acotados).
+
+**Auto-revisión (2026-10-17) — NO es T6.** Chequeos mecánicos del repaso adversarial que se quiso delegar: (a) `save` con los dos argumentos en el único call site productivo (`gemini-recipe-provider.ts:265`) y en los 4 fakes de test; (b) corte RLS/admin intacto (`recipes` → `clients.client` RLS; `recipeWriter` → `adminClient`, `repositories/index.ts:71,75`); (c) el `logger` real llega al escritor (`server-application.ts:12,23` → `repositories/index.ts:77`), así que el `warn` de degradación **sí** se emite en producción y no queda `undefined`; (d) ningún Client Component (17 en total) importa el cliente admin ni la composition de servidor; (e) la deduplicación es por `ingredient_id` resuelto, así que dos nombres que normalizan igual colapsan; (f) no se escriben filas de join si falla el insert de la receta. Sin bloqueantes nuevos. **Aporta evidencia, no independencia: T6 hay que correrla igual cuando la credencial esté sana.**
+
+**L4 (2026-10-17, verbatim):** "esta caido opendode entonces la revision la hago yo, deja asi"
+
+**Cierre (2026-10-17).** T6 queda **asumida por el usuario**: OpenCode está caído y él hace la verificación independiente por su cuenta. El agente no la ejecutó ni emite veredicto sobre ella. Tareas T1–T5 cerradas con evidencia propia; T7 cerrado con este documento. **Sin pushear**: `main` sigue 2 commits adelante de `origin/main`. La decisión de entrega (un solo PR vs. encadenado — recomendación registrada: un solo PR) queda pendiente a criterio del usuario.

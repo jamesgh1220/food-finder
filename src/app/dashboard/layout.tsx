@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { DashboardMobileNavigation } from "@/components/dashboard/dashboard-mobile-navigation";
 import { createServerAuthServices } from "@/lib/composition/server-auth";
 import { messages } from "@/lib/i18n/messages";
 
@@ -35,7 +36,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 /** Static header shell rendered while the session streams in. */
 function DashboardHeaderShell() {
   return (
-    <header className="border-b border-border bg-card">
+    <header className="relative border-b border-border bg-card">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
         <span className="text-lg font-display font-medium tracking-tight text-primary">
           {messages.appName}
@@ -57,7 +58,7 @@ async function AuthenticatedHeader() {
   const user = result.data;
 
   return (
-    <header className="border-b border-border bg-card">
+    <header className="relative border-b border-border bg-card">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
         <div className="flex items-center gap-6">
           <Link
@@ -68,29 +69,30 @@ async function AuthenticatedHeader() {
           </Link>
           <Link
             href="/dashboard/pantry"
-            className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="hidden rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 sm:inline"
           >
             {messages.dashboard.pantryNav}
           </Link>
           <Link
             href="/dashboard/recipes"
-            className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="hidden rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 sm:inline"
           >
             {messages.dashboard.recipesNav}
           </Link>
           <Link
             href="/dashboard/favorites"
-            className="rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="hidden rounded-sm text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 sm:inline"
           >
             {messages.favorites.nav}
           </Link>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden items-center gap-4 sm:flex">
           <span className="hidden text-sm text-muted-foreground sm:inline">
             {user.email}
           </span>
           <LogoutButton />
         </div>
+        <DashboardMobileNavigation email={user.email} />
       </div>
     </header>
   );
